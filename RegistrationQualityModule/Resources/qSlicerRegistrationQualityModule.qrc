@@ -1,0 +1,18 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+    <file>Icons/RegistrationQualityIcon.png</file>
+	<file>Icons/GlyphIcon.png</file>
+	<file>Icons/GridIcon.png</file>
+	<file>Icons/BlockIcon.png</file>
+	<file>Icons/ContourIcon.png</file>
+	<file>Icons/GlyphSliceIcon.png</file>
+	<file>Icons/GridSliceIcon.png</file>
+	<file>Icons/CURLIcon.png</file>
+	<file>Icons/JacobianIcon_new.png</file>
+	<file>Icons/ICEIcon.png</file>
+	<file>Icons/FalseColourIcon.png</file>
+	<file>Icons/MovieIcon.png</file>
+	<file>Icons/CheckerboardIcon.png</file>
+	<file>Icons/FlickerIcon.png</file>
+  </qresource>
+</RCC>
