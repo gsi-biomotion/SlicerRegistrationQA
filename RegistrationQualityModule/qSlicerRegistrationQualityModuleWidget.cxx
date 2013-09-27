@@ -536,6 +536,17 @@ void qSlicerRegistrationQualityModuleWidget::setup()
   connect(d->InputFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(inputVolumeChanged(vtkMRMLNode*)));
   connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
   connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
+  
+  // Image Checks
+   
+  connect(d->FalseColorToggle, SIGNAL(clicked()),
+          this, SLOT (falseColorToggle()));
+  connect(d->CheckerboardToggle, SIGNAL(clicked()),
+          this, SLOT (loadNonDicomData()));
+  connect(d->MovieToggle, SIGNAL(clicked()),
+          this, SLOT (loadRemoteSampleData()));
+  connect(d->FlickerToggle, SIGNAL(clicked()),
+          this, SLOT (editApplicationSettings()));
 
   // Glyph Parameters
   connect(d->InputGlyphPointMax, SIGNAL(valueChanged(double)), this, SLOT(setGlyphPointMax(double)));
@@ -585,6 +596,35 @@ void qSlicerRegistrationQualityModuleWidget::setup()
 
   connect(d->ApplyButton, SIGNAL(clicked()), this, SLOT(visualize()));
 }
+
+
+//-----------------------------------------------------------------------------
+// Image Checks
+//-----------------------------------------------------------------------------
+
+void qSlicerRegistrationQualityModuleWidget::falseColorToggle(){
+
+  Q_D(const qSlicerRegistrationQualityModuleWidget);
+  vtkSlicerCropVolumeLogic *logic = d->logic();
+  
+  if(!this->parametersNode || !d->InputVolumeComboBox->currentNode() || 
+     !d->InputROIComboBox->currentNode())
+    return;
+
+  this->parametersNode->SetWarpedInputVolumeNodeID(d->InputWapredComboBox->currentNode()->GetID());
+  this->parametersNode->SetReferenceInputVolumeNodeID(d->InputReferenceComboBox->currentNode()->GetID());
+
+  if(!logic->Apply(this->parametersNode)) 
+    {
+    std::cerr << "Propagating to the selection node" << std::endl;
+    vtkSlicerApplicationLogic *appLogic = this->module()->appLogic();
+    vtkMRMLSelectionNode *selectionNode = appLogic->GetSelectionNode();
+    selectionNode->SetReferenceActiveVolumeID(this->parametersNode->GetOutputVolumeNodeID()); //TODO Edit logic, so you'll get output.
+    appLogic->PropagateVolumeSelection();
+    }
+}
+
+
 
 //-----------------------------------------------------------------------------
 // Glyph parameters
