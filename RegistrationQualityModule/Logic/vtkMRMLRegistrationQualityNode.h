@@ -26,14 +26,18 @@ public:
   virtual void UpdateReferenceID(const char *oldID, const char *newID);
 
 public:
-  vtkSetStringMacro(InputVolumeNodeID);
-  vtkGetStringMacro(InputVolumeNodeID);
-  void SetAndObserveInputVolumeNodeID(const char* id);
+  vtkSetStringMacro(VectorVolumeNodeID);
+  vtkGetStringMacro(VectorVolumeNodeID);
+  void SetAndObserveVectorVolumeNodeID(const char* id);
 
   vtkSetStringMacro(ReferenceVolumeNodeID);
   vtkGetStringMacro(ReferenceVolumeNodeID);
   void SetAndObserveReferenceVolumeNodeID(const char* id);
 
+  vtkSetStringMacro(WarpedVolumeNodeID);
+  vtkGetStringMacro(WarpedVolumeNodeID);
+  void SetAndObserveWarpedVolumeNodeID(const char* id);  
+  
   vtkSetStringMacro(OutputModelNodeID);
   vtkGetStringMacro(OutputModelNodeID);
   void SetAndObserveOutputModelNodeID(const char* id);
@@ -126,8 +130,9 @@ protected:
   vtkMRMLRegistrationQualityNode(const vtkMRMLRegistrationQualityNode&);
   void operator=(const vtkMRMLRegistrationQualityNode&);
   
-  char* InputVolumeNodeID;
+  char* VectorVolumeNodeID;
   char* ReferenceVolumeNodeID;
+  char* WarpedVolumeNodeID;
   char* OutputModelNodeID;
 
 //Parameters

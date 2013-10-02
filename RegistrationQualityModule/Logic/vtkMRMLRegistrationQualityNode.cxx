@@ -14,8 +14,9 @@ vtkMRMLNodeNewMacro(vtkMRMLRegistrationQualityNode);
 
 //----------------------------------------------------------------------------
 vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode(){
-  this->InputVolumeNodeID = NULL;
+  this->VectorVolumeNodeID = NULL;
   this->ReferenceVolumeNodeID = NULL;
+  this->WarpedVolumeNodeID = NULL;
   this->OutputModelNodeID = NULL;
     
   //Glyph Parameters
@@ -69,8 +70,9 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode(){
 
 //----------------------------------------------------------------------------
 vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode(){
-  this->SetInputVolumeNodeID(NULL);
+  this->SetVectorVolumeNodeID(NULL);
   this->SetReferenceVolumeNodeID(NULL);
+  this->SetWarpedVolumeNodeID(NULL);
   this->SetOutputModelNodeID(NULL);
   this->SetGlyphSliceNodeID(NULL);
   this->SetGridSliceNodeID(NULL);
@@ -87,12 +89,16 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts){
     attName = *(atts++);
     attValue = *(atts++);
     
-    if (!strcmp(attName, "InputVolumeNodeID")){
-      this->SetInputVolumeNodeID(attValue);
+    if (!strcmp(attName, "VectorVolumeNodeID")){
+      this->SetVectorVolumeNodeID(attValue);
       continue;
     }
     if (!strcmp(attName, "ReferenceVolumeNodeID")){
       this->SetReferenceVolumeNodeID(attValue);
+      continue;
+    }        
+    if (!strcmp(attName, "WarpedVolumeNodeID")){
+      this->SetWarpedVolumeNodeID(attValue);
       continue;
     }
     if (!strcmp(attName, "OutputModelNodeID")){
@@ -309,8 +315,9 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent){
   Superclass::WriteXML(of, nIndent);
   vtkIndent indent(nIndent);
 
-  of << indent << " InputVolumeNodeID=\"" << (this->InputVolumeNodeID ? this->InputVolumeNodeID : "NULL") << "\"";
+  of << indent << " VectorVolumeNodeID=\"" << (this->VectorVolumeNodeID ? this->VectorVolumeNodeID : "NULL") << "\"";
   of << indent << " ReferenceVolumeNodeID=\"" << (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\"";
+  of << indent << " WarpedVolumeNodeID=\"" << (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\"";
   of << indent << " OutputModelNodeID=\"" << (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\"";
   
   of << indent << " GlyphPointMax=\""<< this->GlyphPointMax << "\"";
@@ -358,8 +365,9 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode){
   vtkMRMLRegistrationQualityNode *node = vtkMRMLRegistrationQualityNode::SafeDownCast(anode);
   this->DisableModifiedEventOn();
 
-  this->SetInputVolumeNodeID(node->GetInputVolumeNodeID());
+  this->SetVectorVolumeNodeID(node->GetVectorVolumeNodeID());
   this->SetReferenceVolumeNodeID(node->GetReferenceVolumeNodeID());
+  this->SetWarpedVolumeNodeID(node->GetWarpedVolumeNodeID());
   this->SetOutputModelNodeID(node->GetOutputModelNodeID());
   
   this->GlyphPointMax = node->GlyphPointMax;
@@ -405,8 +413,8 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode){
 
 //----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::UpdateReferenceID(const char *oldID, const char *newID){
-  if (this->InputVolumeNodeID && !strcmp(oldID, this->InputVolumeNodeID)){
-    this->SetAndObserveInputVolumeNodeID(newID);
+  if (this->VectorVolumeNodeID && !strcmp(oldID, this->VectorVolumeNodeID)){
+    this->SetAndObserveVectorVolumeNodeID(newID);
   }
 
   if (this->OutputModelNodeID && !strcmp(oldID, this->OutputModelNodeID)){
@@ -423,15 +431,15 @@ void vtkMRMLRegistrationQualityNode::UpdateReferenceID(const char *oldID, const 
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveInputVolumeNodeID(const char* id){
-  if (this->InputVolumeNodeID){
-    this->Scene->RemoveReferencedNodeID(this->InputVolumeNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveVectorVolumeNodeID(const char* id){
+  if (this->VectorVolumeNodeID){
+    this->Scene->RemoveReferencedNodeID(this->VectorVolumeNodeID, this);
   }
   
-  this->SetInputVolumeNodeID(id);
+  this->SetVectorVolumeNodeID(id);
   
   if (id){
-    this->Scene->AddReferencedNodeID(this->InputVolumeNodeID, this);
+    this->Scene->AddReferencedNodeID(this->VectorVolumeNodeID, this);
   }
 }
 
@@ -448,6 +456,18 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveReferenceVolumeNodeID(const ch
   }
 }
 
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveWarpedVolumeNodeID(const char* id){
+  if (this->WarpedVolumeNodeID){
+    this->Scene->RemoveReferencedNodeID(this->WarpedVolumeNodeID, this);
+  }
+  
+  this->SetWarpedVolumeNodeID(id);
+  
+  if (id){
+    this->Scene->AddReferencedNodeID(this->WarpedVolumeNodeID, this);
+  }
+}
 //----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::SetAndObserveOutputModelNodeID(const char* id){
   if (this->OutputModelNodeID){
@@ -491,14 +511,15 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveGridSliceNodeID(const char* id
 void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
   Superclass::PrintSelf(os,indent);
 
-  os << indent << " InputNodeID = " << (this->InputVolumeNodeID ? this->InputVolumeNodeID : "NULL") << "\n";
-  os << indent << " ReferenceNodeID = " << (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\n";  
+  os << indent << " InputNodeID = " << (this->VectorVolumeNodeID ? this->VectorVolumeNodeID : "NULL") << "\n";
+  os << indent << " ReferenceNodeID = " << (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\n";
+  os << indent << " WarpedNodeID = " << (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\n";  
   os << indent << " OutputModelNodeID = " << (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\n";
   os << indent << " GlyphPointMax = "<< this->GlyphPointMax << "\n";
   os << indent << " GlyphScale = "<< this->GlyphScale << "\n";
   os << indent << " GlyphScaleDirectional = " << this->GlyphScaleDirectional << "\n";
   os << indent << " GlyphScaleIsotropic =  " << this->GlyphScaleIsotropic << "\n";
-  os << indent << " GlyphThresholdMax = "<< this->GlyphThresholdMax << "\n";
+//   os << indent << " GlyphThresholdMax = "<< this->GlyphThresholdMax << "\n";
   os << indent << " GlyphThresholdMin = "<< this->GlyphThresholdMin << "\n";  
   os << indent << " GlyphSeed = "<< this->GlyphSeed << "\n";
   os << indent << " GlyphSourceOption = "<< this->GlyphSourceOption << "\n";  

@@ -35,9 +35,13 @@ protected slots:
   void onLogicModified();
   void updateSourceOptions(int);
   
-  void inputVolumeChanged(vtkMRMLNode*);
+  void vectorVolumeChanged(vtkMRMLNode*);
   void referenceVolumeChanged(vtkMRMLNode*);
+  void warpedVolumeChanged(vtkMRMLNode*);
   void outputModelChanged(vtkMRMLNode*);
+  // Image Checks
+  
+  void falseColorToggle();
   
   // Parameters
   // Glyph Parameters

@@ -7,22 +7,35 @@
 #include <QProgressDialog>
 #include <QMainWindow>
 
+// SlicerQt includes
+#include <qSlicerAbstractCoreModule.h>
+
 // DeformationVisualizer includes
 #include "vtkSlicerRegistrationQualityLogic.h"
 #include "vtkMRMLRegistrationQualityNode.h"
 
 // MMRL includes
+#include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLVectorVolumeNode.h>
 #include <vtkMRMLLinearTransformNode.h>
 #include <vtkMRMLBSplineTransformNode.h>
 #include <vtkMRMLGridTransformNode.h>
 #include <vtkMRMLSliceNode.h>
+#include <vtkMRMLSelectionNode.h>
+
+// MRMLLogic includes
+#include <vtkMRMLApplicationLogic.h>
 
 // VTK includes
 #include <vtkImageData.h>
 #include <vtkPointData.h>
+#include <vtkNew.h>
 #include <vtkDataArray.h>
 #include <vtkGeneralTransform.h>
+#include <vtkSmartPointer.h>
+
+
+
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_RegistrationQuality
@@ -153,13 +166,13 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML()
   {
     d->ParameterComboBox->setCurrentNode(pNode);
 
-    if (pNode->GetInputVolumeNodeID())
+    if (pNode->GetVectorVolumeNodeID())
     {
-      d->InputFieldComboBox->setCurrentNode(pNode->GetInputVolumeNodeID());
+      d->InputFieldComboBox->setCurrentNode(pNode->GetVectorVolumeNodeID());
     }
     else
     {
-      this->inputVolumeChanged(d->InputFieldComboBox->currentNode());
+      this->vectorVolumeChanged(d->InputFieldComboBox->currentNode());
     }
 
     if (pNode->GetReferenceVolumeNodeID())
@@ -252,7 +265,7 @@ void qSlicerRegistrationQualityModuleWidget::onLogicModified()
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::inputVolumeChanged(vtkMRMLNode* node)
+void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* node)
 {
   Q_D(qSlicerRegistrationQualityModuleWidget);
 
@@ -269,7 +282,7 @@ void qSlicerRegistrationQualityModuleWidget::inputVolumeChanged(vtkMRMLNode* nod
   d->VolumeDisabledLabel->hide();  
 
   pNode->DisableModifiedEventOn();
-  pNode->SetAndObserveInputVolumeNodeID(node->GetID());
+  pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
   pNode->DisableModifiedEventOff();
 
   double maxNorm = 0;
@@ -340,15 +353,15 @@ void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode*
 
   double maxNorm = 0;
 
-  vtkSmartPointer<vtkMRMLTransformNode> inputVolumeNode = vtkMRMLTransformNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetInputVolumeNodeID()));
-  if (inputVolumeNode == NULL)
+  vtkSmartPointer<vtkMRMLTransformNode> vectorVolumeNode = vtkMRMLTransformNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetVectorVolumeNodeID()));
+  if (vectorVolumeNode == NULL)
   {
     return;
   }
 
-  if (strcmp(inputVolumeNode->GetClassName(), "vtkMRMLLinearTransformNode") == 0 || 
-    strcmp(inputVolumeNode->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
-    strcmp(inputVolumeNode->GetClassName(), "vtkMRMLGridTransformNode") == 0)
+  if (strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLLinearTransformNode") == 0 || 
+    strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
+    strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLGridTransformNode") == 0)
   {
     //TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
     QProgressDialog *convertProgress =  new QProgressDialog(qSlicerApplication::application()->mainWindow());
@@ -379,7 +392,22 @@ void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode*
   d->InputGlyphSliceThreshold->setMaximum(maxNorm);
   d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);    
 }
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* node)
+{
+   Q_D(qSlicerRegistrationQualityModuleWidget);
 
+  //TODO: Move into updatefrommrml?
+  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+  if (!pNode || !this->mrmlScene() || !node)
+  {
+    return;
+  }
+
+  pNode->DisableModifiedEventOn();
+  pNode->SetAndObserveWarpedVolumeNodeID(node->GetID());
+  pNode->DisableModifiedEventOff(); 
+}
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* node)
 {
@@ -533,8 +561,9 @@ void qSlicerRegistrationQualityModuleWidget::setup()
 
   connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegistrationQualityParametersNode(vtkMRMLNode*)));
 
-  connect(d->InputFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(inputVolumeChanged(vtkMRMLNode*)));
+  connect(d->InputFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(vectorVolumeChanged(vtkMRMLNode*)));
   connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
+  connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
   connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
   
   // Image Checks
@@ -604,24 +633,10 @@ void qSlicerRegistrationQualityModuleWidget::setup()
 
 void qSlicerRegistrationQualityModuleWidget::falseColorToggle(){
 
-  Q_D(const qSlicerRegistrationQualityModuleWidget);
-  vtkSlicerCropVolumeLogic *logic = d->logic();
-  
-  if(!this->parametersNode || !d->InputVolumeComboBox->currentNode() || 
-     !d->InputROIComboBox->currentNode())
-    return;
-
-  this->parametersNode->SetWarpedInputVolumeNodeID(d->InputWapredComboBox->currentNode()->GetID());
-  this->parametersNode->SetReferenceInputVolumeNodeID(d->InputReferenceComboBox->currentNode()->GetID());
-
-  if(!logic->Apply(this->parametersNode)) 
-    {
-    std::cerr << "Propagating to the selection node" << std::endl;
-    vtkSlicerApplicationLogic *appLogic = this->module()->appLogic();
-    vtkMRMLSelectionNode *selectionNode = appLogic->GetSelectionNode();
-    selectionNode->SetReferenceActiveVolumeID(this->parametersNode->GetOutputVolumeNodeID()); //TODO Edit logic, so you'll get output.
-    appLogic->PropagateVolumeSelection();
-    }
+  Q_D(const qSlicerRegistrationQualityModuleWidget);  
+  vtkSlicerRegistrationQualityLogic *logic = d->logic();
+  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();   
+  logic->FalseColor();
 }
 
 

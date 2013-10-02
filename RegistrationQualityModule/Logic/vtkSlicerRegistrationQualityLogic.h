@@ -6,6 +6,7 @@
 #include "vtkSlicerModuleLogic.h"
 
 // MRML includes
+#include <vtkMRMLSliceCompositeNode.h>
 
 // STD includes
 #include <cstdlib>
@@ -48,7 +49,9 @@ public:
    * Issue when input data is changed without modifying node
    * Will either remake or account for scenario some other way
    */
+  void FalseColor();
   void GenerateTransformField();
+  void SetForegroundImage(vtkMRMLSliceCompositeNode*);
 
 public:
   void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);
@@ -74,7 +77,6 @@ protected:
 private:
   vtkSlicerRegistrationQualityLogic(const vtkSlicerRegistrationQualityLogic&);// Not implemented
   void operator=(const vtkSlicerRegistrationQualityLogic&);// Not implemented
-  
 protected:
   /// Parameter set MRML node
   vtkMRMLRegistrationQualityNode* RegistrationQualityNode;

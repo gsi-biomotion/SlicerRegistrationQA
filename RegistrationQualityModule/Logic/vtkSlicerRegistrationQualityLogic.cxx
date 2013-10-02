@@ -4,13 +4,20 @@
 #include "vtkMRMLRegistrationQualityNode.h"
 #include "vtkDFVGlyph3D.h"
 
+// SlicerQt Includes
+#include "qSlicerApplication.h"
+
 // MRML includes
 #include <vtkMRMLVectorVolumeNode.h>
 #include <vtkMRMLModelDisplayNode.h>
+#include <vtkMRMLScalarVolumeDisplayNode.h>
 #include <vtkMRMLModelNode.h>
 #include <vtkMRMLColorTableNode.h>
 #include <vtkMRMLTransformNode.h>
 #include <vtkMRMLSliceNode.h>
+#include <vtkMRMLSliceCompositeNode.h>
+#include "vtkMRMLViewNode.h"
+
 
 // VTK includes
 #include <vtkNew.h>
@@ -67,7 +74,7 @@ vtkSlicerRegistrationQualityLogic::vtkSlicerRegistrationQualityLogic()
   this->TransformField = vtkSmartPointer<vtkImageData>::New();
 }
 
-//----------------------------------------------------------------------------
+//----------------------------------------------------------------------------vtkMRMLSliceNode
 vtkSlicerRegistrationQualityLogic::~vtkSlicerRegistrationQualityLogic()
 {
   vtkSetAndObserveMRMLNodeMacro(this->RegistrationQualityNode, NULL);
@@ -165,11 +172,77 @@ void vtkSlicerRegistrationQualityLogic::OnMRMLSceneEndClose()
 {
   this->Modified();
 }
+//----------------------------------------------------------------------------
+//--- Image Checks
+void vtkSlicerRegistrationQualityLogic::FalseColor()
+{
+    if (!this->GetMRMLScene() || !this->RegistrationQualityNode)
+  {
+      vtkErrorMacro("FalseColor: Invalid scene or parameter set node!");
+      return;
+  }
+    std::cerr << "Logic." << std::endl;
+
+    vtkMRMLScalarVolumeNode *referenceVolume = 
+    vtkMRMLScalarVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
+
+    vtkMRMLScalarVolumeNode *warpedVolume = 
+    vtkMRMLScalarVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetWarpedVolumeNodeID()));    
+    if (!referenceVolume || !warpedVolume)
+  {
+      vtkErrorMacro("Falsecolor: Invalid reference or warped volume!");
+      return;
+  }
+  
+  referenceVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeWarmTint1");
+  warpedVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeWarmTint3");
+  
+  // Set window and level the same for warped and reference volume.
+  warpedVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
+  double window, level;
+  window = referenceVolume->GetScalarVolumeDisplayNode()->GetWindow();
+  level = referenceVolume->GetScalarVolumeDisplayNode()->GetLevel();
+  
+  warpedVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
+  warpedVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
+  
+  
+  // Set warped image in background
+  
+  qSlicerApplication * app = qSlicerApplication::application();
+  qSlicerLayoutManager * layoutManager = app->layoutManager();
+  
+  if (!layoutManager)
+  {
+   return;
+  }
+    
+//   vtkMRMLSliceCompositeNode *rcn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed"));
+//   vtkMRMLSliceCompositeNode *ycn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow"));
+//   vtkMRMLSliceCompositeNode *gcn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen"));
+
+   //TODO Bad Solution. Linking layers somehow doesn't work - it only changes one (red) slice.
+  this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed"))); 
+  this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow")));
+  this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen")));
+
+  return;
+}
+//----------------------------------------------------------------------------
+//---Change backroung image and set opacity------------------------
+
+void vtkSlicerRegistrationQualityLogic::SetForegroundImage(vtkMRMLSliceCompositeNode* cn)
+{
+  cn->SetBackgroundVolumeID(this->RegistrationQualityNode->GetReferenceVolumeNodeID());
+  cn->SetForegroundVolumeID(this->RegistrationQualityNode->GetWarpedVolumeNodeID());
+  cn->SetForegroundOpacity(0.5);
+  return;
+}
 
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::GenerateTransformField()
 {
-  vtkSmartPointer<vtkMRMLTransformNode> inputVolumeNode = vtkMRMLTransformNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetInputVolumeNodeID()));
+  vtkSmartPointer<vtkMRMLTransformNode> inputVolumeNode = vtkMRMLTransformNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetVectorVolumeNodeID()));
   if (inputVolumeNode == NULL)
   {
     return;
@@ -283,10 +356,10 @@ void vtkSlicerRegistrationQualityLogic::CreateVisualization(int option)
   vtkSmartPointer<vtkImageData> field = vtkSmartPointer<vtkImageData>::New();
   
   //Initialize input
-  if (strcmp((this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetInputVolumeNodeID()))->GetClassName(), "vtkMRMLVectorVolumeNode") == 0)
+  if (strcmp((this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetVectorVolumeNodeID()))->GetClassName(), "vtkMRMLVectorVolumeNode") == 0)
   {
   
-    vtkSmartPointer<vtkMRMLVectorVolumeNode> inputVolumeNode = vtkMRMLVectorVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetInputVolumeNodeID()));
+    vtkSmartPointer<vtkMRMLVectorVolumeNode> inputVolumeNode = vtkMRMLVectorVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetVectorVolumeNodeID()));
     if (inputVolumeNode == NULL)
     {
       return;
@@ -325,9 +398,9 @@ void vtkSlicerRegistrationQualityLogic::CreateVisualization(int option)
       ptr[i+2] = x*invertDirs->GetElement(2,0) + y*invertDirs->GetElement(2,1) + z*invertDirs->GetElement(2,2);    
     }
   }
-  else if (strcmp((this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetInputVolumeNodeID()))->GetClassName(), "vtkMRMLLinearTransformNode") == 0 || 
-  strcmp((this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetInputVolumeNodeID()))->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
-  strcmp((this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetInputVolumeNodeID()))->GetClassName(), "vtkMRMLGridTransformNode") == 0)
+  else if (strcmp((this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetVectorVolumeNodeID()))->GetClassName(), "vtkMRMLLinearTransformNode") == 0 || 
+  strcmp((this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetVectorVolumeNodeID()))->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
+  strcmp((this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetVectorVolumeNodeID()))->GetClassName(), "vtkMRMLGridTransformNode") == 0)
   {
     vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
     if (referenceVolumeNode == NULL)
