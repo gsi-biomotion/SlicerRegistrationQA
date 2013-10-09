@@ -6,6 +6,9 @@
 // Qt includes
 #include <QProgressDialog>
 #include <QMainWindow>
+#include <QDebug>
+#include <QFileDialog>
+#include <QCheckBox>
 
 // SlicerQt includes
 #include <qSlicerAbstractCoreModule.h>
@@ -34,7 +37,8 @@
 #include <vtkGeneralTransform.h>
 #include <vtkSmartPointer.h>
 
-
+//C include
+#include <time.h>
 
 
 //-----------------------------------------------------------------------------
@@ -183,7 +187,14 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML()
     {
       this->referenceVolumeChanged(d->InputReferenceComboBox->currentNode());
     }    
-
+    if (pNode->GetWarpedVolumeNodeID())
+    {
+      d->InputWarpedComboBox->setCurrentNode(pNode->GetWarpedVolumeNodeID());
+    }
+    else
+    {
+      this->warpedVolumeChanged(d->InputWarpedComboBox->currentNode());
+    } 
     if (pNode->GetOutputModelNodeID())
     {
       d->OutputModelComboBox->setCurrentNode(pNode->GetOutputModelNodeID());
@@ -191,10 +202,18 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML()
     else
     {
       this->outputModelChanged(d->OutputModelComboBox->currentNode());
-    }  
+    }
+//     if (pNode->GetCheckerboardNodeID())
+//     {
+//       d->CheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
+//     }
+//     else
+//     {
+//       this->outputModelChanged(d->CheckerboardComboBox->currentNode());
+//     }  
 
     //Update Visualization Parameters
-
+    d->CheckerboardPatternLineEdit->setText(pNode->GetCheckerboardPattern());
     // Glyph Parameters
     d->InputGlyphPointMax->setValue(pNode->GetGlyphPointMax());
     d->InputGlyphSeed->setValue(pNode->GetGlyphSeed());
@@ -571,12 +590,14 @@ void qSlicerRegistrationQualityModuleWidget::setup()
   connect(d->FalseColorToggle, SIGNAL(clicked()),
           this, SLOT (falseColorToggle()));
   connect(d->CheckerboardToggle, SIGNAL(clicked()),
-          this, SLOT (loadNonDicomData()));
+          this, SLOT (checkerboardToggle()));
   connect(d->MovieToggle, SIGNAL(clicked()),
-          this, SLOT (loadRemoteSampleData()));
+          this, SLOT (movieToggle()));
   connect(d->FlickerToggle, SIGNAL(clicked()),
-          this, SLOT (editApplicationSettings()));
-
+          this, SLOT (flickerToggle()));
+  
+  connect(d->CheckerboardPatternLineEdit, SIGNAL(textEdited(QString)), this, SLOT(setCheckerboardPattern(QString)));
+  
   // Glyph Parameters
   connect(d->InputGlyphPointMax, SIGNAL(valueChanged(double)), this, SLOT(setGlyphPointMax(double)));
   connect(d->InputGlyphScale, SIGNAL(valueChanged(double)), this, SLOT(setGlyphScale(double)));
@@ -635,12 +656,72 @@ void qSlicerRegistrationQualityModuleWidget::falseColorToggle(){
 
   Q_D(const qSlicerRegistrationQualityModuleWidget);  
   vtkSlicerRegistrationQualityLogic *logic = d->logic();
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();   
+//   vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();   
   logic->FalseColor();
 }
 
+void qSlicerRegistrationQualityModuleWidget::checkerboardToggle(){
+
+  Q_D(const qSlicerRegistrationQualityModuleWidget);  
+  vtkSlicerRegistrationQualityLogic *logic = d->logic();
+  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+  logic->Checkerboard();
+  std::cerr << "Let'see. " << pNode->GetCheckerboardPattern() << std::endl;
+}
+
+void qSlicerRegistrationQualityModuleWidget::flickerToggle(){
+
+  Q_D(const qSlicerRegistrationQualityModuleWidget);  
+  vtkSlicerRegistrationQualityLogic *logic = d->logic();
+  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+  
+  if (pNode->GetGlyphPointMax()!=0 && pNode->GetGlyphPointMax()!=1)
+  {
+    pNode->SetGlyphPointMax(1);
+  }
+
+  logic->Flicker(pNode->GetGlyphPointMax());
+  
+  if (pNode->GetGlyphPointMax()==0)
+  {
+    pNode->SetGlyphPointMax(1);
+  }
+  else 
+  {
+    pNode->SetGlyphPointMax(0);
+  }
+  
+  
+
+    //TODO How to set sleep time? Must somehow update scene in between
+//     clock_t start_time = clock();
+//     clock_t end_time = sec*CLOCKS_PER_SEC + start_time;
+//     while(clock() != end_time);
+ 
+
+}
+
+void qSlicerRegistrationQualityModuleWidget::movieToggle(){
+
+  Q_D(const qSlicerRegistrationQualityModuleWidget);  
+  vtkSlicerRegistrationQualityLogic *logic = d->logic();
+  logic->Movie();
+}
 
 
+void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(QString aText)
+{
+  Q_D(qSlicerRegistrationQualityModuleWidget);
+  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+  if (!pNode || !this->mrmlScene())
+  {
+    return;
+  }
+  pNode->DisableModifiedEventOn();
+  pNode->SetCheckerboardPattern(aText.toLatin1().constData());
+  pNode->DisableModifiedEventOff(); 
+  
+}
 //-----------------------------------------------------------------------------
 // Glyph parameters
 //-----------------------------------------------------------------------------

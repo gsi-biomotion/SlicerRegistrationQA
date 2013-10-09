@@ -42,6 +42,15 @@ public:
   vtkGetStringMacro(OutputModelNodeID);
   void SetAndObserveOutputModelNodeID(const char* id);
 
+  // Checkerboard parameters
+  vtkSetStringMacro(CheckerboardNodeID);
+  vtkGetStringMacro(CheckerboardNodeID);
+  void SetAndObserveCheckerboardNodeID(const char* id);
+  
+  vtkSetStringMacro(CheckerboardPattern);
+  vtkGetStringMacro(CheckerboardPattern);
+  
+  vtkSetMacro(FlickerOpacity, int);
   // Glyph Parameters
   vtkSetMacro(GlyphPointMax, int);
   vtkGetMacro(GlyphPointMax, int);
@@ -134,9 +143,12 @@ protected:
   char* ReferenceVolumeNodeID;
   char* WarpedVolumeNodeID;
   char* OutputModelNodeID;
-
+  
+  char* CheckerboardNodeID;
+  char* CheckerboardPattern;
 //Parameters
 protected:
+  int FlickerOpacity;
   // Glyph Parameters
   int GlyphPointMax;
   //TODO: Need to change the UI into float too

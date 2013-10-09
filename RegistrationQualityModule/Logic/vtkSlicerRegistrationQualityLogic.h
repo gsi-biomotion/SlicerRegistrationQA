@@ -50,8 +50,11 @@ public:
    * Will either remake or account for scenario some other way
    */
   void FalseColor();
+  void Flicker(int opacity);
+  void Movie();
+  void Checkerboard();
   void GenerateTransformField();
-  void SetForegroundImage(vtkMRMLSliceCompositeNode*);
+  void SetForegroundImage(vtkMRMLSliceCompositeNode*,double opacity);
 
 public:
   void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);

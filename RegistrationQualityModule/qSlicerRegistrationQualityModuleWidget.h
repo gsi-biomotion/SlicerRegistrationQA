@@ -39,11 +39,15 @@ protected slots:
   void referenceVolumeChanged(vtkMRMLNode*);
   void warpedVolumeChanged(vtkMRMLNode*);
   void outputModelChanged(vtkMRMLNode*);
-  // Image Checks
   
+  // Image Checks  
   void falseColorToggle();
+  void checkerboardToggle();
+  void movieToggle();
+  void flickerToggle();
   
   // Parameters
+  void setCheckerboardPattern(QString aText);
   // Glyph Parameters
   void setGlyphPointMax(double);
   void setGlyphScale(double);

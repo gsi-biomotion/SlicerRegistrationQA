@@ -19,6 +19,11 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode(){
   this->WarpedVolumeNodeID = NULL;
   this->OutputModelNodeID = NULL;
     
+  //Checkerboard Parameters
+  this->CheckerboardPattern = NULL;
+  this->CheckerboardNodeID = NULL;
+  
+  this->FlickerOpacity = 1;
   //Glyph Parameters
   this->GlyphPointMax = 2000;
   this->GlyphScale = 1;
@@ -74,6 +79,8 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode(){
   this->SetReferenceVolumeNodeID(NULL);
   this->SetWarpedVolumeNodeID(NULL);
   this->SetOutputModelNodeID(NULL);
+  this->SetCheckerboardNodeID(NULL);
+  this->SetCheckerboardNodeID(NULL);
   this->SetGlyphSliceNodeID(NULL);
   this->SetGridSliceNodeID(NULL);
 }
@@ -104,8 +111,26 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts){
     if (!strcmp(attName, "OutputModelNodeID")){
       this->SetOutputModelNodeID(attValue);
       continue;
-    }    
-    
+    }      
+    if (!strcmp(attName, "CheckerboardPattern")){
+      std::stringstream ss;
+      ss << attValue;
+      this->SetCheckerboardPattern(ss.str().c_str());
+      continue;
+    } 
+    if (!strcmp(attName,"CheckerboardNodeID")){
+      this->SetCheckerboardNodeID(attValue);
+      continue;
+    } 
+ 
+     if (!strcmp(attName,"FlickerOpacity")){
+      std::stringstream ss;
+      ss << attValue;
+      ss >> this->FlickerOpacity;
+      continue;
+    }
+ 
+ 
     if (!strcmp(attName,"GlyphPointMax")){
       std::stringstream ss;
       ss << attValue;
@@ -320,6 +345,11 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent){
   of << indent << " WarpedVolumeNodeID=\"" << (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\"";
   of << indent << " OutputModelNodeID=\"" << (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\"";
   
+  of << indent << " CheckerboardPattern=\""<< this->CheckerboardPattern << "\"";
+  of << indent << " CheckerboardNodeID=\"" << (this->CheckerboardNodeID ? this->OutputModelNodeID : "NULL") << "\"";
+  
+  of << indent << " FlickerOpacity=\""<< this->FlickerOpacity << "\"";
+  
   of << indent << " GlyphPointMax=\""<< this->GlyphPointMax << "\"";
   of << indent << " GlyphScale=\""<< this->GlyphScale << "\"";
   of << indent << " GlyphScaleDirectional=\"" << this->GlyphScaleDirectional << "\"";
@@ -369,6 +399,11 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode){
   this->SetReferenceVolumeNodeID(node->GetReferenceVolumeNodeID());
   this->SetWarpedVolumeNodeID(node->GetWarpedVolumeNodeID());
   this->SetOutputModelNodeID(node->GetOutputModelNodeID());
+  
+  this->SetCheckerboardNodeID(node->GetCheckerboardNodeID());
+  this->SetCheckerboardPattern(node->GetCheckerboardPattern());
+  
+  this->FlickerOpacity = node->FlickerOpacity;
   
   this->GlyphPointMax = node->GlyphPointMax;
   this->GlyphScaleDirectional = node->GlyphScaleDirectional;
@@ -482,6 +517,19 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveOutputModelNodeID(const char* 
 }
 
 //----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveCheckerboardNodeID(const char* id){
+  if (this->CheckerboardNodeID){
+    this->Scene->RemoveReferencedNodeID(this->CheckerboardNodeID, this);
+  }
+  
+  this->SetCheckerboardNodeID(id);
+  
+  if (id){
+    this->Scene->AddReferencedNodeID(this->CheckerboardNodeID, this);
+  }
+}
+
+//----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::SetAndObserveGlyphSliceNodeID(const char* id){
   if (this->GlyphSliceNodeID){
     this->Scene->RemoveReferencedNodeID(this->GlyphSliceNodeID, this);
@@ -511,10 +559,16 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveGridSliceNodeID(const char* id
 void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
   Superclass::PrintSelf(os,indent);
 
-  os << indent << " InputNodeID = " << (this->VectorVolumeNodeID ? this->VectorVolumeNodeID : "NULL") << "\n";
+  os << indent << " VectorVolumeNodeID = " << (this->VectorVolumeNodeID ? this->VectorVolumeNodeID : "NULL") << "\n";
   os << indent << " ReferenceNodeID = " << (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\n";
   os << indent << " WarpedNodeID = " << (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\n";  
+  
   os << indent << " OutputModelNodeID = " << (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\n";
+  os << indent << " CheckerboardNodeID = " << (this->CheckerboardNodeID ? this->CheckerboardNodeID : "NULL") << "\n";
+  os << indent << " CheckerboardPattern = "<< this->CheckerboardPattern << "\n";
+  
+  os << indent << " FlickerOpacity = "<< this->FlickerOpacity << "\n";
+  
   os << indent << " GlyphPointMax = "<< this->GlyphPointMax << "\n";
   os << indent << " GlyphScale = "<< this->GlyphScale << "\n";
   os << indent << " GlyphScaleDirectional = " << this->GlyphScaleDirectional << "\n";

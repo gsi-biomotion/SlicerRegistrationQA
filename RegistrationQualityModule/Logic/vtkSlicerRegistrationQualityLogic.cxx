@@ -6,6 +6,11 @@
 
 // SlicerQt Includes
 #include "qSlicerApplication.h"
+#include "qSlicerCLILoadableModuleFactory.h"
+#include "qSlicerCLIModule.h"
+#include "qSlicerCLIModuleWidget.h"
+#include "qSlicerModuleFactoryManager.h"
+#include "qSlicerModuleManager.h"
 
 // MRML includes
 #include <vtkMRMLVectorVolumeNode.h>
@@ -63,6 +68,7 @@
 // STD includes
 #include <cassert>
 #include <math.h>
+
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerRegistrationQualityLogic);
@@ -181,7 +187,7 @@ void vtkSlicerRegistrationQualityLogic::FalseColor()
       vtkErrorMacro("FalseColor: Invalid scene or parameter set node!");
       return;
   }
-    std::cerr << "Logic." << std::endl;
+    std::cerr << "Setting false color." << std::endl;
 
     vtkMRMLScalarVolumeNode *referenceVolume = 
     vtkMRMLScalarVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
@@ -222,20 +228,250 @@ void vtkSlicerRegistrationQualityLogic::FalseColor()
 //   vtkMRMLSliceCompositeNode *gcn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen"));
 
    //TODO Bad Solution. Linking layers somehow doesn't work - it only changes one (red) slice.
-  this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed"))); 
-  this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow")));
-  this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen")));
+  this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed")),0.5); 
+  this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow")),0.5);
+  this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen")),0.5);
 
   return;
 }
+
+//----------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::Flicker(int opacity)
+{
+  if (!this->GetMRMLScene() || !this->RegistrationQualityNode)
+  {
+      vtkErrorMacro("FalseColor: Invalid scene or parameter set node!");
+      return;
+  }
+    std::cerr << "Strating Flicker." << std::endl;
+
+    vtkMRMLScalarVolumeNode *referenceVolume = 
+    vtkMRMLScalarVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
+
+    vtkMRMLScalarVolumeNode *warpedVolume = 
+    vtkMRMLScalarVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetWarpedVolumeNodeID()));    
+    if (!referenceVolume || !warpedVolume)
+  {
+      vtkErrorMacro("Falsecolor: Invalid reference or warped volume!");
+      return;
+  }
+   
+  
+  // Set warped image in background
+  
+  qSlicerApplication * app = qSlicerApplication::application();
+  qSlicerLayoutManager * layoutManager = app->layoutManager();
+  
+  if (!layoutManager)
+  {
+   return;
+  }
+   //TODO Bad Solution. Linking layers somehow doesn't work - it only changes one (red) slice.    
+  vtkMRMLSliceCompositeNode *rcn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed"));
+  vtkMRMLSliceCompositeNode *ycn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow"));
+  vtkMRMLSliceCompositeNode *gcn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen"));
+
+
+  this->SetForegroundImage(rcn,opacity); 
+  this->SetForegroundImage(ycn,opacity);
+  this->SetForegroundImage(gcn,opacity);
+    
+  return;
+}
+//----------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::Movie()
+{
+  return;
+}
+//----------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::Checkerboard()
+{
+  // The checkerboardfilter module (CLIModule4Test) has already been built as a normal
+  // CLI library. It can be found in
+  // Slicer-build/lib/Slicer-X.Y/cli-modules[/Debug|Release]
+//   QString cliModuleName("checkerboardfilter");
+// 
+//   qSlicerApplication::setAttribute(qSlicerApplication::AA_DisablePython);
+//   qSlicerApplication app(argc, argv);
+// 
+//   qSlicerModuleManager * moduleManager = app.moduleManager();
+//   if (!moduleManager)
+//     {
+//     std::cerr << "Line " << __LINE__
+//               << " - Problem with qSlicerApplication::moduleManager()" << std::endl;
+//     return;
+//     }
+// 
+//   qSlicerModuleFactoryManager* moduleFactoryManager = moduleManager->factoryManager();
+//   if (!moduleFactoryManager)
+//     {
+//     std::cerr << "Line " << __LINE__
+//               << " - Problem with qSlicerModuleManager::factoryManager()" << std::endl;
+//     return;
+//     }
+// 
+//   moduleFactoryManager->registerFactory(new qSlicerCLILoadableModuleFactory);
+//   QString cliPath = app.slicerHome() + "/" + Slicer_CLIMODULES_LIB_DIR + "/";
+//   moduleFactoryManager->addSearchPath(cliPath);
+//   moduleFactoryManager->addSearchPath(cliPath + app.intDir());
+// 
+//   // Register and instantiate modules
+//   moduleFactoryManager->registerModules();
+//   moduleFactoryManager->instantiateModules();
+// 
+//   QStringList moduleNames = moduleFactoryManager->instantiatedModuleNames();
+//   if (!moduleNames.contains(cliModuleName))
+//     {
+//     std::cerr << "Line " << __LINE__ << " - Problem with qSlicerCLILoadableModuleFactory"
+//               << " - Failed to register '" << qPrintable(cliModuleName) << "' module" << std::endl;
+//     return;
+//     }
+// 
+//   foreach(const QString& name, moduleNames)
+//     {
+//     moduleFactoryManager->loadModule(name);
+//     }
+// 
+//   qSlicerAbstractCoreModule * module = moduleManager->module("checkerboardfilter");
+//   if (!module)
+//     {
+//     std::cerr << "Line " << __LINE__
+//               << " - Problem with qSlicerModuleManager::module()"
+//               << " - Failed to retrieve module named '" << qPrintable(cliModuleName) << "'" << std::endl;
+//     return;
+//     }
+// 
+//   qSlicerCLIModule * cliModule = qobject_cast<qSlicerCLIModule*>(module);
+//   if (!cliModule)
+//     {
+//     std::cerr << "Line " << __LINE__
+//               << " - Failed to cast module named '" << qPrintable(cliModuleName) << "' "
+//               << "from [qSlicerAbstractCoreModule*] into [qSlicerCLIModule*]" << std::endl;
+//     return;
+//     }
+// 
+//   qSlicerAbstractModuleRepresentation * widgetRepresentation = cliModule->widgetRepresentation();
+//   if (!widgetRepresentation)
+//     {
+//     std::cerr << "Line " << __LINE__
+//               << " - Problem with qSlicerCLIModule::widgetRepresentation()"
+//               << " - Failed to retrieve representation associated with module named '"
+//               << qPrintable(cliModuleName) << "'" << std::endl;
+//     return;
+//     }
+// 
+//   qSlicerCLIModuleWidget* cliWidget =
+//     dynamic_cast<qSlicerCLIModuleWidget*>(widgetRepresentation);
+//   if (!cliWidget)
+//     {
+//     std::cerr << "Line " << __LINE__
+//               << " - Failed to cast module '" << qPrintable(cliModuleName) << "' representation "
+//               << "from [qSlicerAbstractModuleRepresentation*] into [qSlicerCLIModuleWidget*]" << std::endl;
+//     return;
+//     }
+// 
+//   cliWidget->show();
+// 
+// //   QPushButton button("Simulate CLI programmatic start");
+// //   CLIModule = cliModule;
+//   runCli
+// //   ctkCallback callback(runCli);
+// //   QObject::connect(&button, SIGNAL(clicked()), &callback, SLOT(invoke()));
+// 
+//   button.show();
+// 
+//   QTimer::singleShot(0, &callback, SLOT(invoke()));
+// 
+//   bool checkResult = false;
+//   if (argc < 2 || QString(argv[1]) != "-I" )
+//     {
+//     QTimer::singleShot(500, &app, SLOT(quit()));
+//     checkResult = true;
+//     }
+// 
+//   int status = app.exec();
+//   if (status == )
+//     {
+//     std::cerr << "Line " << __LINE__ << " - Problem with qSlicerApplication::exec()";
+//     return;
+//     }
+// 
+//   if (checkResult && !ErrorString.isEmpty())
+//     {
+//     std::cerr << "Line " << __LINE__ << " - Problem executing command line module - "
+//               << qPrintable(ErrorString) << std::endl;
+//     return;
+//     }
+// 
+//   return EXIT_SUCCESS;
+//   
+//   
+  std::cerr << "Setting checkerboard pattern." << std::endl;
+  return;
+}
+// namespace
+// {
+// //-----------------------------------------------------------------------------
+// qSlicerCLIModule * CLIModule;
+// QString ErrorString;
+// 
+// //-----------------------------------------------------------------------------
+// void runCli(void * data)
+// {
+//   Q_ASSERT(CLIModule);
+//   Q_UNUSED(data);
+// 
+//   QTemporaryFile outputFile("qSlicerCLIModuleTest1-outputFile-XXXXXX");
+//   if (!outputFile.open())
+//     {
+//     ErrorString = "Failed to create temporary file";
+//     return;
+//     }
+//   //outputFile.close();
+// 
+//   // Create node
+//   vtkMRMLCommandLineModuleNode * cliModuleNode =
+//     CLIModule->cliModuleLogic()->CreateNodeInScene();
+// 
+//   // Values
+//   int inputValue1 = 4;
+//   int inputValue2 = 3;
+// 
+//   // Set node parameters
+//   cliModuleNode->SetParameterAsInt("InputValue1", inputValue1);
+//   cliModuleNode->SetParameterAsInt("InputValue2", inputValue2);
+//   cliModuleNode->SetParameterAsString("OperationType", "Addition");
+//   cliModuleNode->SetParameterAsString("OutputFile", outputFile.fileName().toStdString());
+// 
+//   // Execute synchronously so that we can check the content of the file after the module execution
+//   CLIModule->cliModuleLogic()->ApplyAndWait(cliModuleNode);
+// 
+//   // Read outputFile
+//   QTextStream stream(&outputFile);
+//   QString operationResult = stream.readAll().trimmed();
+// 
+//   QString expectedResult = QString::number(inputValue1 + inputValue2);
+//   if (operationResult.compare(expectedResult) != 0)
+//     {
+//     ErrorString = QString("OutputFile doesn't contain the expected result !\n"
+//                           "\tExpected:%1\n"
+//                           "\tCurrent:%2").arg(expectedResult).arg(operationResult);
+//     return;
+//     }
+// 
+//   outputFile.close();
+// }
+// 
+// } // end anonymous namespace
+
 //----------------------------------------------------------------------------
 //---Change backroung image and set opacity------------------------
 
-void vtkSlicerRegistrationQualityLogic::SetForegroundImage(vtkMRMLSliceCompositeNode* cn)
+void vtkSlicerRegistrationQualityLogic::SetForegroundImage(vtkMRMLSliceCompositeNode* cn, double opacity)
 {
   cn->SetBackgroundVolumeID(this->RegistrationQualityNode->GetReferenceVolumeNodeID());
   cn->SetForegroundVolumeID(this->RegistrationQualityNode->GetWarpedVolumeNodeID());
-  cn->SetForegroundOpacity(0.5);
+  cn->SetForegroundOpacity(opacity);
   return;
 }
 
@@ -1084,5 +1320,4 @@ vtkSmartPointer<vtkPolyData> vtkSlicerRegistrationQualityLogic::GridSliceVisuali
 
   return ribbon1->GetOutput();
 }
-
 
