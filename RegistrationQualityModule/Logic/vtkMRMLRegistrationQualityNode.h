@@ -51,6 +51,7 @@ public:
   vtkGetStringMacro(CheckerboardPattern);
   
   vtkSetMacro(FlickerOpacity, int);
+  vtkGetMacro(FlickerOpacity, int);
   // Glyph Parameters
   vtkSetMacro(GlyphPointMax, int);
   vtkGetMacro(GlyphPointMax, int);

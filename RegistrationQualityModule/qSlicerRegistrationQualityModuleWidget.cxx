@@ -203,15 +203,15 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML()
     {
       this->outputModelChanged(d->OutputModelComboBox->currentNode());
     }
-//     if (pNode->GetCheckerboardNodeID())
-//     {
-//       d->CheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
-//     }
-//     else
-//     {
-//       this->outputModelChanged(d->CheckerboardComboBox->currentNode());
-//     }  
-
+    if (pNode->GetCheckerboardNodeID())
+    {
+      d->OutputCheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
+    }
+    else
+    {
+      this->checkerboardVolumeChanged(d->OutputCheckerboardComboBox->currentNode());
+    }  
+    pNode->SetFlickerOpacity(0);
     //Update Visualization Parameters
     d->CheckerboardPatternLineEdit->setText(pNode->GetCheckerboardPattern());
     // Glyph Parameters
@@ -448,7 +448,22 @@ void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* nod
   pNode->SetAndObserveOutputModelNodeID(node->GetID());
   pNode->DisableModifiedEventOff();
 }
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::checkerboardVolumeChanged(vtkMRMLNode* node)
+{
+   Q_D(qSlicerRegistrationQualityModuleWidget);
 
+  //TODO: Move into updatefrommrml?
+  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+  if (!pNode || !this->mrmlScene() || !node)
+  {
+    return;
+  }
+
+  pNode->DisableModifiedEventOn();
+  pNode->SetAndObserveCheckerboardNodeID(node->GetID());
+  pNode->DisableModifiedEventOff(); 
+}
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::updateSourceOptions(int option)
 {
@@ -584,7 +599,7 @@ void qSlicerRegistrationQualityModuleWidget::setup()
   connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
   connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
   connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
-  
+  connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
   // Image Checks
    
   connect(d->FalseColorToggle, SIGNAL(clicked()),
@@ -665,6 +680,11 @@ void qSlicerRegistrationQualityModuleWidget::checkerboardToggle(){
   Q_D(const qSlicerRegistrationQualityModuleWidget);  
   vtkSlicerRegistrationQualityLogic *logic = d->logic();
   vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+  
+//   pNode->DisableModifiedEventOn();
+//   pNode->SetAndObserveCheckerboardNodeID(pNode->GetReferenceVolumeNodeID());
+//   pNode->DisableModifiedEventOff();
+  
   logic->Checkerboard();
   std::cerr << "Let'see. " << pNode->GetCheckerboardPattern() << std::endl;
 }
@@ -675,25 +695,30 @@ void qSlicerRegistrationQualityModuleWidget::flickerToggle(){
   vtkSlicerRegistrationQualityLogic *logic = d->logic();
   vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
   
-  if (pNode->GetGlyphPointMax()!=0 && pNode->GetGlyphPointMax()!=1)
+  //TODO Change GlyphPointMax to FlickerOpacity. Currently there is no class in RegistrationQualityNode, eventhough I copied it.
+  if (pNode->GetFlickerOpacity()!=0 && pNode->GetFlickerOpacity()!=1)
   {
-    pNode->SetGlyphPointMax(1);
+    pNode->SetFlickerOpacity(1);
   }
 
-  logic->Flicker(pNode->GetGlyphPointMax());
+  logic->Flicker(pNode->GetFlickerOpacity());
   
-  if (pNode->GetGlyphPointMax()==0)
+  if (pNode->GetFlickerOpacity()==0)
   {
-    pNode->SetGlyphPointMax(1);
+    pNode->DisableModifiedEventOn();
+    pNode->SetFlickerOpacity(1);
+    pNode->DisableModifiedEventOff();
   }
   else 
   {
-    pNode->SetGlyphPointMax(0);
+    pNode->DisableModifiedEventOn();
+    pNode->SetFlickerOpacity(0);
+    pNode->DisableModifiedEventOff();
   }
   
   
 
-    //TODO How to set sleep time? Must somehow update scene in between
+    //TODO How to set sleep time? Must somehow update scene in between sleep time.
 //     clock_t start_time = clock();
 //     clock_t end_time = sec*CLOCKS_PER_SEC + start_time;
 //     while(clock() != end_time);

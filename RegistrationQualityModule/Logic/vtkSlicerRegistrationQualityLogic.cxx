@@ -1,5 +1,7 @@
 #include "vtkSlicerRegistrationQualityLogic.h"
 
+
+
 // RegistrationQuality includes
 #include "vtkMRMLRegistrationQualityNode.h"
 #include "vtkDFVGlyph3D.h"
@@ -11,6 +13,7 @@
 #include "qSlicerCLIModuleWidget.h"
 #include "qSlicerModuleFactoryManager.h"
 #include "qSlicerModuleManager.h"
+#include <vtkSlicerCLIModuleLogic.h>
 
 // MRML includes
 #include <vtkMRMLVectorVolumeNode.h>
@@ -21,7 +24,10 @@
 #include <vtkMRMLTransformNode.h>
 #include <vtkMRMLSliceNode.h>
 #include <vtkMRMLSliceCompositeNode.h>
+#include "vtkSlicerVolumesLogic.h"
 #include "vtkMRMLViewNode.h"
+#include "vtkSlicerCLIModuleLogic.h"
+#include <vtkMRMLVolumeNode.h>
 
 
 // VTK includes
@@ -66,10 +72,24 @@
 #include <vtkAppendPolyData.h>
 
 // STD includes
+#include <iostream>
 #include <cassert>
 #include <math.h>
 
 
+class vtkSlicerRegistrationQualityLogic::vtkInternal
+{
+public:
+  vtkInternal();
+
+  vtkSlicerVolumesLogic* VolumesLogic;
+};
+
+//----------------------------------------------------------------------------
+vtkSlicerRegistrationQualityLogic::vtkInternal::vtkInternal()
+{
+  this->VolumesLogic = 0;
+}
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerRegistrationQualityLogic);
 
@@ -78,14 +98,26 @@ vtkSlicerRegistrationQualityLogic::vtkSlicerRegistrationQualityLogic()
 {
   this->RegistrationQualityNode = NULL;
   this->TransformField = vtkSmartPointer<vtkImageData>::New();
+  this->Internal = new vtkInternal;
 }
 
 //----------------------------------------------------------------------------vtkMRMLSliceNode
 vtkSlicerRegistrationQualityLogic::~vtkSlicerRegistrationQualityLogic()
 {
   vtkSetAndObserveMRMLNodeMacro(this->RegistrationQualityNode, NULL);
+  delete this->Internal;
+}
+//----------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::SetVolumesLogic(vtkSlicerVolumesLogic* logic)
+{
+  this->Internal->VolumesLogic = logic;
 }
 
+//----------------------------------------------------------------------------
+vtkSlicerVolumesLogic* vtkSlicerRegistrationQualityLogic::GetVolumesLogic()
+{
+  return this->Internal->VolumesLogic;
+}
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::PrintSelf(ostream& os, vtkIndent indent)
 {
@@ -271,6 +303,7 @@ void vtkSlicerRegistrationQualityLogic::Flicker(int opacity)
   vtkMRMLSliceCompositeNode *ycn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow"));
   vtkMRMLSliceCompositeNode *gcn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen"));
 
+  // Seting opacity for all three layers.
 
   this->SetForegroundImage(rcn,opacity); 
   this->SetForegroundImage(ycn,opacity);
@@ -286,183 +319,82 @@ void vtkSlicerRegistrationQualityLogic::Movie()
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::Checkerboard()
 {
-  // The checkerboardfilter module (CLIModule4Test) has already been built as a normal
-  // CLI library. It can be found in
-  // Slicer-build/lib/Slicer-X.Y/cli-modules[/Debug|Release]
-//   QString cliModuleName("checkerboardfilter");
-// 
-//   qSlicerApplication::setAttribute(qSlicerApplication::AA_DisablePython);
-//   qSlicerApplication app(argc, argv);
-// 
-//   qSlicerModuleManager * moduleManager = app.moduleManager();
-//   if (!moduleManager)
+//   Calling checkerboardfilter cli. Logic has been copied and modified from CropVolumeLogic onApply.
+  if (!this->GetMRMLScene() || !this->RegistrationQualityNode)
+  {
+      vtkErrorMacro("Checkerboard: Invalid scene or parameter set node!");
+      return;
+  }
+
+  vtkMRMLVolumeNode *referenceVolume = 
+    vtkMRMLVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
+  vtkMRMLVolumeNode *warpedVolume = 
+    vtkMRMLVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetWarpedVolumeNodeID()));   
+  vtkMRMLVolumeNode *outputVolume = 
+    vtkMRMLVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->RegistrationQualityNode->GetCheckerboardNodeID()));
+
+  
+//TODO: This is piece of code that doesn't work. It was supposed to copy reference Volume and create new Checkerboard Volume, but it
+    // doesn't work. Everything is copied from crop volume logic.
+//   if(!this->Internal->VolumesLogic)
 //     {
-//     std::cerr << "Line " << __LINE__
-//               << " - Problem with qSlicerApplication::moduleManager()" << std::endl;
+//       std::cerr << "CheckerboardPattern: ERROR: failed to get hold of Volumes logic" << std::endl;
+//       return;
+//     }
+//     
+//   std::ostringstream outSS;
+// //   outSS << referenceVolume->GetName() << warpedVolume->GetName() << "CheckerboardPattern"; 
+// //  
+// // //       stringstream ss("this is a string\n");
+// // // 
+// // //     string str(outSS.str());
+// //   
+// //   const std::string tmp = outSS.str();
+// //   const char* cstr = tmp.c_str();
+//     double outputSpacing[3], spacingScaleConst = 2;
+//   outSS << referenceVolume->GetName() << "-subvolume-scale_" << spacingScaleConst;
+//   if(svnode)
+//   {
+// //     outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
+//   outputVolume = CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
+// //     outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume);
+//   }
+//   else
+//   {
+//     std::cerr << "Reference volume not scalar volume!" << std::endl;
 //     return;
-//     }
-// 
-//   qSlicerModuleFactoryManager* moduleFactoryManager = moduleManager->factoryManager();
-//   if (!moduleFactoryManager)
-//     {
-//     std::cerr << "Line " << __LINE__
-//               << " - Problem with qSlicerModuleManager::factoryManager()" << std::endl;
-//     return;
-//     }
-// 
-//   moduleFactoryManager->registerFactory(new qSlicerCLILoadableModuleFactory);
-//   QString cliPath = app.slicerHome() + "/" + Slicer_CLIMODULES_LIB_DIR + "/";
-//   moduleFactoryManager->addSearchPath(cliPath);
-//   moduleFactoryManager->addSearchPath(cliPath + app.intDir());
-// 
-//   // Register and instantiate modules
-//   moduleFactoryManager->registerModules();
-//   moduleFactoryManager->instantiateModules();
-// 
-//   QStringList moduleNames = moduleFactoryManager->instantiatedModuleNames();
-//   if (!moduleNames.contains(cliModuleName))
-//     {
-//     std::cerr << "Line " << __LINE__ << " - Problem with qSlicerCLILoadableModuleFactory"
-//               << " - Failed to register '" << qPrintable(cliModuleName) << "' module" << std::endl;
-//     return;
-//     }
-// 
-//   foreach(const QString& name, moduleNames)
-//     {
-//     moduleFactoryManager->loadModule(name);
-//     }
-// 
-//   qSlicerAbstractCoreModule * module = moduleManager->module("checkerboardfilter");
-//   if (!module)
-//     {
-//     std::cerr << "Line " << __LINE__
-//               << " - Problem with qSlicerModuleManager::module()"
-//               << " - Failed to retrieve module named '" << qPrintable(cliModuleName) << "'" << std::endl;
-//     return;
-//     }
-// 
-//   qSlicerCLIModule * cliModule = qobject_cast<qSlicerCLIModule*>(module);
-//   if (!cliModule)
-//     {
-//     std::cerr << "Line " << __LINE__
-//               << " - Failed to cast module named '" << qPrintable(cliModuleName) << "' "
-//               << "from [qSlicerAbstractCoreModule*] into [qSlicerCLIModule*]" << std::endl;
-//     return;
-//     }
-// 
-//   qSlicerAbstractModuleRepresentation * widgetRepresentation = cliModule->widgetRepresentation();
-//   if (!widgetRepresentation)
-//     {
-//     std::cerr << "Line " << __LINE__
-//               << " - Problem with qSlicerCLIModule::widgetRepresentation()"
-//               << " - Failed to retrieve representation associated with module named '"
-//               << qPrintable(cliModuleName) << "'" << std::endl;
-//     return;
-//     }
-// 
-//   qSlicerCLIModuleWidget* cliWidget =
-//     dynamic_cast<qSlicerCLIModuleWidget*>(widgetRepresentation);
-//   if (!cliWidget)
-//     {
-//     std::cerr << "Line " << __LINE__
-//               << " - Failed to cast module '" << qPrintable(cliModuleName) << "' representation "
-//               << "from [qSlicerAbstractModuleRepresentation*] into [qSlicerCLIModuleWidget*]" << std::endl;
-//     return;
-//     }
-// 
-//   cliWidget->show();
-// 
-// //   QPushButton button("Simulate CLI programmatic start");
-// //   CLIModule = cliModule;
-//   runCli
-// //   ctkCallback callback(runCli);
-// //   QObject::connect(&button, SIGNAL(clicked()), &callback, SLOT(invoke()));
-// 
-//   button.show();
-// 
-//   QTimer::singleShot(0, &callback, SLOT(invoke()));
-// 
-//   bool checkResult = false;
-//   if (argc < 2 || QString(argv[1]) != "-I" )
-//     {
-//     QTimer::singleShot(500, &app, SLOT(quit()));
-//     checkResult = true;
-//     }
-// 
-//   int status = app.exec();
-//   if (status == )
-//     {
-//     std::cerr << "Line " << __LINE__ << " - Problem with qSlicerApplication::exec()";
-//     return;
-//     }
-// 
-//   if (checkResult && !ErrorString.isEmpty())
-//     {
-//     std::cerr << "Line " << __LINE__ << " - Problem executing command line module - "
-//               << qPrintable(ErrorString) << std::endl;
-//     return;
-//     }
-// 
-//   return EXIT_SUCCESS;
-//   
-//   
+//   }
+  
+//   outputVolume->SetName(outSS.str().c_str());
+  if (!referenceVolume || !warpedVolume || !outputVolume)
+  {
+    std::cerr << "Volumes not set!" << std::endl;
+    return;
+  }
+  qSlicerCLIModule* checkerboardfilterCLI = dynamic_cast<qSlicerCLIModule*>(qSlicerCoreApplication::application()->moduleManager()->module("CheckerBoardFilter"));
+  QString cliModuleName("CheckerBoardFilter");
+  
+  vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode = 
+  checkerboardfilterCLI->cliModuleLogic()->CreateNodeInScene();
+ 
+
+
+  // Set node parameters
+  cmdNode->SetParameterAsString("checkerPattern",this->RegistrationQualityNode->GetCheckerboardPattern());
+  cmdNode->SetParameterAsString("inputVolume1", referenceVolume->GetID());
+  cmdNode->SetParameterAsString("inputVolume2", warpedVolume->GetID());
+  cmdNode->SetParameterAsString("outputVolume", outputVolume->GetID());
+  
+   // Execute synchronously so that we can check the content of the file after the module execution
+  checkerboardfilterCLI->cliModuleLogic()->ApplyAndWait(cmdNode); 
+    
+  this->GetMRMLScene()->RemoveNode(cmdNode);
+   
+  outputVolume->SetAndObserveTransformNodeID(NULL);
+  this->RegistrationQualityNode->SetCheckerboardNodeID(outputVolume->GetID()); 
   std::cerr << "Setting checkerboard pattern." << std::endl;
   return;
 }
-// namespace
-// {
-// //-----------------------------------------------------------------------------
-// qSlicerCLIModule * CLIModule;
-// QString ErrorString;
-// 
-// //-----------------------------------------------------------------------------
-// void runCli(void * data)
-// {
-//   Q_ASSERT(CLIModule);
-//   Q_UNUSED(data);
-// 
-//   QTemporaryFile outputFile("qSlicerCLIModuleTest1-outputFile-XXXXXX");
-//   if (!outputFile.open())
-//     {
-//     ErrorString = "Failed to create temporary file";
-//     return;
-//     }
-//   //outputFile.close();
-// 
-//   // Create node
-//   vtkMRMLCommandLineModuleNode * cliModuleNode =
-//     CLIModule->cliModuleLogic()->CreateNodeInScene();
-// 
-//   // Values
-//   int inputValue1 = 4;
-//   int inputValue2 = 3;
-// 
-//   // Set node parameters
-//   cliModuleNode->SetParameterAsInt("InputValue1", inputValue1);
-//   cliModuleNode->SetParameterAsInt("InputValue2", inputValue2);
-//   cliModuleNode->SetParameterAsString("OperationType", "Addition");
-//   cliModuleNode->SetParameterAsString("OutputFile", outputFile.fileName().toStdString());
-// 
-//   // Execute synchronously so that we can check the content of the file after the module execution
-//   CLIModule->cliModuleLogic()->ApplyAndWait(cliModuleNode);
-// 
-//   // Read outputFile
-//   QTextStream stream(&outputFile);
-//   QString operationResult = stream.readAll().trimmed();
-// 
-//   QString expectedResult = QString::number(inputValue1 + inputValue2);
-//   if (operationResult.compare(expectedResult) != 0)
-//     {
-//     ErrorString = QString("OutputFile doesn't contain the expected result !\n"
-//                           "\tExpected:%1\n"
-//                           "\tCurrent:%2").arg(expectedResult).arg(operationResult);
-//     return;
-//     }
-// 
-//   outputFile.close();
-// }
-// 
-// } // end anonymous namespace
 
 //----------------------------------------------------------------------------
 //---Change backroung image and set opacity------------------------

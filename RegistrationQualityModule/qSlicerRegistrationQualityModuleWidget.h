@@ -39,7 +39,7 @@ protected slots:
   void referenceVolumeChanged(vtkMRMLNode*);
   void warpedVolumeChanged(vtkMRMLNode*);
   void outputModelChanged(vtkMRMLNode*);
-  
+  void checkerboardVolumeChanged(vtkMRMLNode*);
   // Image Checks  
   void falseColorToggle();
   void checkerboardToggle();

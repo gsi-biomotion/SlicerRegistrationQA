@@ -20,6 +20,7 @@
 
 class vtkMRMLRegistrationQualityNode;
 class vtkMRMLVectorVolumeNode;
+class vtkSlicerVolumesLogic;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkSlicerRegistrationQualityLogic : 
@@ -30,6 +31,7 @@ public:
   vtkTypeMacro(vtkSlicerRegistrationQualityLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
 
+  
   /*!
    * TODO: Add description of the function itself and its arguments
    * \param option (it is named option in the source but it tells nothing, please rename)
@@ -59,6 +61,9 @@ public:
 public:
   void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);
   vtkGetObjectMacro(RegistrationQualityNode, vtkMRMLRegistrationQualityNode);
+  
+  void SetVolumesLogic(vtkSlicerVolumesLogic* logic);
+  vtkSlicerVolumesLogic* GetVolumesLogic();
 
 protected:
   vtkSlicerRegistrationQualityLogic();
@@ -80,6 +85,8 @@ protected:
 private:
   vtkSlicerRegistrationQualityLogic(const vtkSlicerRegistrationQualityLogic&);// Not implemented
   void operator=(const vtkSlicerRegistrationQualityLogic&);// Not implemented
+  class vtkInternal;
+  vtkInternal* Internal;
 protected:
   /// Parameter set MRML node
   vtkMRMLRegistrationQualityNode* RegistrationQualityNode;

@@ -80,7 +80,6 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode(){
   this->SetWarpedVolumeNodeID(NULL);
   this->SetOutputModelNodeID(NULL);
   this->SetCheckerboardNodeID(NULL);
-  this->SetCheckerboardNodeID(NULL);
   this->SetGlyphSliceNodeID(NULL);
   this->SetGridSliceNodeID(NULL);
 }
@@ -128,8 +127,7 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts){
       ss << attValue;
       ss >> this->FlickerOpacity;
       continue;
-    }
- 
+    } 
  
     if (!strcmp(attName,"GlyphPointMax")){
       std::stringstream ss;
@@ -404,7 +402,6 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode){
   this->SetCheckerboardPattern(node->GetCheckerboardPattern());
   
   this->FlickerOpacity = node->FlickerOpacity;
-  
   this->GlyphPointMax = node->GlyphPointMax;
   this->GlyphScaleDirectional = node->GlyphScaleDirectional;
   this->GlyphScaleIsotropic = node->GlyphScaleIsotropic;
