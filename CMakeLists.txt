@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.9)
 
-project(LoadableExtensionTemplate)
 project(SlicerDIRQA)
 
 #-----------------------------------------------------------------------------
+set(EXTENSION_NAME "Registration Quality Extension")
 set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/4.3/Extensions/LoadableExtensionTemplate")
 set(EXTENSION_CATEGORY "Registration")
 set(EXTENSION_CONTRIBUTORS "Kristjan Anderle (GSI), Tobias Brandt (University Clinic of Erlangen), Daniel Richter (University Clinic of Erlangen), Jens Woelfelschneider (University Clinic of Erlangen")
