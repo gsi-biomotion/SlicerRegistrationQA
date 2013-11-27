@@ -233,7 +233,7 @@ void vtkSlicerRegistrationQualityLogic::FalseColor()
   }
   
   referenceVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeWarmTint1");
-  warpedVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeWarmTint3");
+  warpedVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeCoolTint1");
   
   // Set window and level the same for warped and reference volume.
   warpedVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
