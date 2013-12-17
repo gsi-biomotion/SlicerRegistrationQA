@@ -42,6 +42,41 @@ public:
   vtkGetStringMacro(OutputModelNodeID);
   void SetAndObserveOutputModelNodeID(const char* id);
 
+	// Movie parameters
+	vtkGetMacro(MovieBoxRedState, int);
+	vtkGetMacro(MovieBoxYellowState, int);
+	vtkGetMacro(MovieBoxGreenState, int);
+
+	// No set for this one
+	vtkGetMacro(MovieRun, int);
+
+	virtual void SetMovieBoxRedState(int state) {
+		vtkDebugMacro(<< GetClassName() << " (" << this << "): setting MovieBoxRedState to " << state);
+		if(MovieBoxRedState != state) {
+			MovieBoxRedState = state;
+			MovieRun ^= 1<<0;
+			Modified();
+		}
+	}
+
+	virtual void SetMovieBoxYellowState(int state) {
+		vtkDebugMacro(<< GetClassName() << " (" << this << "): setting MovieBoxYellowState to " << state);
+		if(MovieBoxYellowState != state) {
+			MovieBoxYellowState = state;
+			MovieRun ^= 1<<1;
+			Modified();
+		}
+	}
+
+	virtual void SetMovieBoxGreenState(int state) {
+		vtkDebugMacro(<< GetClassName() << " (" << this << "): setting MovieBoxGreenState to " << state);
+		if(MovieBoxGreenState != state) {
+			MovieBoxGreenState = state;
+			MovieRun ^= 1<<2;
+			Modified();
+		}
+	}
+
   // Checkerboard parameters
   vtkSetStringMacro(CheckerboardNodeID);
   vtkGetStringMacro(CheckerboardNodeID);
@@ -145,6 +180,11 @@ protected:
   char* WarpedVolumeNodeID;
   char* OutputModelNodeID;
   
+  int MovieBoxRedState;
+  int MovieBoxYellowState;
+  int MovieBoxGreenState;
+  int MovieRun;
+
   char* CheckerboardNodeID;
   char* CheckerboardPattern;
 //Parameters

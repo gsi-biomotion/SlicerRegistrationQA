@@ -212,6 +212,9 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML()
       this->checkerboardVolumeChanged(d->OutputCheckerboardComboBox->currentNode());
     }  
     pNode->SetFlickerOpacity(0);
+	
+	d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
+	
     //Update Visualization Parameters
     d->CheckerboardPatternLineEdit->setText(pNode->GetCheckerboardPattern());
     // Glyph Parameters
@@ -606,8 +609,16 @@ void qSlicerRegistrationQualityModuleWidget::setup()
           this, SLOT (falseColorToggle()));
   connect(d->CheckerboardToggle, SIGNAL(clicked()),
           this, SLOT (checkerboardToggle()));
+  
   connect(d->MovieToggle, SIGNAL(clicked()),
-          this, SLOT (movieToggle()));
+		  this, SLOT (movieToggle()));
+  connect(d->movieBoxRed, SIGNAL(stateChanged(int)),
+		  this, SLOT (movieBoxRedStateChanged(int)));
+  connect(d->movieBoxYellow, SIGNAL(stateChanged(int)),
+		  this, SLOT (movieBoxYellowStateChanged(int)));
+  connect(d->movieBoxGreen, SIGNAL(stateChanged(int)),
+		  this, SLOT (movieBoxGreenStateChanged(int)));
+  
   connect(d->FlickerToggle, SIGNAL(clicked()),
           this, SLOT (flickerToggle()));
   
@@ -728,9 +739,57 @@ void qSlicerRegistrationQualityModuleWidget::flickerToggle(){
 
 void qSlicerRegistrationQualityModuleWidget::movieToggle(){
 
-  Q_D(const qSlicerRegistrationQualityModuleWidget);  
+  Q_D(const qSlicerRegistrationQualityModuleWidget);
+  d->MovieToggle->setText("Stop");
+  
   vtkSlicerRegistrationQualityLogic *logic = d->logic();
   logic->Movie();
+  d->MovieToggle->setText("Start");
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::movieBoxRedStateChanged(int state)
+{
+	cout << "movieBoxRed State changed: " << state << endl;
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene())
+	{
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetMovieBoxRedState(state);
+	pNode->DisableModifiedEventOff();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::movieBoxYellowStateChanged(int state)
+{
+	cout << "movieBoxYellow State changed: " << state << endl;
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene())
+	{
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetMovieBoxYellowState(state);
+	pNode->DisableModifiedEventOff();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::movieBoxGreenStateChanged(int state)
+{
+	cout << "movieBoxGreen State changed: " << state << endl;
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene())
+	{
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetMovieBoxGreenState(state);
+	pNode->DisableModifiedEventOff();
 }
 
 
@@ -773,7 +832,7 @@ void qSlicerRegistrationQualityModuleWidget::setSeed()
     return;
   }
   pNode->DisableModifiedEventOn();
-  pNode->SetGlyphSeed((RAND_MAX+1)*(long)rand()+rand()); //TODO: Integer overflow here. Why use two random numbers?
+  pNode->SetGlyphSeed((static_cast<long>(RAND_MAX)+1)*(long)rand()+rand()); //TODO: Integer overflow here. Why use two random numbers?
   d->InputGlyphSeed->setValue(pNode->GetGlyphSeed());
   pNode->DisableModifiedEventOff();
 }
@@ -1149,7 +1208,7 @@ void qSlicerRegistrationQualityModuleWidget::setSeed2()
     return;
   }
   pNode->DisableModifiedEventOn();
-  pNode->SetGlyphSliceSeed((RAND_MAX+1)*(long)rand()+rand()); //TODO: Integer overflow here. Why use two random numbers?
+  pNode->SetGlyphSliceSeed((static_cast<long>(RAND_MAX)+1)*(long)rand()+rand()); //TODO: Integer overflow here. Why use two random numbers?
   d->InputGlyphSliceSeed->setValue(pNode->GetGlyphSliceSeed());
   pNode->DisableModifiedEventOff();
 }

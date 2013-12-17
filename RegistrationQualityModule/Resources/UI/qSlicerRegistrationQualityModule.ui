@@ -325,7 +325,7 @@
    <item>
     <widget class="ctkCollapsibleButton" name="ImageChecks">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -339,7 +339,7 @@
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>170</height>
+       <height>25000</height>
       </size>
      </property>
      <property name="toolTip">
@@ -351,54 +351,243 @@
      <property name="autoRepeatInterval">
       <number>100</number>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="2" column="0" colspan="5">
-       <widget class="QPushButton" name="FalseColorToggle">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>False Color</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../qSlicerRegistrationQualityModule.qrc">
-          <normaloff>:/Icons/FalseColourIcon.png</normaloff>:/Icons/FalseColourIcon.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>48</width>
-          <height>48</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="14" column="0" colspan="5">
-       <widget class="QPushButton" name="MovieToggle">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Movie</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../qSlicerRegistrationQualityModule.qrc">
-          <normaloff>:/Icons/MovieIcon.png</normaloff>:/Icons/MovieIcon.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>48</width>
-          <height>48</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="0" colspan="5">
+	 <layout class="QVBoxLayout" name="gridLayout_2">
+	  <item row="0" column="0" colspan="5">
+	   <widget class="QGroupBox" name="falseColorGroupBox">
+	    <property name="sizePolicy">
+		 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+		  <horstretch>0</horstretch>
+		  <verstretch>0</verstretch>
+		 </sizepolicy>
+		</property>
+		<property name="title">
+		 <string>False Color</string>
+		</property>
+		<layout class="QGridLayout" name="falseColorGridLayout">
+		<item row="0" column="0" colspan="5">
+		<widget class="QPushButton" name="FalseColorToggle">
+			<property name="sizePolicy">
+			<sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+			<horstretch>0</horstretch>
+			<verstretch>0</verstretch>
+			</sizepolicy>
+			</property>
+			<property name="text">
+			<string>False Color</string>
+			</property>
+			<property name="icon">
+			<iconset resource="../qSlicerRegistrationQualityModule.qrc">
+			<normaloff>:/Icons/FalseColourIcon.png</normaloff>:/Icons/FalseColourIcon.png</iconset>
+			</property>
+			<property name="iconSize">
+			<size>
+			<width>48</width>
+			<height>48</height>
+			</size>
+			</property>
+		</widget>
+		</item>
+		</layout>
+	</widget>
+</item>
+
+<item row="1" column="0" colspan="5">
+	<widget class="QGroupBox" name="checkerboardGroupBox">
+		<property name="sizePolicy">
+			<sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+				<horstretch>0</horstretch>
+				<verstretch>0</verstretch>
+			</sizepolicy>
+		</property>
+		<property name="title">
+			<string>Checkerboard</string>
+		</property>
+		<layout class="QGridLayout" name="checkerboardGridLayout">
+			<item row="3" column="0">
+				<widget class="QLabel" name="CheckerboardLabel">
+					<property name="sizePolicy">
+						<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+							<horstretch>0</horstretch>
+							<verstretch>0</verstretch>
+						</sizepolicy>
+					</property>
+					<property name="text">
+						<string>Pattern:</string>
+					</property>
+				</widget>
+			</item>
+			<item row="3" column="3" colspan="2">
+				<widget class="QPushButton" name="CheckerboardToggle">
+					<property name="sizePolicy">
+						<sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+							<horstretch>0</horstretch>
+							<verstretch>0</verstretch>
+						</sizepolicy>
+					</property>
+					<property name="text">
+						<string>Checkerboard</string>
+					</property>
+					<property name="icon">
+						<iconset resource="../qSlicerRegistrationQualityModule.qrc">
+							<normaloff>:/Icons/CheckerboardIcon.png</normaloff>:/Icons/CheckerboardIcon.png</iconset>
+					</property>
+					<property name="iconSize">
+						<size>
+							<width>48</width>
+							<height>48</height>
+						</size>
+					</property>
+				</widget>
+			</item>
+			<item row="4" column="3">
+				<widget class="qMRMLNodeComboBox" name="OutputCheckerboardComboBox">
+					<property name="enabled">
+						<bool>false</bool>
+					</property>
+					<property name="sizePolicy">
+						<sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+							<horstretch>0</horstretch>
+							<verstretch>0</verstretch>
+						</sizepolicy>
+					</property>
+					<property name="nodeTypes">
+						<stringlist>
+							<string>vtkMRMLVolumeNode</string>
+						</stringlist>
+					</property>
+					<property name="noneEnabled">
+						<bool>true</bool>
+					</property>
+					<property name="addEnabled">
+						<bool>true</bool>
+					</property>
+					<property name="removeEnabled">
+						<bool>true</bool>
+					</property>
+					<property name="editEnabled">
+						<bool>false</bool>
+					</property>
+					<property name="renameEnabled">
+						<bool>true</bool>
+					</property>
+				</widget>
+			</item>
+			<item row="4" column="0" colspan="2">
+				<widget class="QLabel" name="label_9">
+					<property name="text">
+						<string>Output Checkerboard Volume:</string>
+					</property>
+				</widget>
+			</item>
+			<item row="3" column="1">
+				<widget class="QLineEdit" name="CheckerboardPatternLineEdit">
+					<property name="sizePolicy">
+						<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+							<horstretch>0</horstretch>
+							<verstretch>0</verstretch>
+						</sizepolicy>
+					</property>
+					<property name="inputMask">
+						<string/>
+						</property>
+						<property name="text">
+							<string>10,10,10</string>
+						</property>
+					</widget>
+				</item>
+		</layout>
+	</widget>
+</item>
+	  <item row="2" column="0" colspan="5">
+		  <widget class="QGroupBox" name="movieGroupBox">
+			  <property name="sizePolicy">
+				  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+					  <horstretch>0</horstretch>
+					  <verstretch>0</verstretch>
+				  </sizepolicy>
+			  </property>
+			  <property name="title">
+				  <string>Movie</string>
+			  </property>
+			  <layout class="QGridLayout" name="movieFormLayout">
+				  <item row="0" column="0">
+					  <widget class="ctkCheckBox" name="movieBoxRed">
+						  <property name="sizePolicy">
+							  <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+								  <horstretch>0</horstretch>
+								  <verstretch>0</verstretch>
+							  </sizepolicy>
+						  </property>
+						  <property name="text">
+							  <string></string>
+						  </property>
+						  <property name="icon">
+							  <iconset resource="../qSlicerRegistrationQualityModule.qrc">
+								  <normaloff>:/Icons/RedIcon.png</normaloff>:/Icons/RedIcon.png</iconset>
+						  </property>
+					  </widget>
+				  </item>
+				  <item row="0" column="1">
+					  <widget class="ctkCheckBox" name="movieBoxYellow">
+						  <property name="sizePolicy">
+							  <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+								  <horstretch>0</horstretch>
+								  <verstretch>0</verstretch>
+							  </sizepolicy>
+						  </property>
+						  <property name="text">
+							  <string></string>
+						  </property>
+						  <property name="icon">
+							  <iconset resource="../qSlicerRegistrationQualityModule.qrc">
+								  <normaloff>:/Icons/YellowIcon.png</normaloff>:/Icons/YellowIcon.png</iconset>
+						  </property>
+					  </widget>
+				  </item>
+				  <item row="0" column="2">
+					  <widget class="ctkCheckBox" name="movieBoxGreen">
+						  <property name="sizePolicy">
+							  <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+								  <horstretch>0</horstretch>
+								  <verstretch>0</verstretch>
+							  </sizepolicy>
+						  </property>
+						  <property name="text">
+							  <string></string>
+						  </property>
+						  <property name="icon">
+							  <iconset resource="../qSlicerRegistrationQualityModule.qrc">
+								  <normaloff>:/Icons/GreenIcon.png</normaloff>:/Icons/GreenIcon.png</iconset>
+						  </property>
+					  </widget>
+				  </item>
+				  <item row="0" column="3" colspan="2">
+					  <widget class="QPushButton" name="MovieToggle">
+						  <property name="sizePolicy">
+							  <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+								  <horstretch>0</horstretch>
+								  <verstretch>0</verstretch>
+							  </sizepolicy>
+						  </property>
+						  <property name="text">
+							  <string>Start</string>
+						  </property>
+						  <property name="icon">
+							  <iconset resource="../qSlicerRegistrationQualityModule.qrc">
+								  <normaloff>:/Icons/MovieIcon.png</normaloff>:/Icons/MovieIcon.png</iconset>
+						  </property>
+						  <property name="iconSize">
+							  <size>
+								  <width>48</width>
+								  <height>48</height>
+							  </size>
+						  </property>
+					  </widget>
+				  </item>
+						  </layout>
+					  </widget>
+	  </item>
+      <item row="3" column="0" colspan="5">
        <widget class="QPushButton" name="FlickerToggle">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -421,105 +610,13 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="CheckerboardLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Pattern:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3" colspan="2">
-       <widget class="QPushButton" name="CheckerboardToggle">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Checkerboard</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../qSlicerRegistrationQualityModule.qrc">
-          <normaloff>:/Icons/CheckerboardIcon.png</normaloff>:/Icons/CheckerboardIcon.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>48</width>
-          <height>48</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="3">
-       <widget class="qMRMLNodeComboBox" name="OutputCheckerboardComboBox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="nodeTypes">
-         <stringlist>
-          <string>vtkMRMLScalarVolumeNode</string>
-         </stringlist>
-        </property>
-        <property name="noneEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="addEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="removeEnabled">
-         <bool>true</bool>
-        </property>
-        <property name="editEnabled">
-         <bool>false</bool>
-        </property>
-        <property name="renameEnabled">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Output Checkerboard Volume:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="CheckerboardPatternLineEdit">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="inputMask">
-         <string/>
-        </property>
-        <property name="text">
-         <string>10,10,10</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
    <item>
     <widget class="ctkCollapsibleButton" name="VectorFieldChecks">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -527,7 +624,7 @@
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>38</height>
+       <height>500</height>
       </size>
      </property>
      <property name="toolTip">
@@ -542,7 +639,7 @@
      <property name="contentsFrameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3">
+     <layout class="QGridLayout" name="gridLayout_31">
       <item row="2" column="2">
        <widget class="QPushButton" name="GridSliceToggle">
         <property name="sizePolicy">

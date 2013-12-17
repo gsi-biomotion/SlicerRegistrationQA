@@ -53,6 +53,7 @@ public:
    */
   void FalseColor();
   void Flicker(int opacity);
+  void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
   void Movie();
   void Checkerboard();
   void GenerateTransformField();

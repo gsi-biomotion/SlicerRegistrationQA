@@ -311,10 +311,111 @@ void vtkSlicerRegistrationQualityLogic::Flicker(int opacity)
     
   return;
 }
+
+void vtkSlicerRegistrationQualityLogic::getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax) {
+	vtkMRMLScalarVolumeNode* foreground = vtkMRMLScalarVolumeNode::SafeDownCast(
+		this->GetMRMLScene()->GetNodeByID(scn->GetBackgroundVolumeID()));
+	vtkMRMLScalarVolumeNode* background = vtkMRMLScalarVolumeNode::SafeDownCast(
+		this->GetMRMLScene()->GetNodeByID(scn->GetForegroundVolumeID()));
+	double rasBounds[6] = {INFINITY,-INFINITY,INFINITY,-INFINITY,INFINITY,-INFINITY};
+	double rasBoundsBack[6] = {INFINITY,-INFINITY,INFINITY,-INFINITY,INFINITY,-INFINITY};
+	if(foreground) foreground->GetRASBounds(rasBounds);
+	if(background) background->GetRASBounds(rasBoundsBack);
+	for(int i=0;i<3; i++) {
+		minmax[2*i] = std::min(rasBounds[2*i],rasBoundsBack[2*i]);
+		minmax[2*i+1] = std::max(rasBounds[2*i+1],rasBoundsBack[2*i+1]);
+		if(minmax[2*i]>minmax[2*i+1]) {
+			cout << "rasBounds infty" << endl;
+			minmax[2*i] = minmax[2*i+1] = 0;
+		}
+	}
+}
 //----------------------------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::Movie()
-{
-  return;
+/**
+ * Movie through slices.
+ * TODO:	- Calculate slice spacing
+ * 			- Changed slice directions
+ * 			- Oblique slices
+ */
+void vtkSlicerRegistrationQualityLogic::Movie() {
+	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
+		vtkErrorMacro("Movie: Invalid scene or parameter set node!");
+		return;
+	}
+	vtkMRMLSliceNode* sliceNodeRed = vtkMRMLSliceNode::SafeDownCast(
+		this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceNodeRed"));
+	vtkMRMLSliceNode* sliceNodeYellow = vtkMRMLSliceNode::SafeDownCast(
+		this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceNodeYellow"));
+	vtkMRMLSliceNode* sliceNodeGreen = vtkMRMLSliceNode::SafeDownCast(
+		this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceNodeGreen"));
+
+	double rasBoundsRed[6], rasBoundsYellow[6], rasBoundsGreen[6];
+	int runState = this->RegistrationQualityNode->GetMovieRun();
+
+	if(runState) {
+		vtkMRMLSliceCompositeNode *scn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed"));
+		getSliceCompositeNodeRASBounds(scn,rasBoundsRed);
+		scn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow"));
+		getSliceCompositeNodeRASBounds(scn,rasBoundsYellow);
+		scn = vtkMRMLSliceCompositeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen"));
+		getSliceCompositeNodeRASBounds(scn,rasBoundsGreen);
+
+		double redMin = rasBoundsRed[4];
+		double redMax = rasBoundsRed[5];
+		double redStep = 3;
+		double redPos = redMin;
+		double yellowMin = rasBoundsYellow[0];
+		double yellowMax = rasBoundsYellow[1];
+		double yellowStep = 3;
+		double yellowPos = yellowMin;
+		double greenMin = rasBoundsGreen[2];
+		double greenMax = rasBoundsGreen[3];
+		double greenStep = 3;
+		double greenPos = greenMin;
+
+		cout << "movie:\n"
+			<< " red:    " << redMin << " .. " << redMax << "\n"
+			<< " yellow: " << yellowMin << " .. " << yellowMax << "\n"
+			<< " green:  " << greenMin << " .. " << greenMax << "\n"
+			<< endl;
+
+		while(runState) {
+
+// 			cout << " runRed=" << (runState&1?"true":"false") 
+// 				<< " runYellow=" << (runState&2?"true":"false") 
+// 				<< " runGreen=" << (runState&4?"true":"false")
+// 				<< " MovieRun=" << runState << endl;
+
+			if(runState&1) {
+				sliceNodeRed->JumpSliceByCentering((yellowMin+yellowMax)/2,(greenMin+greenMax)/2,redPos);
+				redPos += redStep;
+				if(redPos>redMax)  {
+					redPos -= redMax - redMin;
+					cout << "red Overflow" << endl;
+				}
+			}
+			if(runState&2) {
+				sliceNodeYellow->JumpSliceByCentering(yellowPos,(greenMin+greenMax)/2,(redMin+redMax)/2);
+				yellowPos += yellowStep;
+				if(yellowPos>yellowMax)  {
+					yellowPos -= yellowMax - yellowMin;
+					cout << "yellow Overflow" << endl;
+				}
+			}
+			if(runState&4) {
+				sliceNodeGreen->JumpSliceByCentering((yellowMin+yellowMax)/2,greenPos,(redMin+redMax)/2);
+				greenPos += greenStep;
+				if(greenPos>greenMax)  {
+					greenPos -= greenMax - greenMin;
+					cout << "green Overflow" << endl;
+				}
+			}
+			qSlicerApplication::application()->processEvents();
+// 	 		time.sleep(0.2);
+
+			runState = RegistrationQualityNode->GetMovieRun();
+		}
+	}
 }
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::Checkerboard()

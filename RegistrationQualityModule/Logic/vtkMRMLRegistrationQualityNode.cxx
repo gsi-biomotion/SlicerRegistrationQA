@@ -24,6 +24,12 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode(){
   this->CheckerboardNodeID = NULL;
   
   this->FlickerOpacity = 1;
+
+  MovieBoxRedState = 0;
+  MovieBoxYellowState = 0;
+  MovieBoxGreenState = 0;
+  MovieRun = 0;
+
   //Glyph Parameters
   this->GlyphPointMax = 2000;
   this->GlyphScale = 1;
