@@ -740,11 +740,13 @@ void qSlicerRegistrationQualityModuleWidget::flickerToggle(){
 void qSlicerRegistrationQualityModuleWidget::movieToggle(){
 
   Q_D(const qSlicerRegistrationQualityModuleWidget);
+  d->MovieToggle->setEnabled(false);
   d->MovieToggle->setText("Stop");
   
   vtkSlicerRegistrationQualityLogic *logic = d->logic();
   logic->Movie();
   d->MovieToggle->setText("Start");
+  d->MovieToggle->setEnabled(true);
 }
 
 //-----------------------------------------------------------------------------
