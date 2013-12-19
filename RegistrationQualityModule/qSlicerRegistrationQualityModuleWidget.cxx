@@ -40,723 +40,636 @@
 //C include
 #include <time.h>
 
-
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_RegistrationQuality
 // TODO: Keeping private for now until after fixes and enhancements
-class qSlicerRegistrationQualityModuleWidgetPrivate: public Ui_qSlicerRegistrationQualityModule{
-  Q_DECLARE_PUBLIC(qSlicerRegistrationQualityModuleWidget);
+class qSlicerRegistrationQualityModuleWidgetPrivate: public Ui_qSlicerRegistrationQualityModule {
+	Q_DECLARE_PUBLIC(qSlicerRegistrationQualityModuleWidget);
 protected:
-  qSlicerRegistrationQualityModuleWidget* const q_ptr;
+	qSlicerRegistrationQualityModuleWidget* const q_ptr;
 public:
-  qSlicerRegistrationQualityModuleWidgetPrivate(qSlicerRegistrationQualityModuleWidget& object);
-  vtkSlicerRegistrationQualityLogic* logic() const;
+	qSlicerRegistrationQualityModuleWidgetPrivate(qSlicerRegistrationQualityModuleWidget& object);
+	vtkSlicerRegistrationQualityLogic* logic() const;
 };
 
 //-----------------------------------------------------------------------------
 // qSlicerRegistrationQualityModuleWidgetPrivate methods
 //-----------------------------------------------------------------------------
-qSlicerRegistrationQualityModuleWidgetPrivate::qSlicerRegistrationQualityModuleWidgetPrivate(qSlicerRegistrationQualityModuleWidget& object) : q_ptr(&object)
-{
+qSlicerRegistrationQualityModuleWidgetPrivate::qSlicerRegistrationQualityModuleWidgetPrivate(
+	qSlicerRegistrationQualityModuleWidget& object) : q_ptr(&object) {
 }
 
 vtkSlicerRegistrationQualityLogic* qSlicerRegistrationQualityModuleWidgetPrivate::logic() const {
-  Q_Q( const qSlicerRegistrationQualityModuleWidget );
-  return vtkSlicerRegistrationQualityLogic::SafeDownCast( q->logic() );
+	Q_Q( const qSlicerRegistrationQualityModuleWidget );
+	return vtkSlicerRegistrationQualityLogic::SafeDownCast( q->logic() );
 }
 
 
 //-----------------------------------------------------------------------------
 // qSlicerRegistrationQualityModuleWidget methods
 //-----------------------------------------------------------------------------
-qSlicerRegistrationQualityModuleWidget::qSlicerRegistrationQualityModuleWidget(QWidget* _parent) : Superclass( _parent ) , d_ptr(new qSlicerRegistrationQualityModuleWidgetPrivate(*this))
-{
+qSlicerRegistrationQualityModuleWidget::qSlicerRegistrationQualityModuleWidget(QWidget* _parent)
+	: Superclass( _parent )
+	, d_ptr(new qSlicerRegistrationQualityModuleWidgetPrivate(*this)) {
 }
 
 //-----------------------------------------------------------------------------
-qSlicerRegistrationQualityModuleWidget::~qSlicerRegistrationQualityModuleWidget()
-{
+qSlicerRegistrationQualityModuleWidget::~qSlicerRegistrationQualityModuleWidget() {
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setMRMLScene(vtkMRMLScene* scene)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
+void qSlicerRegistrationQualityModuleWidget::setMRMLScene(vtkMRMLScene* scene) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-  this->Superclass::setMRMLScene(scene);
+	this->Superclass::setMRMLScene(scene);
 
-  // Find parameters node or create it if there is no one in the scene
-  if (scene &&  d->logic()->GetRegistrationQualityNode() == 0)
-  {
-    vtkMRMLNode* node = scene->GetNthNodeByClass(0, "vtkMRMLRegistrationQualityNode");
-    if (node){
-      this->setRegistrationQualityParametersNode(vtkMRMLRegistrationQualityNode::SafeDownCast(node));
-    }
-  }
+	// Find parameters node or create it if there is no one in the scene
+	if (scene &&  d->logic()->GetRegistrationQualityNode() == 0) {
+		vtkMRMLNode* node = scene->GetNthNodeByClass(0, "vtkMRMLRegistrationQualityNode");
+		if (node) {
+			this->setRegistrationQualityParametersNode(
+				vtkMRMLRegistrationQualityNode::SafeDownCast(node));
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::onSceneImportedEvent()
-{
-  this->onEnter();
+void qSlicerRegistrationQualityModuleWidget::onSceneImportedEvent() {
+	this->onEnter();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::enter()
-{
-  this->onEnter();
-  this->Superclass::enter();
+void qSlicerRegistrationQualityModuleWidget::enter() {
+	this->onEnter();
+	this->Superclass::enter();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::onEnter()
-{
-  if (!this->mrmlScene())
-  {
-    return;
-  }
+void qSlicerRegistrationQualityModuleWidget::onEnter() {
+	if (!this->mrmlScene()) {
+		return;
+	}
 
-  Q_D(qSlicerRegistrationQualityModuleWidget);
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-  if (d->logic() == NULL)
-  {
-    return;
-  }
+	if (d->logic() == NULL) {
+		return;
+	}
 
-  //Check for existing parameter node
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	//Check for existing parameter node
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
-  if (pNode == NULL)
-  {
-    vtkMRMLNode* node = this->mrmlScene()->GetNthNodeByClass(0, "vtkMRMLRegistrationQualityNode");
-    if (node)
-    {
-      pNode = vtkMRMLRegistrationQualityNode::SafeDownCast(node);
-      d->logic()->SetAndObserveRegistrationQualityNode(pNode);
-      return;
-    }
-    else
-    {
-      vtkSmartPointer<vtkMRMLRegistrationQualityNode> newNode = vtkSmartPointer<vtkMRMLRegistrationQualityNode>::New();
-      this->mrmlScene()->AddNode(newNode);
-      d->logic()->SetAndObserveRegistrationQualityNode(newNode);
-    }
-  }
-  this->updateWidgetFromMRML();
+	if (pNode == NULL) {
+		vtkMRMLNode* node = this->mrmlScene()->GetNthNodeByClass(0,"vtkMRMLRegistrationQualityNode");
+		if (node) {
+			pNode = vtkMRMLRegistrationQualityNode::SafeDownCast(node);
+			d->logic()->SetAndObserveRegistrationQualityNode(pNode);
+			return;
+		} else {
+			vtkSmartPointer<vtkMRMLRegistrationQualityNode> newNode = vtkSmartPointer<vtkMRMLRegistrationQualityNode>::New();
+			this->mrmlScene()->AddNode(newNode);
+			d->logic()->SetAndObserveRegistrationQualityNode(newNode);
+		}
+	}
+	this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setRegistrationQualityParametersNode(vtkMRMLNode *node)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
+void qSlicerRegistrationQualityModuleWidget::setRegistrationQualityParametersNode(vtkMRMLNode *node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-  vtkMRMLRegistrationQualityNode* pNode = vtkMRMLRegistrationQualityNode::SafeDownCast(node);
+	vtkMRMLRegistrationQualityNode* pNode = vtkMRMLRegistrationQualityNode::SafeDownCast(node);
 
-  qvtkReconnect( d->logic()->GetRegistrationQualityNode(), pNode, vtkCommand::ModifiedEvent, this, SLOT(updateWidgetFromMRML()));
+	qvtkReconnect( d->logic()->GetRegistrationQualityNode(), pNode,
+				   vtkCommand::ModifiedEvent, this, SLOT(updateWidgetFromMRML()));
 
-  d->logic()->SetAndObserveRegistrationQualityNode(pNode);
+	d->logic()->SetAndObserveRegistrationQualityNode(pNode);
 
-  this->updateWidgetFromMRML();
+	this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML()
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
+void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
-  if (pNode && this->mrmlScene())
-  {
-    d->ParameterComboBox->setCurrentNode(pNode);
+	if (pNode && this->mrmlScene()) {
+		d->ParameterComboBox->setCurrentNode(pNode);
 
-    if (pNode->GetVectorVolumeNodeID())
-    {
-      d->InputFieldComboBox->setCurrentNode(pNode->GetVectorVolumeNodeID());
-    }
-    else
-    {
-      this->vectorVolumeChanged(d->InputFieldComboBox->currentNode());
-    }
+		if (pNode->GetVectorVolumeNodeID()) {
+			d->InputFieldComboBox->setCurrentNode(pNode->GetVectorVolumeNodeID());
+		} else {
+			this->vectorVolumeChanged(d->InputFieldComboBox->currentNode());
+		}
 
-    if (pNode->GetReferenceVolumeNodeID())
-    {
-      d->InputReferenceComboBox->setCurrentNode(pNode->GetReferenceVolumeNodeID());
-    }
-    else
-    {
-      this->referenceVolumeChanged(d->InputReferenceComboBox->currentNode());
-    }    
-    if (pNode->GetWarpedVolumeNodeID())
-    {
-      d->InputWarpedComboBox->setCurrentNode(pNode->GetWarpedVolumeNodeID());
-    }
-    else
-    {
-      this->warpedVolumeChanged(d->InputWarpedComboBox->currentNode());
-    } 
-    if (pNode->GetOutputModelNodeID())
-    {
-      d->OutputModelComboBox->setCurrentNode(pNode->GetOutputModelNodeID());
-    }
-    else
-    {
-      this->outputModelChanged(d->OutputModelComboBox->currentNode());
-    }
-    if (pNode->GetCheckerboardNodeID())
-    {
-      d->OutputCheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
-    }
-    else
-    {
-      this->checkerboardVolumeChanged(d->OutputCheckerboardComboBox->currentNode());
-    }  
-    pNode->SetFlickerOpacity(0);
-	
-	d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
-	
-    //Update Visualization Parameters
-    d->CheckerboardPatternLineEdit->setText(pNode->GetCheckerboardPattern());
-    // Glyph Parameters
-    d->InputGlyphPointMax->setValue(pNode->GetGlyphPointMax());
-    d->InputGlyphSeed->setValue(pNode->GetGlyphSeed());
-    d->InputGlyphScale->setValue(pNode->GetGlyphScale());
-    d->InputGlyphScaleDirectional->setChecked(pNode->GetGlyphScaleDirectional());
-    d->InputGlyphScaleIsotropic->setChecked(pNode->GetGlyphScaleIsotropic());
-    d->InputGlyphThreshold->setMaximumValue(pNode->GetGlyphThresholdMax());
-    d->InputGlyphThreshold->setMinimumValue(pNode->GetGlyphThresholdMin());
-    d->GlyphSourceComboBox->setCurrentIndex(pNode->GetGlyphSourceOption());
-    // Arrow Parameters
-    d->InputGlyphArrowTipLength->setValue(pNode->GetGlyphArrowTipLength());
-    d->InputGlyphArrowTipRadius->setValue(pNode->GetGlyphArrowTipRadius());
-    d->InputGlyphArrowShaftRadius->setValue(pNode->GetGlyphArrowShaftRadius());
-    d->InputGlyphArrowResolution->setValue(pNode->GetGlyphArrowResolution());
-    // Cone Parameters
-    d->InputGlyphConeHeight->setValue(pNode->GetGlyphConeHeight());
-    d->InputGlyphConeRadius->setValue(pNode->GetGlyphConeRadius());
-    d->InputGlyphConeResolution->setValue(pNode->GetGlyphConeResolution());
-    // Sphere Parameters
-    d->InputGlyphSphereResolution->setValue(pNode->GetGlyphSphereResolution());
+		if (pNode->GetReferenceVolumeNodeID()) {
+			d->InputReferenceComboBox->setCurrentNode(pNode->GetReferenceVolumeNodeID());
+		} else {
+			this->referenceVolumeChanged(d->InputReferenceComboBox->currentNode());
+		}
 
-    // Grid Parameters
-    d->InputGridScale->setValue(pNode->GetGridScale());
-    d->InputGridDensity->setValue(pNode->GetGridDensity());
+		if (pNode->GetWarpedVolumeNodeID()) {
+			d->InputWarpedComboBox->setCurrentNode(pNode->GetWarpedVolumeNodeID());
+		} else {
+			this->warpedVolumeChanged(d->InputWarpedComboBox->currentNode());
+		}
 
-    // Block Parameters
-    d->InputBlockScale->setValue(pNode->GetBlockScale());
-    d->InputBlockDisplacementCheck->setChecked(pNode->GetBlockDisplacementCheck());
+		if (pNode->GetOutputModelNodeID()) {
+			d->OutputModelComboBox->setCurrentNode(pNode->GetOutputModelNodeID());
+		} else {
+			this->outputModelChanged(d->OutputModelComboBox->currentNode());
+		}
 
-    // Contour Parameters
-    d->InputContourNumber->setValue(pNode->GetContourNumber());
-    d->InputContourRange->setMaximumValue(pNode->GetContourMax());
-    d->InputContourRange->setMinimumValue(pNode->GetContourMin());
+		if (pNode->GetCheckerboardNodeID()) {
+			d->OutputCheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
+		} else {
+			this->checkerboardVolumeChanged(d->OutputCheckerboardComboBox->currentNode());
+		}
 
-    // Glyph Slice Parameters
-    if (pNode->GetGlyphSliceNodeID())
-    {
-      d->GlyphSliceComboBox->setCurrentNode(pNode->GetGlyphSliceNodeID());
-    }
-    else
-    {
-      this->setGlyphSliceNode(d->GlyphSliceComboBox->currentNode());
-    }  
-    d->InputGlyphSlicePointMax->setValue(pNode->GetGlyphSlicePointMax());
-    d->InputGlyphSliceThreshold->setMaximumValue(pNode->GetGlyphSliceThresholdMax());
-    d->InputGlyphSliceThreshold->setMinimumValue(pNode->GetGlyphSliceThresholdMin());
-    d->InputGlyphSliceScale->setValue(pNode->GetGlyphSliceScale());
-    d->InputGlyphSliceSeed->setValue(pNode->GetGlyphSliceSeed());
+		pNode->SetFlickerOpacity(0);
+		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
 
-    // Grid Slice Parameters
-    if (pNode->GetGridSliceNodeID())
-    {
-      d->GridSliceComboBox->setCurrentNode(pNode->GetGridSliceNodeID());
-    }
-    else
-    {
-      this->setGridSliceNode(d->GridSliceComboBox->currentNode());
-    }  
-    d->InputGridSliceScale->setValue(pNode->GetGridSliceScale());
-    d->InputGridSliceDensity->setValue(pNode->GetGridSliceDensity());
-  }
+		//Update Visualization Parameters
+		d->CheckerboardPatternLineEdit->setText(pNode->GetCheckerboardPattern());
+		// Glyph Parameters
+		d->InputGlyphPointMax->setValue(pNode->GetGlyphPointMax());
+		d->InputGlyphSeed->setValue(pNode->GetGlyphSeed());
+		d->InputGlyphScale->setValue(pNode->GetGlyphScale());
+		d->InputGlyphScaleDirectional->setChecked(pNode->GetGlyphScaleDirectional());
+		d->InputGlyphScaleIsotropic->setChecked(pNode->GetGlyphScaleIsotropic());
+		d->InputGlyphThreshold->setMaximumValue(pNode->GetGlyphThresholdMax());
+		d->InputGlyphThreshold->setMinimumValue(pNode->GetGlyphThresholdMin());
+		d->GlyphSourceComboBox->setCurrentIndex(pNode->GetGlyphSourceOption());
+		// Arrow Parameters
+		d->InputGlyphArrowTipLength->setValue(pNode->GetGlyphArrowTipLength());
+		d->InputGlyphArrowTipRadius->setValue(pNode->GetGlyphArrowTipRadius());
+		d->InputGlyphArrowShaftRadius->setValue(pNode->GetGlyphArrowShaftRadius());
+		d->InputGlyphArrowResolution->setValue(pNode->GetGlyphArrowResolution());
+		// Cone Parameters
+		d->InputGlyphConeHeight->setValue(pNode->GetGlyphConeHeight());
+		d->InputGlyphConeRadius->setValue(pNode->GetGlyphConeRadius());
+		d->InputGlyphConeResolution->setValue(pNode->GetGlyphConeResolution());
+		// Sphere Parameters
+		d->InputGlyphSphereResolution->setValue(pNode->GetGlyphSphereResolution());
+
+		// Grid Parameters
+		d->InputGridScale->setValue(pNode->GetGridScale());
+		d->InputGridDensity->setValue(pNode->GetGridDensity());
+
+		// Block Parameters
+		d->InputBlockScale->setValue(pNode->GetBlockScale());
+		d->InputBlockDisplacementCheck->setChecked(pNode->GetBlockDisplacementCheck());
+
+		// Contour Parameters
+		d->InputContourNumber->setValue(pNode->GetContourNumber());
+		d->InputContourRange->setMaximumValue(pNode->GetContourMax());
+		d->InputContourRange->setMinimumValue(pNode->GetContourMin());
+
+		// Glyph Slice Parameters
+		if (pNode->GetGlyphSliceNodeID()) {
+			d->GlyphSliceComboBox->setCurrentNode(pNode->GetGlyphSliceNodeID());
+		} else {
+			this->setGlyphSliceNode(d->GlyphSliceComboBox->currentNode());
+		}
+		d->InputGlyphSlicePointMax->setValue(pNode->GetGlyphSlicePointMax());
+		d->InputGlyphSliceThreshold->setMaximumValue(pNode->GetGlyphSliceThresholdMax());
+		d->InputGlyphSliceThreshold->setMinimumValue(pNode->GetGlyphSliceThresholdMin());
+		d->InputGlyphSliceScale->setValue(pNode->GetGlyphSliceScale());
+		d->InputGlyphSliceSeed->setValue(pNode->GetGlyphSliceSeed());
+
+		// Grid Slice Parameters
+		if (pNode->GetGridSliceNodeID()) {
+			d->GridSliceComboBox->setCurrentNode(pNode->GetGridSliceNodeID());
+		} else {
+			this->setGridSliceNode(d->GridSliceComboBox->currentNode());
+		}
+		d->InputGridSliceScale->setValue(pNode->GetGridSliceScale());
+		d->InputGridSliceDensity->setValue(pNode->GetGridSliceDensity());
+	}
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::onLogicModified()
-{
-  this->updateWidgetFromMRML();
+void qSlicerRegistrationQualityModuleWidget::onLogicModified() {
+	this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* node)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
+void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-  // TODO: Move into updatefrommrml?
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene() || !node)
-  {
-    d->ApplyButton->setEnabled(false);
-    d->VolumeDisabledLabel->show();
-    return;
-  }
+	// TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		d->ApplyButton->setEnabled(false);
+		d->VolumeDisabledLabel->show();
+		return;
+	}
 
-  d->ApplyButton->setEnabled(true);
-  d->VolumeDisabledLabel->hide();  
+	d->ApplyButton->setEnabled(true);
+	d->VolumeDisabledLabel->hide();
 
-  pNode->DisableModifiedEventOn();
-  pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
-  pNode->DisableModifiedEventOff();
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
 
-  double maxNorm = 0;
+	double maxNorm = 0;
 
-  // What to do if there is more than one array? Would there be more than one array?
-  if (strcmp(node->GetClassName(), "vtkMRMLVectorVolumeNode") == 0)
-  {
-    d->InputReferenceComboBox->setEnabled(false);
-    maxNorm = vtkMRMLVectorVolumeNode::SafeDownCast(node)->GetImageData()->GetPointData()->GetArray(0)->GetMaxNorm();
-  }
-  else if (strcmp(node->GetClassName(), "vtkMRMLLinearTransformNode") == 0 || 
-    strcmp(node->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
-    strcmp(node->GetClassName(), "vtkMRMLGridTransformNode") == 0)
-  {
-    d->InputReferenceComboBox->setEnabled(true);
+	// What to do if there is more than one array? Would there be more than one array?
+	if (strcmp(node->GetClassName(), "vtkMRMLVectorVolumeNode") == 0) {
+		d->InputReferenceComboBox->setEnabled(false);
+		maxNorm = vtkMRMLVectorVolumeNode::SafeDownCast(node)->GetImageData()->GetPointData()->GetArray(0)->GetMaxNorm();
+	} else if (	strcmp(node->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
+				strcmp(node->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
+				strcmp(node->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
+		d->InputReferenceComboBox->setEnabled(true);
 
-    vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetReferenceVolumeNodeID()));
-    if (referenceVolumeNode == NULL)
-    {
-      return;
-    }
+		vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetReferenceVolumeNodeID()));
+		if (referenceVolumeNode == NULL) {
+			return;
+		}
 
-    //TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
-    QProgressDialog *convertProgress = new QProgressDialog(qSlicerApplication::application()->mainWindow());
-    convertProgress->setModal(true);
-    convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
-    convertProgress->show();
-    convertProgress->setLabelText("Converting transform to vector volume...");
-    
-    convertProgress->setValue(20);
-    d->logic()->GenerateTransformField();
-    
-    convertProgress->setValue(80);
-    maxNorm = d->logic()->GetFieldMaxNorm() + 1;
-    
-    convertProgress->setValue(100);
-    delete convertProgress;
-  }
+		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
+		QProgressDialog *convertProgress = new QProgressDialog(qSlicerApplication::application()->mainWindow());
+		convertProgress->setModal(true);
+		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
+		convertProgress->show();
+		convertProgress->setLabelText("Converting transform to vector volume...");
 
-  pNode->SetGlyphThresholdMax(maxNorm);
-  d->InputGlyphThreshold->setMaximum(maxNorm);
-  d->InputGlyphThreshold->setMaximumValue(maxNorm);
+		convertProgress->setValue(20);
+		d->logic()->GenerateTransformField();
 
-  pNode->SetContourMax(maxNorm);
-  d->InputContourRange->setMaximum(maxNorm);
-  d->InputContourRange->setMaximumValue(maxNorm);
+		convertProgress->setValue(80);
+		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
 
-  pNode->SetGlyphSliceThresholdMax(maxNorm);
-  d->InputGlyphSliceThreshold->setMaximum(maxNorm);
-  d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);    
+		convertProgress->setValue(100);
+		delete convertProgress;
+	}
+
+	pNode->SetGlyphThresholdMax(maxNorm);
+	d->InputGlyphThreshold->setMaximum(maxNorm);
+	d->InputGlyphThreshold->setMaximumValue(maxNorm);
+
+	pNode->SetContourMax(maxNorm);
+	d->InputContourRange->setMaximum(maxNorm);
+	d->InputContourRange->setMaximumValue(maxNorm);
+
+	pNode->SetGlyphSliceThresholdMax(maxNorm);
+	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
+	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode* node)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
+void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-  //TODO: Move into updatefrommrml?
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene() || !node)
-  {
-    return;
-  }
+	//TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		return;
+	}
 
-  pNode->DisableModifiedEventOn();
-  pNode->SetAndObserveReferenceVolumeNodeID(node->GetID());
-  pNode->DisableModifiedEventOff();
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveReferenceVolumeNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
 
-  double maxNorm = 0;
+	double maxNorm = 0;
 
-  vtkSmartPointer<vtkMRMLTransformNode> vectorVolumeNode = vtkMRMLTransformNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetVectorVolumeNodeID()));
-  if (vectorVolumeNode == NULL)
-  {
-    return;
-  }
+	vtkSmartPointer<vtkMRMLTransformNode> vectorVolumeNode = vtkMRMLTransformNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetVectorVolumeNodeID()));
+	if (vectorVolumeNode == NULL) {
+		return;
+	}
 
-  if (strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLLinearTransformNode") == 0 || 
-    strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
-    strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLGridTransformNode") == 0)
-  {
-    //TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
-    QProgressDialog *convertProgress =  new QProgressDialog(qSlicerApplication::application()->mainWindow());
-    convertProgress->setModal(true);
-    convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
-    convertProgress->show();
-    convertProgress->setLabelText("Converting transform to vector volume...");
-    
-    convertProgress->setValue(20);
-    d->logic()->GenerateTransformField();
-  
-    convertProgress->setValue(80);
-    maxNorm = d->logic()->GetFieldMaxNorm() + 1;
-  
-    convertProgress->setValue(100);
-    delete convertProgress;
-  }
+	if ( strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
+		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
+		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
 
-  pNode->SetGlyphThresholdMax(maxNorm);
-  d->InputGlyphThreshold->setMaximum(maxNorm);
-  d->InputGlyphThreshold->setMaximumValue(maxNorm);
+		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
+		QProgressDialog *convertProgress =  new QProgressDialog(qSlicerApplication::application()->mainWindow());
+		convertProgress->setModal(true);
+		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
+		convertProgress->show();
+		convertProgress->setLabelText("Converting transform to vector volume...");
 
-  pNode->SetContourMax(maxNorm);
-  d->InputContourRange->setMaximum(maxNorm);
-  d->InputContourRange->setMaximumValue(maxNorm);
+		convertProgress->setValue(20);
+		d->logic()->GenerateTransformField();
 
-  pNode->SetGlyphSliceThresholdMax(maxNorm);
-  d->InputGlyphSliceThreshold->setMaximum(maxNorm);
-  d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);    
+		convertProgress->setValue(80);
+		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
+
+		convertProgress->setValue(100);
+		delete convertProgress;
+	}
+
+	pNode->SetGlyphThresholdMax(maxNorm);
+	d->InputGlyphThreshold->setMaximum(maxNorm);
+	d->InputGlyphThreshold->setMaximumValue(maxNorm);
+
+	pNode->SetContourMax(maxNorm);
+	d->InputContourRange->setMaximum(maxNorm);
+	d->InputContourRange->setMaximumValue(maxNorm);
+
+	pNode->SetGlyphSliceThresholdMax(maxNorm);
+	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
+	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	//TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		return;
+	}
+
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveWarpedVolumeNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* node)
-{
-   Q_D(qSlicerRegistrationQualityModuleWidget);
+void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-  //TODO: Move into updatefrommrml?
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene() || !node)
-  {
-    return;
-  }
+	//TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		d->ApplyButton->setEnabled(false);
+		d->ModelDisabledLabel->show();
+		return;
+	}
 
-  pNode->DisableModifiedEventOn();
-  pNode->SetAndObserveWarpedVolumeNodeID(node->GetID());
-  pNode->DisableModifiedEventOff(); 
-}
-//-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* node)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
+	d->ApplyButton->setEnabled(true);
+	d->ModelDisabledLabel->hide();
 
-  //TODO: Move into updatefrommrml?
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene() || !node)
-  {
-    d->ApplyButton->setEnabled(false);
-    d->ModelDisabledLabel->show();
-    return;
-  }
-
-  d->ApplyButton->setEnabled(true);
-  d->ModelDisabledLabel->hide();
-
-  pNode->DisableModifiedEventOn();
-  pNode->SetAndObserveOutputModelNodeID(node->GetID());
-  pNode->DisableModifiedEventOff();
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveOutputModelNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
 }
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::checkerboardVolumeChanged(vtkMRMLNode* node)
 {
-   Q_D(qSlicerRegistrationQualityModuleWidget);
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-  //TODO: Move into updatefrommrml?
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene() || !node)
-  {
-    return;
-  }
+	//TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		return;
+	}
 
-  pNode->DisableModifiedEventOn();
-  pNode->SetAndObserveCheckerboardNodeID(node->GetID());
-  pNode->DisableModifiedEventOff(); 
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveCheckerboardNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::updateSourceOptions(int option)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+void qSlicerRegistrationQualityModuleWidget::updateSourceOptions(int option) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
-  //TODO: Move into updatefrommrml?
-  if (option == 0)
-  {
-    d->ArrowSourceOptions->setEnabled(true);
-    d->ArrowSourceOptions->setVisible(true);
-    d->ConeSourceOptions->setEnabled(false);
-    d->ConeSourceOptions->setVisible(false);
-    d->SphereSourceOptions->setEnabled(false);
-    d->SphereSourceOptions->setVisible(false);
+	//TODO: Move into updatefrommrml?
+	if (option == 0) {
+		d->ArrowSourceOptions->setEnabled(true);
+		d->ArrowSourceOptions->setVisible(true);
+		d->ConeSourceOptions->setEnabled(false);
+		d->ConeSourceOptions->setVisible(false);
+		d->SphereSourceOptions->setEnabled(false);
+		d->SphereSourceOptions->setVisible(false);
 
-    if (!pNode || !this->mrmlScene())
-    {
-      return;
-    }
-    pNode->DisableModifiedEventOn();
-    pNode->SetGlyphScaleDirectional(true);
-    pNode->SetGlyphScaleIsotropic(false);
-    pNode->DisableModifiedEventOff();
-  }
-  else if (option == 1)
-  {
-    d->ArrowSourceOptions->setEnabled(false);
-    d->ArrowSourceOptions->setVisible(false);
-    d->ConeSourceOptions->setEnabled(true);
-    d->ConeSourceOptions->setVisible(true);
-    d->SphereSourceOptions->setEnabled(false);
-    d->SphereSourceOptions->setVisible(false);  
+		if (!pNode || !this->mrmlScene()) {
+			return;
+		}
+		pNode->DisableModifiedEventOn();
+		pNode->SetGlyphScaleDirectional(true);
+		pNode->SetGlyphScaleIsotropic(false);
+		pNode->DisableModifiedEventOff();
+	} else if (option == 1) {
+		d->ArrowSourceOptions->setEnabled(false);
+		d->ArrowSourceOptions->setVisible(false);
+		d->ConeSourceOptions->setEnabled(true);
+		d->ConeSourceOptions->setVisible(true);
+		d->SphereSourceOptions->setEnabled(false);
+		d->SphereSourceOptions->setVisible(false);
 
-    if (!pNode || !this->mrmlScene())
-    {
-      return;
-    }
-    pNode->DisableModifiedEventOn();
-    pNode->SetGlyphScaleDirectional(true);
-    pNode->SetGlyphScaleIsotropic(false);
-    pNode->DisableModifiedEventOff();
-  }
-  else if (option == 2)
-  {
-    d->ArrowSourceOptions->setEnabled(false);
-    d->ArrowSourceOptions->setVisible(false);
-    d->ConeSourceOptions->setEnabled(false);
-    d->ConeSourceOptions->setVisible(false);
-    d->SphereSourceOptions->setEnabled(true);
-    d->SphereSourceOptions->setVisible(true);
+		if (!pNode || !this->mrmlScene()) {
+			return;
+		}
+		pNode->DisableModifiedEventOn();
+		pNode->SetGlyphScaleDirectional(true);
+		pNode->SetGlyphScaleIsotropic(false);
+		pNode->DisableModifiedEventOff();
+	} else if (option == 2) {
+		d->ArrowSourceOptions->setEnabled(false);
+		d->ArrowSourceOptions->setVisible(false);
+		d->ConeSourceOptions->setEnabled(false);
+		d->ConeSourceOptions->setVisible(false);
+		d->SphereSourceOptions->setEnabled(true);
+		d->SphereSourceOptions->setVisible(true);
 
-    if (!pNode || !this->mrmlScene())
-    {
-      return;
-    }
-    pNode->DisableModifiedEventOn();
-    pNode->SetGlyphScaleDirectional(false);
-    pNode->SetGlyphScaleIsotropic(true);
-    pNode->DisableModifiedEventOff();
-  }
+		if (!pNode || !this->mrmlScene()) {
+			return;
+		}
+		pNode->DisableModifiedEventOn();
+		pNode->SetGlyphScaleDirectional(false);
+		pNode->SetGlyphScaleIsotropic(true);
+		pNode->DisableModifiedEventOff();
+	}
 
-  d->InputGlyphScaleDirectional->setChecked(pNode->GetGlyphScaleDirectional());
-  d->InputGlyphScaleIsotropic->setChecked(pNode->GetGlyphScaleIsotropic());
+	d->InputGlyphScaleDirectional->setChecked(pNode->GetGlyphScaleDirectional());
+	d->InputGlyphScaleIsotropic->setChecked(pNode->GetGlyphScaleIsotropic());
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::visualize()
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
+void qSlicerRegistrationQualityModuleWidget::visualize() {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-  if (d->InputFieldComboBox->currentNodeId() != NULL && d->OutputModelComboBox->currentNodeId() != NULL)
-  {
-    //TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
-    QProgressDialog *visualizeProgress =  new QProgressDialog(qSlicerApplication::application()->mainWindow());
-    visualizeProgress->setModal(true);
-    visualizeProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
-    visualizeProgress->show();
-    visualizeProgress->setLabelText("Processing...");
-    visualizeProgress->setValue(0);
-  
-    if (d->GlyphToggle->isChecked())
-    {
-      visualizeProgress->setLabelText("Creating glyphs...");
-      visualizeProgress->setValue(20);
-      d->logic()->CreateVisualization(1);
-    }
-    else if (d->GridToggle->isChecked())
-    {
-      visualizeProgress->setLabelText("Creating grid...");
-      visualizeProgress->setValue(20);
-      d->logic()->CreateVisualization(2);
-    }
-    else if (d->ContourToggle->isChecked())
-    {
-      visualizeProgress->setLabelText("Creating contours...");
-      visualizeProgress->setValue(20);
-      d->logic()->CreateVisualization(3);
-    }
-    else if (d->BlockToggle->isChecked())
-    {
-      visualizeProgress->setLabelText("Creating block...");
-      visualizeProgress->setValue(20);
-      d->logic()->CreateVisualization(4);
-    }
-    else if (d->GlyphSliceToggle->isChecked())
-    {
-      visualizeProgress->setLabelText("Creating glyphs for slice view...");
-      visualizeProgress->setValue(20);
-      d->logic()->CreateVisualization(5);
-    }
-    else if (d->GridSliceToggle->isChecked())
-    {
-      visualizeProgress->setLabelText("Creating grid for slice view...");
-      visualizeProgress->setValue(20);
-      d->logic()->CreateVisualization(6);
-    }
-    visualizeProgress->setValue(100);
-    delete visualizeProgress;
-  }
+	if ( d->InputFieldComboBox->currentNodeId() != NULL &&
+		 d->OutputModelComboBox->currentNodeId() != NULL) {
+
+		//TODO: Remake progress dialog and add detail (update progress from
+		//      actual steps occurring in logic)
+		QProgressDialog *visualizeProgress = new QProgressDialog(
+				qSlicerApplication::application()->mainWindow());
+		visualizeProgress->setModal(true);
+		//will matter a bit more after progress dialog is remade
+		visualizeProgress->setMinimumDuration(100);
+		visualizeProgress->show();
+		visualizeProgress->setLabelText("Processing...");
+		visualizeProgress->setValue(0);
+
+		if (d->GlyphToggle->isChecked()) {
+			visualizeProgress->setLabelText("Creating glyphs...");
+			visualizeProgress->setValue(20);
+			d->logic()->CreateVisualization(1);
+		} else if (d->GridToggle->isChecked()) {
+			visualizeProgress->setLabelText("Creating grid...");
+			visualizeProgress->setValue(20);
+			d->logic()->CreateVisualization(2);
+		} else if (d->ContourToggle->isChecked()) {
+			visualizeProgress->setLabelText("Creating contours...");
+			visualizeProgress->setValue(20);
+			d->logic()->CreateVisualization(3);
+		} else if (d->BlockToggle->isChecked()) {
+			visualizeProgress->setLabelText("Creating block...");
+			visualizeProgress->setValue(20);
+			d->logic()->CreateVisualization(4);
+		} else if (d->GlyphSliceToggle->isChecked()) {
+			visualizeProgress->setLabelText("Creating glyphs for slice view...");
+			visualizeProgress->setValue(20);
+			d->logic()->CreateVisualization(5);
+		} else if (d->GridSliceToggle->isChecked()) {
+			visualizeProgress->setLabelText("Creating grid for slice view...");
+			visualizeProgress->setValue(20);
+			d->logic()->CreateVisualization(6);
+		}
+		visualizeProgress->setValue(100);
+		delete visualizeProgress;
+	}
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setup()
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  d->setupUi(this);
-  this->Superclass::setup();
+void qSlicerRegistrationQualityModuleWidget::setup() {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+	d->setupUi(this);
+	this->Superclass::setup();
 
-  connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegistrationQualityParametersNode(vtkMRMLNode*)));
+	connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegistrationQualityParametersNode(vtkMRMLNode*)));
 
-  connect(d->InputFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(vectorVolumeChanged(vtkMRMLNode*)));
-  connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
-  connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
-  connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
-  connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
-  // Image Checks
-   
-  connect(d->FalseColorToggle, SIGNAL(clicked()),
-          this, SLOT (falseColorToggle()));
-  connect(d->CheckerboardToggle, SIGNAL(clicked()),
-          this, SLOT (checkerboardToggle()));
-  
-  connect(d->MovieToggle, SIGNAL(clicked()),
-		  this, SLOT (movieToggle()));
-  connect(d->movieBoxRed, SIGNAL(stateChanged(int)),
-		  this, SLOT (movieBoxRedStateChanged(int)));
-  connect(d->movieBoxYellow, SIGNAL(stateChanged(int)),
-		  this, SLOT (movieBoxYellowStateChanged(int)));
-  connect(d->movieBoxGreen, SIGNAL(stateChanged(int)),
-		  this, SLOT (movieBoxGreenStateChanged(int)));
-  
-  connect(d->FlickerToggle, SIGNAL(clicked()),
-          this, SLOT (flickerToggle()));
-  
-  connect(d->CheckerboardPatternLineEdit, SIGNAL(textEdited(QString)), this, SLOT(setCheckerboardPattern(QString)));
-  
-  // Glyph Parameters
-  connect(d->InputGlyphPointMax, SIGNAL(valueChanged(double)), this, SLOT(setGlyphPointMax(double)));
-  connect(d->InputGlyphScale, SIGNAL(valueChanged(double)), this, SLOT(setGlyphScale(double)));
-  connect(d->InputGlyphScaleDirectional, SIGNAL(toggled(bool)), this, SLOT(setGlyphScaleDirectional(bool)));
-  connect(d->InputGlyphScaleIsotropic, SIGNAL(toggled(bool)), this, SLOT(setGlyphScaleIsotropic(bool)));
-  connect(d->InputGlyphThreshold, SIGNAL(valuesChanged(double, double)), this, SLOT(setGlyphThreshold(double, double)));
-  connect(d->GenerateSeedButton, SIGNAL(clicked()), this, SLOT(setSeed()));
-  connect(d->InputGlyphSeed, SIGNAL(valueChanged(int)), this, SLOT(setGlyphSeed(int)));  
-  connect(d->GlyphSourceComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setGlyphSourceOption(int)));
-  // Arrow Parameters
-  connect(d->InputGlyphArrowTipLength, SIGNAL(valueChanged(double)), this, SLOT(setGlyphArrowTipLength(double)));
-  connect(d->InputGlyphArrowTipRadius, SIGNAL(valueChanged(double)), this, SLOT(setGlyphArrowTipRadius(double)));
-  connect(d->InputGlyphArrowShaftRadius, SIGNAL(valueChanged(double)), this, SLOT(setGlyphArrowShaftRadius(double)));  
-  connect(d->InputGlyphArrowResolution, SIGNAL(valueChanged(double)), this, SLOT(setGlyphArrowResolution(double)));
-  // Cone Parameters
-  connect(d->InputGlyphConeHeight, SIGNAL(valueChanged(double)), this, SLOT(setGlyphConeHeight(double)));
-  connect(d->InputGlyphConeRadius, SIGNAL(valueChanged(double)), this, SLOT(setGlyphConeRadius(double)));
-  connect(d->InputGlyphConeResolution, SIGNAL(valueChanged(double)), this, SLOT(setGlyphConeResolution(double)));
-  // Sphere Parameters
-  connect(d->InputGlyphSphereResolution, SIGNAL(valueChanged(double)), this, SLOT(setGlyphSphereResolution(double)));
+	connect(d->InputFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(vectorVolumeChanged(vtkMRMLNode*)));
+	connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
+	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
+	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
+	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
 
-  // Grid Parameters
-  connect(d->InputGridScale, SIGNAL(valueChanged(double)), this, SLOT(setGridScale(double)));
-  connect(d->InputGridDensity, SIGNAL(valueChanged(double)), this, SLOT(setGridDensity(double)));
+	// Image Checks
+	connect(d->FalseColorToggle, SIGNAL(clicked()), this, SLOT (falseColorToggle()));
+	connect(d->CheckerboardToggle, SIGNAL(clicked()), this, SLOT (checkerboardToggle()));
 
-  // Block Parameters  
-  connect(d->InputBlockScale, SIGNAL(valueChanged(double)), this, SLOT(setBlockScale(double)));
-  connect(d->InputBlockDisplacementCheck, SIGNAL(stateChanged(int)), this, SLOT(setBlockDisplacementCheck(int)));
+	connect(d->MovieToggle, SIGNAL(clicked()), this, SLOT (movieToggle()));
+	connect(d->movieBoxRed, SIGNAL(stateChanged(int)), this, SLOT (movieBoxRedStateChanged(int)));
+	connect(d->movieBoxYellow, SIGNAL(stateChanged(int)), this, SLOT (movieBoxYellowStateChanged(int)));
+	connect(d->movieBoxGreen, SIGNAL(stateChanged(int)), this, SLOT (movieBoxGreenStateChanged(int)));
 
-  // Contour Parameters
-  connect(d->InputContourNumber, SIGNAL(valueChanged(double)), this, SLOT(setContourNumber(double)));
-  connect(d->InputContourRange, SIGNAL(valuesChanged(double, double)), this, SLOT(setContourRange(double, double)));
+	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 
-  // Glyph Slice Parameters
-  connect(d->GlyphSliceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setGlyphSliceNode(vtkMRMLNode*)));
-  connect(d->InputGlyphSlicePointMax, SIGNAL(valueChanged(double)), this, SLOT(setGlyphSlicePointMax(double)));  
-  connect(d->InputGlyphSliceThreshold, SIGNAL(valuesChanged(double, double)), this, SLOT(setGlyphSliceThreshold(double, double)));
-  connect(d->InputGlyphSliceScale, SIGNAL(valueChanged(double)), this, SLOT(setGlyphSliceScale(double)));
-  connect(d->InputGlyphSliceSeed, SIGNAL(valueChanged(int)), this, SLOT(setGlyphSliceSeed(int)));  
-  connect(d->GenerateSeedButton2, SIGNAL(clicked()), this, SLOT(setSeed2()));
+	connect(d->CheckerboardPatternLineEdit, SIGNAL(textEdited(QString)), this, SLOT(setCheckerboardPattern(QString)));
 
-  // Grid Slice Parameters
-  connect(d->GridSliceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setGridSliceNode(vtkMRMLNode*)));
-  connect(d->InputGridSliceScale, SIGNAL(valueChanged(double)), this, SLOT(setGridSliceScale(double)));
-  connect(d->InputGridSliceDensity, SIGNAL(valueChanged(double)), this, SLOT(setGridSliceDensity(double)));
+	// Glyph Parameters
+	connect(d->InputGlyphPointMax, SIGNAL(valueChanged(double)), this, SLOT(setGlyphPointMax(double)));
+	connect(d->InputGlyphScale, SIGNAL(valueChanged(double)), this, SLOT(setGlyphScale(double)));
+	connect(d->InputGlyphScaleDirectional, SIGNAL(toggled(bool)), this, SLOT(setGlyphScaleDirectional(bool)));
+	connect(d->InputGlyphScaleIsotropic, SIGNAL(toggled(bool)), this, SLOT(setGlyphScaleIsotropic(bool)));
+	connect(d->InputGlyphThreshold, SIGNAL(valuesChanged(double, double)), this, SLOT(setGlyphThreshold(double, double)));
+	connect(d->GenerateSeedButton, SIGNAL(clicked()), this, SLOT(setSeed()));
+	connect(d->InputGlyphSeed, SIGNAL(valueChanged(int)), this, SLOT(setGlyphSeed(int)));
+	connect(d->GlyphSourceComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setGlyphSourceOption(int)));
+	// Arrow Parameters
+	connect(d->InputGlyphArrowTipLength, SIGNAL(valueChanged(double)), this, SLOT(setGlyphArrowTipLength(double)));
+	connect(d->InputGlyphArrowTipRadius, SIGNAL(valueChanged(double)), this, SLOT(setGlyphArrowTipRadius(double)));
+	connect(d->InputGlyphArrowShaftRadius, SIGNAL(valueChanged(double)), this, SLOT(setGlyphArrowShaftRadius(double)));
+	connect(d->InputGlyphArrowResolution, SIGNAL(valueChanged(double)), this, SLOT(setGlyphArrowResolution(double)));
+	// Cone Parameters
+	connect(d->InputGlyphConeHeight, SIGNAL(valueChanged(double)), this, SLOT(setGlyphConeHeight(double)));
+	connect(d->InputGlyphConeRadius, SIGNAL(valueChanged(double)), this, SLOT(setGlyphConeRadius(double)));
+	connect(d->InputGlyphConeResolution, SIGNAL(valueChanged(double)), this, SLOT(setGlyphConeResolution(double)));
+	// Sphere Parameters
+	connect(d->InputGlyphSphereResolution, SIGNAL(valueChanged(double)), this, SLOT(setGlyphSphereResolution(double)));
 
-  connect(d->ApplyButton, SIGNAL(clicked()), this, SLOT(visualize()));
+	// Grid Parameters
+	connect(d->InputGridScale, SIGNAL(valueChanged(double)), this, SLOT(setGridScale(double)));
+	connect(d->InputGridDensity, SIGNAL(valueChanged(double)), this, SLOT(setGridDensity(double)));
+
+	// Block Parameters
+	connect(d->InputBlockScale, SIGNAL(valueChanged(double)), this, SLOT(setBlockScale(double)));
+	connect(d->InputBlockDisplacementCheck, SIGNAL(stateChanged(int)), this, SLOT(setBlockDisplacementCheck(int)));
+
+	// Contour Parameters
+	connect(d->InputContourNumber, SIGNAL(valueChanged(double)), this, SLOT(setContourNumber(double)));
+	connect(d->InputContourRange, SIGNAL(valuesChanged(double, double)), this, SLOT(setContourRange(double, double)));
+
+	// Glyph Slice Parameters
+	connect(d->GlyphSliceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setGlyphSliceNode(vtkMRMLNode*)));
+	connect(d->InputGlyphSlicePointMax, SIGNAL(valueChanged(double)), this, SLOT(setGlyphSlicePointMax(double)));
+	connect(d->InputGlyphSliceThreshold, SIGNAL(valuesChanged(double, double)), this, SLOT(setGlyphSliceThreshold(double, double)));
+	connect(d->InputGlyphSliceScale, SIGNAL(valueChanged(double)), this, SLOT(setGlyphSliceScale(double)));
+	connect(d->InputGlyphSliceSeed, SIGNAL(valueChanged(int)), this, SLOT(setGlyphSliceSeed(int)));
+	connect(d->GenerateSeedButton2, SIGNAL(clicked()), this, SLOT(setSeed2()));
+
+	// Grid Slice Parameters
+	connect(d->GridSliceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setGridSliceNode(vtkMRMLNode*)));
+	connect(d->InputGridSliceScale, SIGNAL(valueChanged(double)), this, SLOT(setGridSliceScale(double)));
+	connect(d->InputGridSliceDensity, SIGNAL(valueChanged(double)), this, SLOT(setGridSliceDensity(double)));
+
+	connect(d->ApplyButton, SIGNAL(clicked()), this, SLOT(visualize()));
 }
-
 
 //-----------------------------------------------------------------------------
 // Image Checks
 //-----------------------------------------------------------------------------
 
-void qSlicerRegistrationQualityModuleWidget::falseColorToggle(){
-
-  Q_D(const qSlicerRegistrationQualityModuleWidget);  
-  vtkSlicerRegistrationQualityLogic *logic = d->logic();
-//   vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();   
-  logic->FalseColor();
+void qSlicerRegistrationQualityModuleWidget::falseColorToggle() {
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+	logic->FalseColor();
 }
 
 void qSlicerRegistrationQualityModuleWidget::checkerboardToggle(){
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
-  Q_D(const qSlicerRegistrationQualityModuleWidget);  
-  vtkSlicerRegistrationQualityLogic *logic = d->logic();
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  
-//   pNode->DisableModifiedEventOn();
-//   pNode->SetAndObserveCheckerboardNodeID(pNode->GetReferenceVolumeNodeID());
-//   pNode->DisableModifiedEventOff();
-  
-  logic->Checkerboard();
-  std::cerr << "Let'see. " << pNode->GetCheckerboardPattern() << std::endl;
+	logic->Checkerboard();
+	std::cerr << "Let'see. " << pNode->GetCheckerboardPattern() << std::endl;
 }
 
 void qSlicerRegistrationQualityModuleWidget::flickerToggle(){
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
 
-  Q_D(const qSlicerRegistrationQualityModuleWidget);  
-  vtkSlicerRegistrationQualityLogic *logic = d->logic();
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  
-  //TODO Change GlyphPointMax to FlickerOpacity. Currently there is no class in RegistrationQualityNode, eventhough I copied it.
-  if (pNode->GetFlickerOpacity()!=0 && pNode->GetFlickerOpacity()!=1)
-  {
-    pNode->SetFlickerOpacity(1);
-  }
+	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
-  logic->Flicker(pNode->GetFlickerOpacity());
-  
-  if (pNode->GetFlickerOpacity()==0)
-  {
-    pNode->DisableModifiedEventOn();
-    pNode->SetFlickerOpacity(1);
-    pNode->DisableModifiedEventOff();
-  }
-  else 
-  {
-    pNode->DisableModifiedEventOn();
-    pNode->SetFlickerOpacity(0);
-    pNode->DisableModifiedEventOff();
-  }
-  
-  
+	if (pNode->GetFlickerOpacity()!=0 && pNode->GetFlickerOpacity()!=1) {
+		pNode->SetFlickerOpacity(1);
+	}
 
-    //TODO How to set sleep time? Must somehow update scene in between sleep time.
-//     clock_t start_time = clock();
-//     clock_t end_time = sec*CLOCKS_PER_SEC + start_time;
-//     while(clock() != end_time);
- 
+	logic->Flicker(pNode->GetFlickerOpacity());
 
+	// TODO: Perhaps just do pNode->SetFlickerOpacity(1-(pNode->GetFlickerOpacity()));
+	if (pNode->GetFlickerOpacity()==0) {
+		pNode->DisableModifiedEventOn();
+		pNode->SetFlickerOpacity(1);
+		pNode->DisableModifiedEventOff();
+	} else {
+		pNode->DisableModifiedEventOn();
+		pNode->SetFlickerOpacity(0);
+		pNode->DisableModifiedEventOff();
+	}
+
+	//TODO How to set sleep time? Must somehow update scene in between sleep time.
+	//     clock_t start_time = clock();
+	//     clock_t end_time = sec*CLOCKS_PER_SEC + start_time;
+	//     while(clock() != end_time);
+	//     Write method "flicker" and call it from a Qt-Timer
 }
 
 void qSlicerRegistrationQualityModuleWidget::movieToggle(){
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
 
-  Q_D(const qSlicerRegistrationQualityModuleWidget);
-  d->MovieToggle->setEnabled(false);
-  d->MovieToggle->setText("Stop");
-  
-  vtkSlicerRegistrationQualityLogic *logic = d->logic();
-  logic->Movie();
-  d->MovieToggle->setText("Start");
-  d->MovieToggle->setEnabled(true);
+	d->MovieToggle->setEnabled(false);
+	d->MovieToggle->setText("Stop");
+
+	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+	logic->Movie();
+	d->MovieToggle->setText("Start");
+	d->MovieToggle->setEnabled(true);
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::movieBoxRedStateChanged(int state)
-{
-	cout << "movieBoxRed State changed: " << state << endl;
+void qSlicerRegistrationQualityModuleWidget::movieBoxRedStateChanged(int state) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
+
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	if (!pNode || !this->mrmlScene())
-	{
+	if (!pNode || !this->mrmlScene()) {
 		return;
 	}
 	pNode->DisableModifiedEventOn();
@@ -765,13 +678,11 @@ void qSlicerRegistrationQualityModuleWidget::movieBoxRedStateChanged(int state)
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::movieBoxYellowStateChanged(int state)
-{
-	cout << "movieBoxYellow State changed: " << state << endl;
+void qSlicerRegistrationQualityModuleWidget::movieBoxYellowStateChanged(int state) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
+
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	if (!pNode || !this->mrmlScene())
-	{
+	if (!pNode || !this->mrmlScene()) {
 		return;
 	}
 	pNode->DisableModifiedEventOn();
@@ -780,13 +691,11 @@ void qSlicerRegistrationQualityModuleWidget::movieBoxYellowStateChanged(int stat
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::movieBoxGreenStateChanged(int state)
-{
-	cout << "movieBoxGreen State changed: " << state << endl;
+void qSlicerRegistrationQualityModuleWidget::movieBoxGreenStateChanged(int state) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
+
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	if (!pNode || !this->mrmlScene())
-	{
+	if (!pNode || !this->mrmlScene()) {
 		return;
 	}
 	pNode->DisableModifiedEventOn();
@@ -795,466 +704,432 @@ void qSlicerRegistrationQualityModuleWidget::movieBoxGreenStateChanged(int state
 }
 
 
-void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(QString aText)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetCheckerboardPattern(aText.toLatin1().constData());
-  pNode->DisableModifiedEventOff(); 
-  
+void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(QString aText) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetCheckerboardPattern(aText.toLatin1().constData());
+	pNode->DisableModifiedEventOff();
 }
+
 //-----------------------------------------------------------------------------
 // Glyph parameters
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphPointMax(double pointMax)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphPointMax(pointMax);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphPointMax(double pointMax) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphPointMax(pointMax);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setSeed()
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphSeed((static_cast<long>(RAND_MAX)+1)*(long)rand()+rand()); //TODO: Integer overflow here. Why use two random numbers?
-  d->InputGlyphSeed->setValue(pNode->GetGlyphSeed());
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setSeed() {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphSeed((static_cast<long>(RAND_MAX)+1)*rand()+rand());
+	d->InputGlyphSeed->setValue(pNode->GetGlyphSeed());
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphSeed(int seed)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphSeed(seed);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphSeed(int seed) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphSeed(seed);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphScale(double scale)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphScale(scale);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphScale(double scale) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphScale(scale);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphScaleDirectional(bool state)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphScaleDirectional(state);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphScaleDirectional(bool state) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphScaleDirectional(state);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphScaleIsotropic(bool state)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphScaleIsotropic(state);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphScaleIsotropic(bool state) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphScaleIsotropic(state);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphThreshold(double min, double max)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphThresholdMin(min);
-  pNode->SetGlyphThresholdMax(max);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphThreshold(double min, double max) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphThresholdMin(min);
+	pNode->SetGlyphThresholdMax(max);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphSourceOption(int option)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphSourceOption(option);
-  pNode->DisableModifiedEventOff();
-  this->updateSourceOptions(option);
+void qSlicerRegistrationQualityModuleWidget::setGlyphSourceOption(int option) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphSourceOption(option);
+	pNode->DisableModifiedEventOff();
+	this->updateSourceOptions(option);
 }
 
 //-----------------------------------------------------------------------------
 // Arrow parameters
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphArrowTipLength(double length)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphArrowTipLength(length);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphArrowTipLength(double length) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphArrowTipLength(length);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphArrowTipRadius(double radius)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphArrowTipRadius(radius);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphArrowTipRadius(double radius) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphArrowTipRadius(radius);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphArrowShaftRadius(double radius)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphArrowShaftRadius(radius);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphArrowShaftRadius(double radius) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphArrowShaftRadius(radius);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphArrowResolution(double resolution)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphArrowResolution(resolution);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphArrowResolution(double resolution) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphArrowResolution(resolution);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
 // Cone Parameters
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphConeHeight(double height)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphConeHeight(height);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphConeHeight(double height) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphConeHeight(height);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphConeRadius(double radius)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphConeRadius(radius);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphConeRadius(double radius) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphConeRadius(radius);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphConeResolution(double resolution)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphConeResolution(resolution);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphConeResolution(double resolution) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphConeResolution(resolution);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
 // Sphere Parameters
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphSphereResolution(double resolution)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphSphereResolution(resolution);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphSphereResolution(double resolution) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphSphereResolution(resolution);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGridScale(double scale)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGridScale(scale);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGridScale(double scale) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGridScale(scale);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGridDensity(double density)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGridDensity(density);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGridDensity(double density) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGridDensity(density);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setBlockScale(double scale)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetBlockScale(scale);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setBlockScale(double scale) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetBlockScale(scale);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setBlockDisplacementCheck(int state)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetBlockDisplacementCheck(state);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setBlockDisplacementCheck(int state) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetBlockDisplacementCheck(state);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setContourNumber(double number)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetContourNumber(number);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setContourNumber(double number) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetContourNumber(number);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setContourRange(double min, double max)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetContourMin(min);
-  pNode->SetContourMax(max);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setContourRange(double min, double max) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetContourMin(min);
+	pNode->SetContourMax(max);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphSliceNode(vtkMRMLNode* node)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
+void qSlicerRegistrationQualityModuleWidget::setGlyphSliceNode(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!node || !pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetAndObserveGlyphSliceNodeID(node->GetID());
-  pNode->DisableModifiedEventOff();  
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!node || !pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveGlyphSliceNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphSlicePointMax(double pointMax)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphSlicePointMax(pointMax);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphSlicePointMax(double pointMax) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphSlicePointMax(pointMax);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphSliceThreshold(double min, double max)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphSliceThresholdMin(min);
-  pNode->SetGlyphSliceThresholdMax(max);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphSliceThreshold(double min, double max) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphSliceThresholdMin(min);
+	pNode->SetGlyphSliceThresholdMax(max);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphSliceScale(double scale)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphSliceScale(scale);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphSliceScale(double scale) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphSliceScale(scale);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGlyphSliceSeed(int seed)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphSliceSeed(seed);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGlyphSliceSeed(int seed) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphSliceSeed(seed);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setSeed2()
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGlyphSliceSeed((static_cast<long>(RAND_MAX)+1)*(long)rand()+rand()); //TODO: Integer overflow here. Why use two random numbers?
-  d->InputGlyphSliceSeed->setValue(pNode->GetGlyphSliceSeed());
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setSeed2() {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGlyphSliceSeed((static_cast<long>(RAND_MAX)+1)*(long)rand()+rand()); //TODO: Integer overflow here. Why use two random numbers?
+	d->InputGlyphSliceSeed->setValue(pNode->GetGlyphSliceSeed());
+	pNode->DisableModifiedEventOff();
 }
 
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGridSliceNode(vtkMRMLNode* node)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
+void qSlicerRegistrationQualityModuleWidget::setGridSliceNode(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!node || !pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetAndObserveGridSliceNodeID(node->GetID());
-  pNode->DisableModifiedEventOff();  
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!node || !pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveGridSliceNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGridSliceScale(double scale)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGridSliceScale(scale);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGridSliceScale(double scale) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGridSliceScale(scale);
+	pNode->DisableModifiedEventOff();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setGridSliceDensity(double density)
-{
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-  vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-  if (!pNode || !this->mrmlScene())
-  {
-    return;
-  }
-  pNode->DisableModifiedEventOn();
-  pNode->SetGridSliceDensity(density);
-  pNode->DisableModifiedEventOff();
+void qSlicerRegistrationQualityModuleWidget::setGridSliceDensity(double density) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	pNode->DisableModifiedEventOn();
+	pNode->SetGridSliceDensity(density);
+	pNode->DisableModifiedEventOff();
 }
