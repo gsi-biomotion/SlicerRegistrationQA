@@ -50,6 +50,7 @@ protected slots:
 	void checkerboardToggle();
 	void movieToggle();
 	void flickerToggle();
+	void flickerToggle1();
 
 	// Parameters
 	void setCheckerboardPattern(QString aText);
@@ -101,6 +102,7 @@ protected slots:
 
 protected:
 	QScopedPointer<qSlicerRegistrationQualityModuleWidgetPrivate> d_ptr;
+	QTimer *flickerTimer;
 
 	virtual void setup();
 	void onEnter();

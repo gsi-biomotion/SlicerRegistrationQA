@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QCheckBox>
+#include <QTimer>
 
 // SlicerQt includes
 #include <qSlicerAbstractCoreModule.h>
@@ -70,7 +71,8 @@ vtkSlicerRegistrationQualityLogic* qSlicerRegistrationQualityModuleWidgetPrivate
 //-----------------------------------------------------------------------------
 qSlicerRegistrationQualityModuleWidget::qSlicerRegistrationQualityModuleWidget(QWidget* _parent)
 	: Superclass( _parent )
-	, d_ptr(new qSlicerRegistrationQualityModuleWidgetPrivate(*this)) {
+	, d_ptr(new qSlicerRegistrationQualityModuleWidgetPrivate(*this))
+	, flickerTimer(new QTimer(this)) {
 }
 
 //-----------------------------------------------------------------------------
@@ -551,6 +553,7 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->movieBoxGreen, SIGNAL(stateChanged(int)), this, SLOT (movieBoxGreenStateChanged(int)));
 
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
+	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
 
 	connect(d->CheckerboardPatternLineEdit, SIGNAL(textEdited(QString)), this, SLOT(setCheckerboardPattern(QString)));
 
@@ -625,6 +628,21 @@ void qSlicerRegistrationQualityModuleWidget::checkerboardToggle(){
 void qSlicerRegistrationQualityModuleWidget::flickerToggle(){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 
+	if(!flickerTimer->isActive()) {
+// 		cerr << "Starting timer" << endl;
+		flickerToggle1();
+		flickerTimer->start(500);
+	} else {
+// 		cerr << "Stopping timer" << endl;
+		flickerTimer->stop();
+	}
+}
+
+// TODO: Move this to Logic
+void qSlicerRegistrationQualityModuleWidget::flickerToggle1(){
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+
+// 	cerr << "Timer timeout" << endl;
 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
@@ -644,12 +662,6 @@ void qSlicerRegistrationQualityModuleWidget::flickerToggle(){
 		pNode->SetFlickerOpacity(0);
 		pNode->DisableModifiedEventOff();
 	}
-
-	//TODO How to set sleep time? Must somehow update scene in between sleep time.
-	//     clock_t start_time = clock();
-	//     clock_t end_time = sec*CLOCKS_PER_SEC + start_time;
-	//     while(clock() != end_time);
-	//     Write method "flicker" and call it from a Qt-Timer
 }
 
 void qSlicerRegistrationQualityModuleWidget::movieToggle(){
