@@ -26,6 +26,7 @@
 #include "vtkMRMLViewNode.h"
 #include "vtkSlicerCLIModuleLogic.h"
 #include <vtkMRMLVolumeNode.h>
+#include <vtkMRMLSliceLogic.h>
 
 // VTK includes
 #include <vtkNew.h>
@@ -244,10 +245,9 @@ void vtkSlicerRegistrationQualityLogic::FalseColor() {
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::Flicker(int opacity) {
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
-		vtkErrorMacro("FalseColor: Invalid scene or parameter set node!");
+		vtkErrorMacro("Flicker: Invalid scene or parameter set node!");
 		return;
 	}
-	std::cerr << "Strating Flicker." << std::endl;
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
@@ -258,7 +258,7 @@ void vtkSlicerRegistrationQualityLogic::Flicker(int opacity) {
 				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
 
 	if (!referenceVolume || !warpedVolume) {
-		vtkErrorMacro("Falsecolor: Invalid reference or warped volume!");
+		vtkErrorMacro("Flicker: Invalid reference or warped volume!");
 		return;
 	}
 
@@ -269,7 +269,7 @@ void vtkSlicerRegistrationQualityLogic::Flicker(int opacity) {
 	if (!layoutManager) {
 		return;
 	}
-	//TODO Bad Solution. Linking layers somehow doesn't work - it only changes one (red) slice.
+
 	vtkMRMLSliceCompositeNode *rcn = vtkMRMLSliceCompositeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed"));
 	vtkMRMLSliceCompositeNode *ycn = vtkMRMLSliceCompositeNode::SafeDownCast(
@@ -277,11 +277,26 @@ void vtkSlicerRegistrationQualityLogic::Flicker(int opacity) {
 	vtkMRMLSliceCompositeNode *gcn = vtkMRMLSliceCompositeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen"));
 
-	// Seting opacity for all three layers.
+	vtkMRMLSliceLogic* redSliceLogic = rcn != NULL ?
+			GetMRMLApplicationLogic()->GetSliceLogicByLayoutName(rcn->GetLayoutName()) : NULL;
+	if (redSliceLogic == NULL) {
+		vtkErrorMacro("Flicker: Invalid SliceLogic!");
+		return;
+	}
 
-	this->SetForegroundImage(rcn,opacity);
-	this->SetForegroundImage(ycn,opacity);
-	this->SetForegroundImage(gcn,opacity);
+	// Link Slice Controls
+	rcn->SetLinkedControl(1);
+	ycn->SetLinkedControl(1);
+	gcn->SetLinkedControl(1);
+
+	// Set volumes and opacity for all three layers.
+	redSliceLogic->StartSliceCompositeNodeInteraction(
+		vtkMRMLSliceCompositeNode::ForegroundVolumeFlag
+		| vtkMRMLSliceCompositeNode::BackgroundVolumeFlag);
+	rcn->SetBackgroundVolumeID(referenceVolume->GetID());
+	rcn->SetForegroundVolumeID(warpedVolume->GetID());
+	rcn->SetForegroundOpacity(opacity);
+	redSliceLogic->EndSliceCompositeNodeInteraction();
 
 	return;
 }
