@@ -188,6 +188,7 @@ protected:
 	char* CheckerboardPattern;
 
 	int FlickerOpacity;
+	int FlickerDelay;
 
 	// Glyph Parameters
 	int GlyphPointMax;
