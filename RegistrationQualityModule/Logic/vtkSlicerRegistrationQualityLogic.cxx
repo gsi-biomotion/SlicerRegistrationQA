@@ -30,6 +30,7 @@
 
 // VTK includes
 #include <vtkNew.h>
+#include <vtkObjectFactory.h>
 #include <vtkSmartPointer.h>
 #include <vtkImageData.h>
 #include <vtkPointData.h>
