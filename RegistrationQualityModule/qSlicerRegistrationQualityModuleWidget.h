@@ -49,6 +49,7 @@ protected slots:
 	void falseColorToggle();
 	void checkerboardToggle();
 	void movieToggle();
+	void flickerDelayChanged(int);
 	void flickerToggle();
 	void flickerToggle1();
 

@@ -86,6 +86,8 @@ public:
 
 	vtkSetMacro(FlickerOpacity, int);
 	vtkGetMacro(FlickerOpacity, int);
+	vtkSetMacro(FlickerDelay, int);
+	vtkGetMacro(FlickerDelay, int);
 	// Glyph Parameters
 	vtkSetMacro(GlyphPointMax, int);
 	vtkGetMacro(GlyphPointMax, int);

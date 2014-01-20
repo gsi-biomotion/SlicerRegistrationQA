@@ -190,6 +190,7 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 		}
 
 		pNode->SetFlickerOpacity(0);
+		d->FlickerDelayBox->setValue(pNode->GetFlickerDelay());
 		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
 
 		//Update Visualization Parameters
@@ -554,6 +555,7 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
+	connect(d->FlickerDelayBox, SIGNAL(valueChanged(int)), this, SLOT(flickerDelayChanged(int)));
 
 	connect(d->CheckerboardPatternLineEdit, SIGNAL(textEdited(QString)), this, SLOT(setCheckerboardPattern(QString)));
 
@@ -625,13 +627,24 @@ void qSlicerRegistrationQualityModuleWidget::checkerboardToggle(){
 	std::cerr << "Let'see. " << pNode->GetCheckerboardPattern() << std::endl;
 }
 
+void qSlicerRegistrationQualityModuleWidget::flickerDelayChanged(int delay){
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	pNode->SetFlickerDelay(delay);
+	cout << "FlickerDelay changed: " << delay << endl;
+	if(delay<2000) d->FlickerDelayBox->setSingleStep(100);
+	else if(delay<5000) d->FlickerDelayBox->setSingleStep(500);
+	else d->FlickerDelayBox->setSingleStep(1000);
+}
+
 void qSlicerRegistrationQualityModuleWidget::flickerToggle(){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
 	if(!flickerTimer->isActive()) {
 // 		cerr << "Starting timer" << endl;
 		flickerToggle1();
-		flickerTimer->start(500);
+		flickerTimer->start(pNode->GetFlickerDelay());
 	} else {
 // 		cerr << "Stopping timer" << endl;
 		flickerTimer->stop();
@@ -645,6 +658,8 @@ void qSlicerRegistrationQualityModuleWidget::flickerToggle1(){
 // 	cerr << "Timer timeout" << endl;
 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+
+	flickerTimer->setInterval(pNode->GetFlickerDelay());
 
 	if (pNode->GetFlickerOpacity()!=0 && pNode->GetFlickerOpacity()!=1) {
 		pNode->SetFlickerOpacity(1);

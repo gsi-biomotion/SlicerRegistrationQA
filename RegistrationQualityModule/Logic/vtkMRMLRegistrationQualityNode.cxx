@@ -24,7 +24,8 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->CheckerboardPattern = NULL;
 	this->CheckerboardNodeID = NULL;
 
-	this->FlickerOpacity = 1;
+	FlickerOpacity = 1;
+	FlickerDelay = 1000;
 
 	MovieBoxRedState = 0;
 	MovieBoxYellowState = 0;
