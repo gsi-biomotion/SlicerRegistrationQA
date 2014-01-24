@@ -30,6 +30,7 @@
 
 // VTK includes
 #include <vtkNew.h>
+#include <vtkObjectFactory.h>
 #include <vtkSmartPointer.h>
 #include <vtkImageData.h>
 #include <vtkPointData.h>
@@ -41,6 +42,7 @@
 #include <vtkGeneralTransform.h>
 #include <vtkLookupTable.h>
 #include <vtkMath.h>
+
 
 // Glyph VTK includes
 #include <vtkArrowSource.h>
@@ -190,8 +192,64 @@ void vtkSlicerRegistrationQualityLogic::OnMRMLSceneEndClose() {
 	this->Modified();
 }
 
+void vtkSlicerRegistrationQualityLogic::ImageDifference() {
+	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
+	    vtkErrorMacro("ImageDifference: Invalid scene or parameter set node!");
+	    return;
+	}
+	
+	std::cerr << "Calculating image difference." << std::endl;
+	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
+
+	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
+
+	if (!referenceVolume || !warpedVolume) {
+		vtkErrorMacro("ImageDifference: Invalid reference or warped volume!");
+		return;
+	}
+	//TODO: Check dimensions of both volume, they must be the same!
+// 	vtkSmartPointer<vtkImageData> imageDataRef = referenceVolume->GetImageData();
+// 	vtkSmartPointer<vtkImageData> imageDataWarp = warpedVolume->GetImageData();
+// 	  int* dimsRef = imageDataRef->GetDimensions();
+// 	  int* dimsWarp = imageDataWarp->GetDimensions();
+// 	// int dims[3]; // can't do this
+// 	if (dimsRef[0] != dimsWarp[0] || dimsRef[1] != dimsWarp[1] || dimsRef[2] != dimsWarp[2] ) {
+// 	  vtkErrorMacro("ImageDifference: Dimensions of Reference and Warped image don't match'!");
+// 	  return;
+// 	}
+// 	
+// 	std::cerr << "Dims: " << " x: " << dimsRef[0] << " y: " << dimsRef[1] << " z: " << dimsRef[2] << std::endl;
+//  	std::cerr << "Number of points: " << imageDataRef->GetNumberOfPoints() << std::endl;
+// 	std::cerr << "Number of cells: " << imageDataRef->GetNumberOfCells() << std::endl;
+// 	double difference=0;
+// 	
+// 	for (int z=0; z<dimsRef[2]; z++)
+// 	{
+// 	  for (int y=0; y<dimsRef[1]; y++)
+// 	  {
+// 	    for (int x=0; x<dimsRef[0]; x++) 
+// 	      {
+// 		//TODO: Use of vtkstatistics?
+// 	       double pixelRef = static_cast<double>(imageDataRef->GetScalarComponentAsDouble(x,y,z,0));
+// 	       double pixelWarp = static_cast<double>(imageDataWarp->GetScalarComponentAsDouble(x,y,z,0));
+// 	       difference+=sqrt((pixelRef-pixelWarp)*(pixelRef-pixelWarp));
+// 	      }
+// 	  }
+// 	}
+// 	difference/=(dimsRef[0]*dimsRef[1]*dimsRef[2]);
+// 	std::cerr << "Mean value:" <<  difference << std::endl;	
+	
+	
+	return;
+}
+
+
 //--- Image Checks -----------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::FalseColor() {
+void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
 		vtkErrorMacro("FalseColor: Invalid scene or parameter set node!");
 		return;
@@ -210,9 +268,15 @@ void vtkSlicerRegistrationQualityLogic::FalseColor() {
 		vtkErrorMacro("Falsecolor: Invalid reference or warped volume!");
 		return;
 	}
-
-	referenceVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeWarmTint1");
-	warpedVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeCoolTint1");
+	//TODO: Volumes go back to gray value - perhaps we should rembemer previous color settings?
+	if (state) {
+	      referenceVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeWarmTint1");
+	      warpedVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeCoolTint1");	  
+	}
+	else {
+	      referenceVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
+	      warpedVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
+	}
 
 	// Set window and level the same for warped and reference volume.
 	warpedVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
