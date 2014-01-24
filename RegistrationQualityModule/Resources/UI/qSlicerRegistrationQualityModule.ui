@@ -462,6 +462,25 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="0" colspan="2">
+	      <widget class="QPushButton" name="SquaredDiffToggle">
+		<property name="sizePolicy">
+		<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+		  <horstretch>50</horstretch>
+		  <verstretch>0</verstretch>
+		</sizepolicy>
+		</property>
+		<property name="text">
+		<string>Calculate</string>
+		</property>
+		<property name="iconSize">
+		<size>
+		  <width>48</width>
+		  <height>48</height>
+		</size>
+		</property>
+	      </widget>
+	      </item>
      </layout>
     </widget>
    </item>

@@ -6,7 +6,7 @@
 
 // MRML includes
 #include <vtkMRMLSliceCompositeNode.h>
-
+#include <vtkMRMLScalarVolumeNode.h>
 // STD includes
 #include <cstdlib>
 
@@ -52,14 +52,14 @@ public:
 	 * Will either remake or account for scenario some other way
 	 */
 	
-	void ImageDifference();
+	void SquaredDifference();
 	void FalseColor(int state);
 	void Flicker(int opacity);
 	void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
 	void Movie();
 	void Checkerboard();
 	void GenerateTransformField();
-	void SetForegroundImage(vtkMRMLSliceCompositeNode*,double opacity);
+	void SetForegroundImage(vtkMRMLSliceCompositeNode*,vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
 
 public:
 	void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);

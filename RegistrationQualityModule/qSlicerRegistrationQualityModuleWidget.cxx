@@ -575,8 +575,12 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
 	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
 	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
-
+	connect(d->SquaredDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(squaredDiffVolumeChanged(vtkMRMLNode*)));
+	
+	// Squared Difference 
+	connect(d->SquaredDiffToggle, SIGNAL(clicked()), this, SLOT (squaredDiffToggle()));
 	// Image Checks
+	
 	connect(d->FalseColorCheckBox, SIGNAL(stateChanged(int)), this, SLOT (falseColorToggle(int)));
 	connect(d->CheckerboardToggle, SIGNAL(clicked()), this, SLOT (checkerboardToggle()));
 
@@ -640,6 +644,14 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 }
 
 //-----------------------------------------------------------------------------
+// Squared Difference
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::squaredDiffToggle() {
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+	logic->SquaredDifference();
+}
+//-----------------------------------------------------------------------------
 // Image Checks
 //-----------------------------------------------------------------------------
 
@@ -652,10 +664,8 @@ void qSlicerRegistrationQualityModuleWidget::falseColorToggle(int state) {
 void qSlicerRegistrationQualityModuleWidget::checkerboardToggle(){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-
 	logic->Checkerboard();
-	std::cerr << "Let'see. " << pNode->GetCheckerboardPattern() << std::endl;
+
 }
 
 void qSlicerRegistrationQualityModuleWidget::flickerToggle(){

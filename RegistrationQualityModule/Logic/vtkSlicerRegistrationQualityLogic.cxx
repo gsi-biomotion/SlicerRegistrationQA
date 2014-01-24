@@ -192,9 +192,9 @@ void vtkSlicerRegistrationQualityLogic::OnMRMLSceneEndClose() {
 	this->Modified();
 }
 
-void vtkSlicerRegistrationQualityLogic::ImageDifference() {
+void vtkSlicerRegistrationQualityLogic::SquaredDifference() {
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
-	    vtkErrorMacro("ImageDifference: Invalid scene or parameter set node!");
+	    vtkErrorMacro("SquaredDifference: Invalid scene or parameter set node!");
 	    return;
 	}
 	
@@ -206,22 +206,75 @@ void vtkSlicerRegistrationQualityLogic::ImageDifference() {
 	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
+	
+	vtkMRMLScalarVolumeNode *outputVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetSquaredDiffNodeID()));
 
-	if (!referenceVolume || !warpedVolume) {
-		vtkErrorMacro("ImageDifference: Invalid reference or warped volume!");
+	if (!referenceVolume || !warpedVolume || ! outputVolume ) {
+		vtkErrorMacro("SquaredDifference: Invalid reference, warped or output volume!");
 		return;
 	}
-	//TODO: Check dimensions of both volume, they must be the same!
-// 	vtkSmartPointer<vtkImageData> imageDataRef = referenceVolume->GetImageData();
-// 	vtkSmartPointer<vtkImageData> imageDataWarp = warpedVolume->GetImageData();
-// 	  int* dimsRef = imageDataRef->GetDimensions();
-// 	  int* dimsWarp = imageDataWarp->GetDimensions();
-// 	// int dims[3]; // can't do this
-// 	if (dimsRef[0] != dimsWarp[0] || dimsRef[1] != dimsWarp[1] || dimsRef[2] != dimsWarp[2] ) {
-// 	  vtkErrorMacro("ImageDifference: Dimensions of Reference and Warped image don't match'!");
-// 	  return;
-// 	}
+	//Check dimensions of both volume, they must be the same.
+	vtkSmartPointer<vtkImageData> imageDataRef = referenceVolume->GetImageData();
+	vtkSmartPointer<vtkImageData> imageDataWarp = warpedVolume->GetImageData();
+	  int* dimsRef = imageDataRef->GetDimensions();
+	  int* dimsWarp = imageDataWarp->GetDimensions();
+	// int dims[3]; // can't do this
+	if (dimsRef[0] != dimsWarp[0] || dimsRef[1] != dimsWarp[1] || dimsRef[2] != dimsWarp[2] ) {
+	  vtkErrorMacro("SquaredDifference: Dimensions of Reference and Warped image don't match'!");
+	  return;
+	}
+	
+	qSlicerCLIModule* checkerboardfilterCLI = dynamic_cast<qSlicerCLIModule*>(
+			qSlicerCoreApplication::application()->moduleManager()->module("SquaredDifference"));
+	QString cliModuleName("SquaredDifference");
+
+	vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
+			checkerboardfilterCLI->cliModuleLogic()->CreateNodeInScene();
+
+	// Set node parameters
+	cmdNode->SetParameterAsString("inputVolume1", referenceVolume->GetID());
+	cmdNode->SetParameterAsString("inputVolume2", warpedVolume->GetID());
+	cmdNode->SetParameterAsString("outputVolume", outputVolume->GetID());
+
+	// Execute synchronously so that we can check the content of the file after the module execution
+	checkerboardfilterCLI->cliModuleLogic()->ApplyAndWait(cmdNode);
+
+	this->GetMRMLScene()->RemoveNode(cmdNode);
+
+	outputVolume->SetAndObserveTransformNodeID(NULL);
+	this->RegistrationQualityNode->SetSquaredDiffNodeID(outputVolume->GetID());
+	
+	outputVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
+	int window=5e6;
+	int level=1e6;
+
+	outputVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,1e6);
+	outputVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
+	outputVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
+	outputVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRed");
+	
+// 	Set Squared Difference image in background
+	qSlicerApplication * app = qSlicerApplication::application();
+	qSlicerLayoutManager * layoutManager = app->layoutManager();
+
+
+	if (!layoutManager) {
+		return;
+	}
+
+	//TODO Bad Solution. Linking layers somehow doesn't work - it only changes one (red) slice.
+	this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed")),referenceVolume,outputVolume,0.5);
+	this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow")),referenceVolume,outputVolume,0.5);
+	this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen")),referenceVolume,outputVolume,0.5);	
+	return;
 // 	
+
+
 // 	std::cerr << "Dims: " << " x: " << dimsRef[0] << " y: " << dimsRef[1] << " z: " << dimsRef[2] << std::endl;
 //  	std::cerr << "Number of points: " << imageDataRef->GetNumberOfPoints() << std::endl;
 // 	std::cerr << "Number of cells: " << imageDataRef->GetNumberOfCells() << std::endl;
@@ -297,11 +350,11 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 
 	//TODO Bad Solution. Linking layers somehow doesn't work - it only changes one (red) slice.
 	this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed")),0.5);
+			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed")),referenceVolume,warpedVolume,0.5);
 	this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow")),0.5);
+			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow")),referenceVolume,warpedVolume,0.5);
 	this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen")),0.5);
+			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen")),referenceVolume,warpedVolume,0.5);
 
 	return;
 }
@@ -554,9 +607,9 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard() {
 
 //---Change backroung image and set opacity-----------------------------------
 void vtkSlicerRegistrationQualityLogic
-::SetForegroundImage(vtkMRMLSliceCompositeNode* cn, double opacity) {
-	cn->SetBackgroundVolumeID(this->RegistrationQualityNode->GetReferenceVolumeNodeID());
-	cn->SetForegroundVolumeID(this->RegistrationQualityNode->GetWarpedVolumeNodeID());
+::SetForegroundImage(vtkMRMLSliceCompositeNode* cn, vtkMRMLScalarVolumeNode *backgroundVolume, vtkMRMLScalarVolumeNode *foregroundVolume,double opacity) {
+	cn->SetBackgroundVolumeID(backgroundVolume->GetID());
+	cn->SetForegroundVolumeID(foregroundVolume->GetID());
 	cn->SetForegroundOpacity(opacity);
 	return;
 }
