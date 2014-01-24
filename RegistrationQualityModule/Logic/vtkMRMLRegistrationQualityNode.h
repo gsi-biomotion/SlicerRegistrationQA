@@ -84,8 +84,20 @@ public:
 	vtkSetStringMacro(CheckerboardPattern);
 	vtkGetStringMacro(CheckerboardPattern);
 
+	
 	vtkSetMacro(FlickerOpacity, int);
 	vtkGetMacro(FlickerOpacity, int);
+	
+	// Squared Difference parameters:
+	vtkSetStringMacro(SquaredDiffNodeID);
+	vtkGetStringMacro(SquaredDiffNodeID);
+	void SetAndObserveSquaredDiffNodeID(const char* id);
+	vtkSetMacro(MeanValue, int);
+	vtkGetMacro(MeanValue, int);
+	
+	vtkSetMacro(STDValue, int);
+	vtkGetMacro(STDValue, int);
+	
 	// Glyph Parameters
 	vtkSetMacro(GlyphPointMax, int);
 	vtkGetMacro(GlyphPointMax, int);
@@ -188,7 +200,11 @@ protected:
 	char* CheckerboardPattern;
 
 	int FlickerOpacity;
-
+	
+	char* SquaredDiffNodeID;
+	int MeanValue;
+	int STDValue;
+	
 	// Glyph Parameters
 	int GlyphPointMax;
 	//TODO: Need to change the UI into float too

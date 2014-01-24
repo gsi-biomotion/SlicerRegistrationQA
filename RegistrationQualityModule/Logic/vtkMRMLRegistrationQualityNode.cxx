@@ -25,7 +25,13 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->CheckerboardNodeID = NULL;
 
 	this->FlickerOpacity = 1;
+	
+	this->SquaredDiffNodeID = NULL;
+	this->MeanValue = 0;
+	this->STDValue = 0;
 
+	
+	
 	MovieBoxRedState = 0;
 	MovieBoxYellowState = 0;
 	MovieBoxGreenState = 0;
@@ -86,6 +92,7 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetWarpedVolumeNodeID(NULL);
 	this->SetOutputModelNodeID(NULL);
 	this->SetCheckerboardNodeID(NULL);
+	this->SetSquaredDiffNodeID(NULL);
 	this->SetGlyphSliceNodeID(NULL);
 	this->SetGridSliceNodeID(NULL);
 }
@@ -131,6 +138,22 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 			std::stringstream ss;
 			ss << attValue;
 			ss >> this->FlickerOpacity;
+			continue;
+		}
+		if (!strcmp(attName,"SquaredDiffNodeID")) {
+			this->SetSquaredDiffNodeID(attValue);
+			continue;
+		}
+		if (!strcmp(attName, "MeanValue")) {
+			std::stringstream ss;
+			ss << attValue;
+			ss >> this->MeanValue;
+			continue;
+		}
+		if (!strcmp(attName, "STDValue")) {
+			std::stringstream ss;
+			ss << attValue;
+			ss >> this->STDValue;
 			continue;
 		}
 		if (!strcmp(attName,"GlyphPointMax")) {
@@ -346,10 +369,16 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 
 	of << indent << " CheckerboardPattern=\"" << this->CheckerboardPattern << "\"";
 	of << indent << " CheckerboardNodeID=\""
-			<< (this->CheckerboardNodeID ? this->OutputModelNodeID : "NULL") << "\"";
+			<< (this->CheckerboardNodeID ? this->CheckerboardNodeID : "NULL") << "\"";
+
 
 	of << indent << " FlickerOpacity=\""<< this->FlickerOpacity << "\"";
-
+	
+	of << indent << " SquaredDiffNodeID=\""
+			<< (this->SquaredDiffNodeID ? this->SquaredDiffNodeID : "NULL") << "\"";
+	of << indent << " MeanValue=\"" << this->MeanValue << "\"";
+	of << indent << " STDValue=\"" << this->STDValue << "\"";
+	
 	of << indent << " GlyphPointMax=\""<< this->GlyphPointMax << "\"";
 	of << indent << " GlyphScale=\""<< this->GlyphScale << "\"";
 	of << indent << " GlyphScaleDirectional=\"" << this->GlyphScaleDirectional << "\"";
@@ -404,8 +433,13 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 
 	this->SetCheckerboardNodeID(node->GetCheckerboardNodeID());
 	this->SetCheckerboardPattern(node->GetCheckerboardPattern());
+	
 
 	this->FlickerOpacity = node->FlickerOpacity;
+	this->SetSquaredDiffNodeID(node->GetSquaredDiffNodeID());
+	this->MeanValue = node->MeanValue;
+	this->STDValue = node->STDValue;
+	
 	this->GlyphPointMax = node->GlyphPointMax;
 	this->GlyphScaleDirectional = node->GlyphScaleDirectional;
 	this->GlyphScaleIsotropic = node->GlyphScaleIsotropic;
@@ -527,6 +561,17 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveCheckerboardNodeID(const char*
 }
 
 //----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveSquaredDiffNodeID(const char* id) {
+	if (this->SquaredDiffNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->SquaredDiffNodeID, this);
+	}
+	this->SetSquaredDiffNodeID(id);
+
+	if (id) {
+		this->Scene->AddReferencedNodeID(this->SquaredDiffNodeID, this);
+	}
+}
+//----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::SetAndObserveGlyphSliceNodeID(const char* id) {
 	if (this->GlyphSliceNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->GlyphSliceNodeID, this);
@@ -568,7 +613,12 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 	os << indent << " CheckerboardPattern = " << this->CheckerboardPattern << "\n";
 
 	os << indent << " FlickerOpacity = " << this->FlickerOpacity << "\n";
-
+	
+	os << indent << " SquaredDiffNodeID = "
+			<< (this->SquaredDiffNodeID ? this->SquaredDiffNodeID : "NULL") << "\n";
+	os << indent << " MeanValue = " << this->MeanValue << "\n";
+	os << indent << " STDValue = " << this->MeanValue << "\n";
+	
 	os << indent << " GlyphPointMax = " << this->GlyphPointMax << "\n";
 	os << indent << " GlyphScale = " << this->GlyphScale << "\n";
 	os << indent << " GlyphScaleDirectional = " << this->GlyphScaleDirectional << "\n";
