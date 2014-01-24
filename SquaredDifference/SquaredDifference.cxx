@@ -55,7 +55,7 @@ int DoIt( int argc, char * argv[], T )
   typename FilterType::Pointer filter = FilterType::New();
   filter->SetInput1( reader1->GetOutput() );
   filter->SetInput2( reader2->GetOutput() );
-
+  filter->Update();
   itk::PluginFilterWatcher watchFilter(filter, "Calculating Squared Difference",
                                        CLPProcessInformation);
 
@@ -106,10 +106,10 @@ int main( int argc, char * argv[] )
         return DoIt( argc, argv, static_cast<char>(0) );
         break;
       case itk::ImageIOBase::USHORT:
-        return DoIt( argc, argv, static_cast<unsigned short>(0) );
+        return DoIt( argc, argv, static_cast<unsigned int>(0) );
         break;
       case itk::ImageIOBase::SHORT:
-        return DoIt( argc, argv, static_cast<short>(0) );
+        return DoIt( argc, argv, static_cast<int>(0) );
         break;
       case itk::ImageIOBase::UINT:
         return DoIt( argc, argv, static_cast<unsigned int>(0) );
