@@ -438,7 +438,6 @@ void qSlicerRegistrationQualityModuleWidget::checkerboardVolumeChanged(vtkMRMLNo
 	if (!pNode || !this->mrmlScene() || !node) {
 		return;
 	}
-
 	pNode->DisableModifiedEventOn();
 	pNode->SetAndObserveCheckerboardNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();

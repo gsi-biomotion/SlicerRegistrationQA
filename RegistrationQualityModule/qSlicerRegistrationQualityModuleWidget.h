@@ -46,6 +46,7 @@ protected slots:
 
 	void checkerboardVolumeChanged(vtkMRMLNode*);
 	void squaredDiffVolumeChanged(vtkMRMLNode*);
+	
 	// Image Checks
 	void falseColorToggle(int state);
 	void checkerboardToggle();
