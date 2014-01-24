@@ -19,6 +19,7 @@
 #include "vtkMRMLRegistrationQualityNode.h"
 
 // MMRL includes
+#include <vtkMRMLScene.h>
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLVectorVolumeNode.h>
 #include <vtkMRMLLinearTransformNode.h>
