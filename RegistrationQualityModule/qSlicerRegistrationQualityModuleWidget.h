@@ -46,7 +46,7 @@ protected slots:
 
 	void checkerboardVolumeChanged(vtkMRMLNode*);
 	// Image Checks
-	void falseColorToggle();
+	void falseColorToggle(int state);
 	void checkerboardToggle();
 	void movieToggle();
 	void flickerToggle();
@@ -99,6 +99,7 @@ protected slots:
 	void setGridSliceNode(vtkMRMLNode*);
 	void setGridSliceScale(double);
 	void setGridSliceDensity(double);
+
 
 protected:
 	QScopedPointer<qSlicerRegistrationQualityModuleWidgetPrivate> d_ptr;

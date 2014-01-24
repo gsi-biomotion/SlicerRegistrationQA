@@ -19,6 +19,7 @@
 #include "vtkMRMLRegistrationQualityNode.h"
 
 // MMRL includes
+#include <vtkMRMLScene.h>
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLVectorVolumeNode.h>
 #include <vtkMRMLLinearTransformNode.h>
@@ -190,6 +191,7 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 		}
 
 		pNode->SetFlickerOpacity(0);
+		pNode->SetMeanValue(0);
 		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
 
 		//Update Visualization Parameters
@@ -323,10 +325,16 @@ void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* no
 
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode* node) {
+	
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 
 	//TODO: Move into updatefrommrml?
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	
+// 	//TODO: Check somewhere if referenceVolume or warpedVolume exist
+// 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+// 	logic->ImageDifference();
+	
 	if (!pNode || !this->mrmlScene() || !node) {
 		return;
 	}
@@ -374,6 +382,7 @@ void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode*
 	pNode->SetGlyphSliceThresholdMax(maxNorm);
 	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
 	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
+	
 }
 
 //-----------------------------------------------------------------------------
@@ -389,6 +398,9 @@ void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* no
 	pNode->DisableModifiedEventOn();
 	pNode->SetAndObserveWarpedVolumeNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();
+	
+// 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+// 	logic->ImageDifference();
 }
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* node) {
@@ -544,7 +556,7 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
 
 	// Image Checks
-	connect(d->FalseColorToggle, SIGNAL(clicked()), this, SLOT (falseColorToggle()));
+	connect(d->FalseColorCheckBox, SIGNAL(stateChanged(int)), this, SLOT (falseColorToggle(int)));
 	connect(d->CheckerboardToggle, SIGNAL(clicked()), this, SLOT (checkerboardToggle()));
 
 	connect(d->MovieToggle, SIGNAL(clicked()), this, SLOT (movieToggle()));
@@ -610,10 +622,10 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 // Image Checks
 //-----------------------------------------------------------------------------
 
-void qSlicerRegistrationQualityModuleWidget::falseColorToggle() {
+void qSlicerRegistrationQualityModuleWidget::falseColorToggle(int state) {
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
-	logic->FalseColor();
+	logic->FalseColor(state);
 }
 
 void qSlicerRegistrationQualityModuleWidget::checkerboardToggle(){

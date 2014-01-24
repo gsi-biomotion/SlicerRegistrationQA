@@ -200,6 +200,7 @@ protected:
 	char* CheckerboardPattern;
 
 	int FlickerOpacity;
+	int FlickerDelay;
 	
 	char* SquaredDiffNodeID;
 	int MeanValue;
