@@ -12,7 +12,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>442</width>
+    <width>470</width>
     <height>1415</height>
    </rect>
   </property>
@@ -323,183 +323,146 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="ImageDifference">
+    <widget class="QGroupBox" name="DiffgroupBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>120</height>
-      </size>
-     </property>
      <property name="title">
       <string>Image Difference</string>
      </property>
-     <widget class="QLineEdit" name="meanValueLineEdit">
-      <property name="enabled">
-       <bool>false</bool>
+     <layout class="QFormLayout" name="formLayoutDiff">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
       </property>
-      <property name="geometry">
-       <rect>
-        <x>190</x>
-        <y>58</y>
-        <width>110</width>
-        <height>26</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="accessibleName">
-       <string/>
-      </property>
-      <property name="inputMask">
-       <string/>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="MeanValueLabel">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>11</x>
-        <y>58</y>
-        <width>151</width>
-        <height>26</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Mean Value:</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="squaredDifferenceLabel">
-      <property name="geometry">
-       <rect>
-        <x>11</x>
-        <y>30</y>
-        <width>201</width>
-        <height>15</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Squared Difference Volume:</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="stdLabel">
-      <property name="geometry">
-       <rect>
-        <x>11</x>
-        <y>90</y>
-        <width>151</width>
-        <height>26</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Standard Deviation:</string>
-      </property>
-     </widget>
-     <widget class="qMRMLNodeComboBox" name="SquaredDiffComboBox" native="true">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>190</x>
-        <y>30</y>
-        <width>86</width>
-        <height>15</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="nodeTypes" stdset="0">
-       <stringlist>
-        <string>vtkMRMLScalarVolumeNode</string>
-       </stringlist>
-      </property>
-      <property name="noneEnabled" stdset="0">
-       <bool>true</bool>
-      </property>
-      <property name="addEnabled" stdset="0">
-       <bool>true</bool>
-      </property>
-      <property name="removeEnabled" stdset="0">
-       <bool>true</bool>
-      </property>
-      <property name="editEnabled" stdset="0">
-       <bool>false</bool>
-      </property>
-      <property name="renameEnabled" stdset="0">
-       <bool>true</bool>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="stdLineEdit">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>190</x>
-        <y>90</y>
-        <width>110</width>
-        <height>25</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="accessibleName">
-       <string/>
-      </property>
-      <property name="inputMask">
-       <string/>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
+      <item row="2" column="0">
+       <widget class="QLabel" name="stdLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Standard Deviation:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="qMRMLNodeComboBox" name="SquaredDiffComboBox" native="true">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="nodeTypes" stdset="0">
+         <stringlist>
+          <string>vtkMRMLScalarVolumeNode</string>
+         </stringlist>
+        </property>
+        <property name="noneEnabled" stdset="0">
+         <bool>true</bool>
+        </property>
+        <property name="addEnabled" stdset="0">
+         <bool>true</bool>
+        </property>
+        <property name="removeEnabled" stdset="0">
+         <bool>true</bool>
+        </property>
+        <property name="editEnabled" stdset="0">
+         <bool>false</bool>
+        </property>
+        <property name="renameEnabled" stdset="0">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="meanValueLineEdit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="accessibleName">
+         <string/>
+        </property>
+        <property name="inputMask">
+         <string/>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="MeanValueLabel">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Mean Value:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="squaredDifferenceLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Squared Difference Volume:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="stdLineEdit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="accessibleName">
+         <string/>
+        </property>
+        <property name="inputMask">
+         <string/>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
@@ -533,7 +496,7 @@
      </property>
      <layout class="QVBoxLayout" name="gridLayout_2">
       <item>
-       <widget class="QGroupBox" name="falseColorGroupBox">
+       <widget class="QGroupBox" name="StillGroupBox">
         <property name="sizePolicy">
          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -541,119 +504,140 @@
          </sizepolicy>
         </property>
         <property name="title">
-         <string>False Color</string>
+         <string>Still Checks</string>
         </property>
-        <layout class="QGridLayout" name="falseColorGridLayout">
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="FalseColorCheckBox">
-           <property name="text">
-            <string>False Color</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="checkerboardGroupBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Checkerboard</string>
-        </property>
-        <layout class="QGridLayout" name="checkerboardGridLayout">
-         <item row="3" column="0">
-          <widget class="QLabel" name="CheckerboardLabel">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Pattern:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="3" colspan="2">
-          <widget class="QPushButton" name="CheckerboardToggle">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Checkerboard</string>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>48</width>
-             <height>48</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="3">
-          <widget class="qMRMLNodeComboBox" name="OutputCheckerboardComboBox" native="true">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="nodeTypes" stdset="0">
-            <stringlist>
-             <string>vtkMRMLScalarVolumeNode</string>
-            </stringlist>
-           </property>
-           <property name="noneEnabled" stdset="0">
-            <bool>true</bool>
-           </property>
-           <property name="addEnabled" stdset="0">
-            <bool>true</bool>
-           </property>
-           <property name="removeEnabled" stdset="0">
-            <bool>true</bool>
-           </property>
-           <property name="editEnabled" stdset="0">
-            <bool>false</bool>
-           </property>
-           <property name="renameEnabled" stdset="0">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0" colspan="2">
-          <widget class="QLabel" name="label_9">
-           <property name="text">
-            <string>Output Checkerboard Volume:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QLineEdit" name="CheckerboardPatternLineEdit">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="inputMask">
-            <string/>
-           </property>
-           <property name="text">
-            <string>10,10,10</string>
-           </property>
-          </widget>
-         </item>
+	  <layout class="QGridLayout" name="stillGridLayout">
+	    <item row="0" column="0">
+	      <widget class="QGroupBox" name="falseColorGroupBox">
+		<property name="sizePolicy">
+		<sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+		<horstretch>0</horstretch>
+		<verstretch>0</verstretch>
+		</sizepolicy>
+		</property>
+		<property name="title">
+		<string>False Color</string>
+		</property>
+		<layout class="QGridLayout" name="falseColorGridLayout">
+		  <item row="0" column="0">
+		    <widget class="QCheckBox" name="FalseColorCheckBox">
+		      <property name="sizePolicy">
+		      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+		      <horstretch>0</horstretch>
+		      <verstretch>0</verstretch>
+		      </sizepolicy>
+		      </property>
+		      <property name="text">
+		      <string>False Color</string>
+		      </property>
+		    </widget>
+		  </item>
+		</layout>
+	      </widget>
+	    </item>	
+	  <item row="0" column="1">
+	    <widget class="QGroupBox" name="checkerboardGroupBox">
+	    <property name="sizePolicy">
+	      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+	      <horstretch>0</horstretch>
+	      <verstretch>0</verstretch>
+	      </sizepolicy>
+	    </property>
+	    <property name="title">
+	      <string>Checkerboard</string>
+	    </property>
+	    <layout class="QGridLayout" name="checkerboardGridLayout">
+	      <item row="3" column="0">
+	      <widget class="QLabel" name="CheckerboardLabel">
+		<property name="sizePolicy">
+		<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+		  <horstretch>0</horstretch>
+		  <verstretch>0</verstretch>
+		</sizepolicy>
+		</property>
+		<property name="text">
+		<string>Pattern:</string>
+		</property>
+	      </widget>
+	      </item>
+	      <item row="3" column="3" colspan="2">
+	      <widget class="QPushButton" name="CheckerboardToggle">
+		<property name="sizePolicy">
+		<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+		  <horstretch>50</horstretch>
+		  <verstretch>0</verstretch>
+		</sizepolicy>
+		</property>
+		<property name="text">
+		<string>Checkerboard</string>
+		</property>
+		<property name="iconSize">
+		<size>
+		  <width>48</width>
+		  <height>48</height>
+		</size>
+		</property>
+	      </widget>
+	      </item>
+	      <item row="4" column="3">
+	      <widget class="qMRMLNodeComboBox" name="OutputCheckerboardComboBox" native="true">
+		<property name="enabled">
+		<bool>false</bool>
+		</property>
+		<property name="sizePolicy">
+		<sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+		  <horstretch>0</horstretch>
+		  <verstretch>0</verstretch>
+		</sizepolicy>
+		</property>
+		<property name="nodeTypes" stdset="0">
+		<stringlist>
+		  <string>vtkMRMLScalarVolumeNode</string>
+		</stringlist>
+		</property>
+		<property name="noneEnabled" stdset="0">
+		<bool>true</bool>
+		</property>
+		<property name="addEnabled" stdset="0">
+		<bool>true</bool>
+		</property>
+		<property name="removeEnabled" stdset="0">
+		<bool>true</bool>
+		</property>
+		<property name="editEnabled" stdset="0">
+		<bool>false</bool>
+		</property>
+		<property name="renameEnabled" stdset="0">
+		<bool>true</bool>
+		</property>
+	      </widget>
+	      </item>
+	      <item row="4" column="0" colspan="2">
+	      <widget class="QLabel" name="label_9">
+		<property name="text">
+		<string>Output Checkerboard Volume:</string>
+		</property>
+	      </widget>
+	      </item>
+	      <item row="3" column="1">
+	      <widget class="QLineEdit" name="CheckerboardPatternLineEdit">
+		<property name="sizePolicy">
+		<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+		  <horstretch>0</horstretch>
+		  <verstretch>0</verstretch>
+		</sizepolicy>
+		</property>
+		<property name="inputMask">
+		<string/>
+		</property>
+		<property name="text">
+		<string>10,10,10</string>
+		</property>
+	      </widget>
+	      </item>
+	    </layout>
+	    </widget>
+	  </item>
         </layout>
        </widget>
       </item>
@@ -666,7 +650,7 @@
          </sizepolicy>
         </property>
         <property name="title">
-         <string>Movie</string>
+         <string>Moving Checks</string>
         </property>
         <layout class="QGridLayout" name="movieFormLayout">
          <item row="0" column="0">
@@ -723,8 +707,8 @@
          <item row="0" column="3" colspan="2">
           <widget class="QPushButton" name="MovieToggle">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-             <horstretch>0</horstretch>
+            <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+             <horstretch>50</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
@@ -739,26 +723,26 @@
            </property>
           </widget>
          </item>
+         <item row="0" column="5">
+          <widget class="QPushButton" name="FlickerToggle">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+             <horstretch>50</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Flicker</string>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>48</width>
+             <height>48</height>
+            </size>
+           </property>
+          </widget>
+         </item>
         </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="FlickerToggle">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Flicker</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>48</width>
-          <height>48</height>
-         </size>
-        </property>
        </widget>
       </item>
      </layout>
