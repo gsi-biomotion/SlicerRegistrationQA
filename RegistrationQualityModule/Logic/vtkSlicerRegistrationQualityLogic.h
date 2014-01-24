@@ -15,6 +15,7 @@
 #include <vtkPolyData.h>
 #include <vtkMatrix4x4.h>
 
+
 #include "vtkSlicerRegistrationQualityModuleLogicExport.h"
 
 class vtkMRMLRegistrationQualityNode;
@@ -50,7 +51,9 @@ public:
 	 * Issue when input data is changed without modifying node
 	 * Will either remake or account for scenario some other way
 	 */
-	void FalseColor();
+	
+	void ImageDifference();
+	void FalseColor(int state);
 	void Flicker(int opacity);
 	void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
 	void Movie();
