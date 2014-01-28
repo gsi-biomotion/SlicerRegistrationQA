@@ -74,6 +74,9 @@ int DoIt( int argc, char * argv[], T )
                                        CLPProcessInformation);
   statistic->SetInput ( filter->GetOutput() );
   statistic->Update();
+  
+  //TODO: How to include Mean into output?
+//   sigma=statistic->GetMean();
   std::cout << "Mean: " << statistic->GetMean() << std::endl;
   std::cout << "Std.: " << statistic->GetSigma() << std::endl;
 //   std::cout << "Min: " << statistic->GetMinimum() << std::endl;
