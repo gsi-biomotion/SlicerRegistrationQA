@@ -253,7 +253,7 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference() {
 	outputVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,1e6);
 	outputVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
 	outputVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
-	outputVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRed");
+	outputVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
 	
 // 	Set Squared Difference image in background
 	qSlicerApplication * app = qSlicerApplication::application();
