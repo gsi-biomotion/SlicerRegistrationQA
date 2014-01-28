@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Filter</category>
+  <title>JacobianFilter</title>
+  <description><![CDATA[This is a CLI module (based on GaussianBlurImageFilter) bundled in an extension]]></description>
+  <version>0.0.1</version>
+  <documentation-url>not-existing yet</documentation-url>
+  <license>Slicer</license>
+  <contributor>Kristjan Anderle (GSI)</contributor>
+  <acknowledgements>This work was partially funded by NIH grant 3P41RR013218-12S1</acknowledgements>
+  <parameters>
+    <label>IO</label>
+      <description><![CDATA[Input/output parameters]]></description>
+    <image type="vector">
+      <name>inputVolume</name>
+      <label>Input Volume</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description><![CDATA[Input vector field]]></description>
+    </image>
+    <image type="vector">
+      <name>outputVolume</name>
+      <label>Output Volume</label>
+      <channel>output</channel>
+      <index>1</index>
+      <description><![CDATA[Output Volume]]></description>
+    </image>
+  </parameters>
+</executable>
