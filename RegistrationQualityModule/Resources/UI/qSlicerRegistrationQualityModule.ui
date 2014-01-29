@@ -323,167 +323,200 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="DiffgroupBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+    <widget class="ctkCollapsibleButton" name="SquaredDifference" native="true">
+      <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="title">
-      <string>Image Difference</string>
-     </property>
-     <layout class="QFormLayout" name="formLayoutDiff">
-      <property name="fieldGrowthPolicy">
-       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
       </property>
-      <item row="2" column="0">
-       <widget class="QLabel" name="stdLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Standard Deviation:</string>
-        </property>
-       </widget>
+      <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+      </property>
+      <property name="maximumSize">
+	<size>
+	<width>16777215</width>
+	<height>25000</height>
+	</size>
+      </property>
+      <property name="toolTip">
+	<string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calculation of squared difference between reference and warped image.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text" stdset="0">
+	<string>Squared Difference</string>
+      </property>
+      <property name="autoRepeatInterval" stdset="0">
+	<number>100</number>
+      </property>
+      <layout class="QVBoxLayout" name="gridLayout_SD">
+      <item>
+	 <widget class="QGroupBox" name="DiffgroupBox">
+	  <property name="sizePolicy">
+	  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+	  <horstretch>0</horstretch>
+	  <verstretch>0</verstretch>
+	  </sizepolicy>
+	  </property>
+	  <property name="title">
+	  <string>Image Difference</string>
+	  </property>
+	  <layout class="QFormLayout" name="formLayoutDiff">
+	    <property name="fieldGrowthPolicy">
+	    <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+	    </property>
+	    <item row="2" column="0">
+	    <widget class="QLabel" name="stdLabel">
+	      <property name="sizePolicy">
+	      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+		<horstretch>0</horstretch>
+	      <verstretch>0</verstretch>
+	      </sizepolicy>
+	      </property>
+	      <property name="text">
+	      <string>Standard Deviation:</string>
+	      </property>
+	    </widget>
+	    </item>
+	    <item row="0" column="1">
+	    <widget class="qMRMLNodeComboBox" name="SquaredDiffComboBox" native="true">
+	      <property name="enabled">
+	      <bool>false</bool>
+	      </property>
+	      <property name="sizePolicy">
+	      <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+		<horstretch>0</horstretch>
+		<verstretch>0</verstretch>
+	      </sizepolicy>
+	      </property>
+	      <property name="nodeTypes" stdset="0">
+	      <stringlist>
+		<string>vtkMRMLScalarVolumeNode</string>
+	      </stringlist>
+	      </property>
+	      <property name="noneEnabled" stdset="0">
+	      <bool>true</bool>
+	      </property>
+	      <property name="addEnabled" stdset="0">
+	      <bool>true</bool>
+	      </property>
+	      <property name="removeEnabled" stdset="0">
+	      <bool>true</bool>
+	      </property>
+	      <property name="editEnabled" stdset="0">
+	      <bool>false</bool>
+	      </property>
+	      <property name="renameEnabled" stdset="0">
+	      <bool>true</bool>
+	      </property>
+	    </widget>
+	    </item>
+	    <item row="1" column="1">
+	    <widget class="QLineEdit" name="meanValueLineEdit">
+	      <property name="enabled">
+	      <bool>false</bool>
+	      </property>
+	      <property name="sizePolicy">
+	      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+		<horstretch>0</horstretch>
+		<verstretch>0</verstretch>
+	      </sizepolicy>
+	      </property>
+	      <property name="accessibleName">
+	      <string/>
+	      </property>
+	      <property name="inputMask">
+	      <string/>
+	      </property>
+	      <property name="text">
+	      <string/>
+	      </property>
+	      <property name="readOnly">
+	      <bool>true</bool>
+	      </property>
+	    </widget>
+	    </item>
+	    <item row="1" column="0">
+	    <widget class="QLabel" name="MeanValueLabel">
+	      <property name="enabled">
+	      <bool>true</bool>
+	      </property>
+	      <property name="sizePolicy">
+	      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+		<horstretch>0</horstretch>
+		<verstretch>0</verstretch>
+	      </sizepolicy>
+	      </property>
+	      <property name="text">
+	      <string>Mean Value:</string>
+	      </property>
+	    </widget>
+	    </item>
+	    <item row="0" column="0">
+	    <widget class="QLabel" name="squaredDifferenceLabel">
+	      <property name="sizePolicy">
+	      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+		<horstretch>0</horstretch>
+		<verstretch>0</verstretch>
+	      </sizepolicy>
+	      </property>
+	      <property name="text">
+	      <string>Squared Difference Volume:</string>
+	      </property>
+	    </widget>
+	    </item>
+	    <item row="2" column="1">
+	    <widget class="QLineEdit" name="stdLineEdit">
+	      <property name="enabled">
+	      <bool>false</bool>
+	      </property>
+	      <property name="sizePolicy">
+	      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+		<horstretch>0</horstretch>
+		<verstretch>0</verstretch>
+	      </sizepolicy>
+	      </property>
+	      <property name="accessibleName">
+	      <string/>
+	      </property>
+	      <property name="inputMask">
+	      <string/>
+	      </property>
+	      <property name="text">
+	      <string/>
+	      </property>
+	      <property name="readOnly">
+	      <bool>true</bool>
+	      </property>
+	    </widget>
+	    </item>
+	    <item row="3" column="0" colspan="2">
+		  <widget class="QPushButton" name="SquaredDiffToggle">
+		    <property name="sizePolicy">
+		    <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+		      <horstretch>50</horstretch>
+		      <verstretch>0</verstretch>
+		    </sizepolicy>
+		    </property>
+		    <property name="text">
+		    <string>Calculate</string>
+		    </property>
+		    <property name="iconSize">
+		    <size>
+		      <width>48</width>
+		      <height>48</height>
+		    </size>
+		    </property>
+		  </widget>
+		  </item>
+	  </layout>
+	</widget>
       </item>
-      <item row="0" column="1">
-       <widget class="qMRMLNodeComboBox" name="SquaredDiffComboBox" native="true">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="nodeTypes" stdset="0">
-         <stringlist>
-          <string>vtkMRMLScalarVolumeNode</string>
-         </stringlist>
-        </property>
-        <property name="noneEnabled" stdset="0">
-         <bool>true</bool>
-        </property>
-        <property name="addEnabled" stdset="0">
-         <bool>true</bool>
-        </property>
-        <property name="removeEnabled" stdset="0">
-         <bool>true</bool>
-        </property>
-        <property name="editEnabled" stdset="0">
-         <bool>false</bool>
-        </property>
-        <property name="renameEnabled" stdset="0">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="meanValueLineEdit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="accessibleName">
-         <string/>
-        </property>
-        <property name="inputMask">
-         <string/>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="MeanValueLabel">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Mean Value:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="squaredDifferenceLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Squared Difference Volume:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="stdLineEdit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="accessibleName">
-         <string/>
-        </property>
-        <property name="inputMask">
-         <string/>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2">
-	      <widget class="QPushButton" name="SquaredDiffToggle">
-		<property name="sizePolicy">
-		<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-		  <horstretch>50</horstretch>
-		  <verstretch>0</verstretch>
-		</sizepolicy>
-		</property>
-		<property name="text">
-		<string>Calculate</string>
-		</property>
-		<property name="iconSize">
-		<size>
-		  <width>48</width>
-		  <height>48</height>
-		</size>
-		</property>
-	      </widget>
-	      </item>
-     </layout>
+      </layout>
     </widget>
-   </item>
+  </item>
    <item>
     <widget class="ctkCollapsibleButton" name="ImageChecks" native="true">
      <property name="sizePolicy">
