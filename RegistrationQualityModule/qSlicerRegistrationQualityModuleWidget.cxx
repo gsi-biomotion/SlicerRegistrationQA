@@ -278,56 +278,57 @@ void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* no
 	}
 
 	d->ApplyButton->setEnabled(true);
+	d->JacobianToggle->setEnabled(true);
 	d->VolumeDisabledLabel->hide();
 
 	pNode->DisableModifiedEventOn();
 	pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();
 
-	double maxNorm = 0;
+// 	double maxNorm = 0;
 
 	// What to do if there is more than one array? Would there be more than one array?
-	if (strcmp(node->GetClassName(), "vtkMRMLVectorVolumeNode") == 0) {
-		d->InputReferenceComboBox->setEnabled(false);
-		maxNorm = vtkMRMLVectorVolumeNode::SafeDownCast(node)->GetImageData()->GetPointData()->GetArray(0)->GetMaxNorm();
-	} else if (	strcmp(node->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
-				strcmp(node->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
-				strcmp(node->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
-		d->InputReferenceComboBox->setEnabled(true);
+// 	if (strcmp(node->GetClassName(), "vtkMRMLVectorVolumeNode") == 0) {
+// 		d->InputReferenceComboBox->setEnabled(false);
+// 		maxNorm = vtkMRMLVectorVolumeNode::SafeDownCast(node)->GetImageData()->GetPointData()->GetArray(0)->GetMaxNorm();
+// 	} else if (	strcmp(node->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
+// 				strcmp(node->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
+// 				strcmp(node->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
+// 		d->InputReferenceComboBox->setEnabled(true);
+// 
+// 		vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetReferenceVolumeNodeID()));
+// 		if (referenceVolumeNode == NULL) {
+// 			return;
+// 		}
+// 
+// 		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
+// 		QProgressDialog *convertProgress = new QProgressDialog(qSlicerApplication::application()->mainWindow());
+// 		convertProgress->setModal(true);
+// 		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
+// 		convertProgress->show();
+// 		convertProgress->setLabelText("Converting transform to vector volume...");
+// 
+// 		convertProgress->setValue(20);
+// 		d->logic()->GenerateTransformField();
+// 
+// 		convertProgress->setValue(80);
+// 		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
+// 
+// 		convertProgress->setValue(100);
+// 		delete convertProgress;
+// 	}
 
-		vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetReferenceVolumeNodeID()));
-		if (referenceVolumeNode == NULL) {
-			return;
-		}
-
-		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
-		QProgressDialog *convertProgress = new QProgressDialog(qSlicerApplication::application()->mainWindow());
-		convertProgress->setModal(true);
-		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
-		convertProgress->show();
-		convertProgress->setLabelText("Converting transform to vector volume...");
-
-		convertProgress->setValue(20);
-		d->logic()->GenerateTransformField();
-
-		convertProgress->setValue(80);
-		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
-
-		convertProgress->setValue(100);
-		delete convertProgress;
-	}
-
-	pNode->SetGlyphThresholdMax(maxNorm);
-	d->InputGlyphThreshold->setMaximum(maxNorm);
-	d->InputGlyphThreshold->setMaximumValue(maxNorm);
-
-	pNode->SetContourMax(maxNorm);
-	d->InputContourRange->setMaximum(maxNorm);
-	d->InputContourRange->setMaximumValue(maxNorm);
-
-	pNode->SetGlyphSliceThresholdMax(maxNorm);
-	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
-	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
+// 	pNode->SetGlyphThresholdMax(maxNorm);
+// 	d->InputGlyphThreshold->setMaximum(maxNorm);
+// 	d->InputGlyphThreshold->setMaximumValue(maxNorm);
+// 
+// 	pNode->SetContourMax(maxNorm);
+// 	d->InputContourRange->setMaximum(maxNorm);
+// 	d->InputContourRange->setMaximumValue(maxNorm);
+// 
+// 	pNode->SetGlyphSliceThresholdMax(maxNorm);
+// 	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
+// 	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
 }
 
 //-----------------------------------------------------------------------------
@@ -350,45 +351,58 @@ void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode*
 	pNode->SetAndObserveReferenceVolumeNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();
 
-	double maxNorm = 0;
-
-	vtkSmartPointer<vtkMRMLTransformNode> vectorVolumeNode = vtkMRMLTransformNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetVectorVolumeNodeID()));
-	if (vectorVolumeNode == NULL) {
-		return;
+	bool currentState;
+	vtkSmartPointer<vtkMRMLVolumeNode> warpedVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetWarpedVolumeNodeID()));
+	if (warpedVolumeNode == NULL) {
+	    currentState=false;
 	}
-
-	if ( strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
-		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
-		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
-
-		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
-		QProgressDialog *convertProgress =  new QProgressDialog(qSlicerApplication::application()->mainWindow());
-		convertProgress->setModal(true);
-		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
-		convertProgress->show();
-		convertProgress->setLabelText("Converting transform to vector volume...");
-
-		convertProgress->setValue(20);
-		d->logic()->GenerateTransformField();
-
-		convertProgress->setValue(80);
-		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
-
-		convertProgress->setValue(100);
-		delete convertProgress;
+	else{
+	  currentState=true;
 	}
+		
+	d->SquaredDiffToggle->setEnabled(currentState);
+	d->FalseColorCheckBox->setEnabled(currentState);
+	d->CheckerboardToggle->setEnabled(currentState);
+	d->MovieToggle->setEnabled(currentState);
+	d->FlickerToggle->setEnabled(currentState);
 
-	pNode->SetGlyphThresholdMax(maxNorm);
-	d->InputGlyphThreshold->setMaximum(maxNorm);
-	d->InputGlyphThreshold->setMaximumValue(maxNorm);
-
-	pNode->SetContourMax(maxNorm);
-	d->InputContourRange->setMaximum(maxNorm);
-	d->InputContourRange->setMaximumValue(maxNorm);
-
-	pNode->SetGlyphSliceThresholdMax(maxNorm);
-	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
-	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
+// 	vtkSmartPointer<vtkMRMLTransformNode> vectorVolumeNode = vtkMRMLTransformNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetVectorVolumeNodeID()));
+// 	if (vectorVolumeNode == NULL) {
+// 		return;
+// 	}
+// 
+// 	if ( strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
+// 		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
+// 		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
+// 
+// 		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
+// 		QProgressDialog *convertProgress =  new QProgressDialog(qSlicerApplication::application()->mainWindow());
+// 		convertProgress->setModal(true);
+// 		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
+// 		convertProgress->show();
+// 		convertProgress->setLabelText("Converting transform to vector volume...");
+// 
+// 		convertProgress->setValue(20);
+// 		d->logic()->GenerateTransformField();
+// 
+// 		convertProgress->setValue(80);
+// 		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
+// 
+// 		convertProgress->setValue(100);
+// 		delete convertProgress;
+// 	}
+// 
+// 	pNode->SetGlyphThresholdMax(maxNorm);
+// 	d->InputGlyphThreshold->setMaximum(maxNorm);
+// 	d->InputGlyphThreshold->setMaximumValue(maxNorm);
+// 
+// 	pNode->SetContourMax(maxNorm);
+// 	d->InputContourRange->setMaximum(maxNorm);
+// 	d->InputContourRange->setMaximumValue(maxNorm);
+// 
+// 	pNode->SetGlyphSliceThresholdMax(maxNorm);
+// 	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
+// 	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
 	
 }
 
@@ -405,7 +419,21 @@ void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* no
 	pNode->DisableModifiedEventOn();
 	pNode->SetAndObserveWarpedVolumeNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();
-	
+		
+	bool currentState;
+	vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetReferenceVolumeNodeID()));
+	if (referenceVolumeNode == NULL) {
+	    currentState=false;
+	}
+	else{
+	  currentState=true;
+	}
+		
+	d->SquaredDiffToggle->setEnabled(currentState);
+	d->FalseColorCheckBox->setEnabled(currentState);
+	d->CheckerboardToggle->setEnabled(currentState);
+	d->MovieToggle->setEnabled(currentState);
+	d->FlickerToggle->setEnabled(currentState);
 // 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
 // 	logic->ImageDifference();
 }
