@@ -276,45 +276,8 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference() {
 	outputVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
 	outputVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
 	
-// 	Set Squared Difference image in background
-// 	qSlicerApplication * app = qSlicerApplication::application();
-// 	qSlicerLayoutManager * layoutManager = app->layoutManager();
-// 
-// 
-// 	if (!layoutManager) {
-// 		return;
-// 	}
-// 
-// 	//TODO Bad Solution. Linking layers somehow doesn't work - it only changes one (red) slice.
-// 	this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed")),referenceVolume,outputVolume,0.5);
-// 	this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow")),referenceVolume,outputVolume,0.5);
 	this->SetForegroundImage(referenceVolume,outputVolume,0.5);	
-// 	return;
-// 	
-
-
-// 	std::cerr << "Dims: " << " x: " << dimsRef[0] << " y: " << dimsRef[1] << " z: " << dimsRef[2] << std::endl;
-//  	std::cerr << "Number of points: " << imageDataRef->GetNumberOfPoints() << std::endl;
-// 	std::cerr << "Number of cells: " << imageDataRef->GetNumberOfCells() << std::endl;
-// 	double difference=0;
-// 	
-// 	for (int z=0; z<dimsRef[2]; z++)
-// 	{
-// 	  for (int y=0; y<dimsRef[1]; y++)
-// 	  {
-// 	    for (int x=0; x<dimsRef[0]; x++) 
-// 	      {
-// 		//TODO: Use of vtkstatistics?
-// 	       double pixelRef = static_cast<double>(imageDataRef->GetScalarComponentAsDouble(x,y,z,0));
-// 	       double pixelWarp = static_cast<double>(imageDataWarp->GetScalarComponentAsDouble(x,y,z,0));
-// 	       difference+=sqrt((pixelRef-pixelWarp)*(pixelRef-pixelWarp));
-// 	      }
-// 	  }
-// 	}
-// 	difference/=(dimsRef[0]*dimsRef[1]*dimsRef[2]);
-// 	std::cerr << "Mean value:" <<  difference << std::endl;	
+	
 	
 	
 	return;
@@ -571,10 +534,11 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard() {
 	      return;
 	    }
 // 	
+	  int PatternValue = this->RegistrationQualityNode->GetCheckerboardPattern();
 	  std::ostringstream outSS;
 	  vtkMRMLScalarVolumeNode *svnode = vtkMRMLScalarVolumeNode::SafeDownCast(referenceVolume);
 	  vtkMRMLVolumeNode *outputVolume = NULL;
-	  outSS << referenceVolume->GetName() << "_CheckerboardVolume";
+	  outSS << referenceVolume->GetName() << "_CheckerboardPattern_"<< PatternValue;
 	  if(svnode)
 	  {
 	    outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
@@ -599,7 +563,6 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard() {
 
 	//Convert PatternValue to string
 	std::ostringstream outPattern;
-	int PatternValue = this->RegistrationQualityNode->GetCheckerboardPattern();
 	outPattern << PatternValue << "," << PatternValue << "," << PatternValue;
 	// Set node parameters
 	cmdNode->SetParameterAsString("checkerPattern",outPattern.str().c_str());
