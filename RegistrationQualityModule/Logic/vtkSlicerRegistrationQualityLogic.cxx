@@ -268,10 +268,10 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference() {
 	this->RegistrationQualityNode->SetSquaredDiffNodeID(outputVolume->GetID());
 	
 	outputVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
-	int window=5e6;
-	int level=1e6;
+	int window=300;
+	int level=200;
 
-	outputVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,1e6);
+	outputVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,3e3);
 	outputVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
 	outputVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
 	outputVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
