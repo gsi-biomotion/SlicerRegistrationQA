@@ -81,8 +81,9 @@ public:
 	vtkSetStringMacro(CheckerboardNodeID);
 	vtkGetStringMacro(CheckerboardNodeID);
 	void SetAndObserveCheckerboardNodeID(const char* id);
-	vtkSetStringMacro(CheckerboardPattern);
-	vtkGetStringMacro(CheckerboardPattern);
+	
+	vtkSetMacro(CheckerboardPattern, int);
+	vtkGetMacro(CheckerboardPattern, int);
 
 	
 	vtkSetMacro(FlickerOpacity, int);
@@ -197,7 +198,7 @@ protected:
 	int MovieRun;
 
 	char* CheckerboardNodeID;
-	char* CheckerboardPattern;
+	int CheckerboardPattern;
 
 	int FlickerOpacity;
 	int FlickerDelay;

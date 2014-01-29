@@ -202,7 +202,7 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
 
 		//Update Visualization Parameters
-		d->CheckerboardPatternLineEdit->setText(pNode->GetCheckerboardPattern());
+		d->CheckerboardPattern->setValue(pNode->GetCheckerboardPattern());
 		// Glyph Parameters
 		d->InputGlyphPointMax->setValue(pNode->GetGlyphPointMax());
 		d->InputGlyphSeed->setValue(pNode->GetGlyphSeed());
@@ -620,7 +620,7 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
 
-	connect(d->CheckerboardPatternLineEdit, SIGNAL(textEdited(QString)), this, SLOT(setCheckerboardPattern(QString)));
+	connect(d->CheckerboardPattern, SIGNAL(valueChanged(int)), this, SLOT(setCheckerboardPattern(int)));
 	
 	connect(d->JacobianToggle, SIGNAL(clicked()), this, SLOT (jacobianToggle()));
 
@@ -798,7 +798,7 @@ void qSlicerRegistrationQualityModuleWidget::movieBoxGreenStateChanged(int state
 }
 
 
-void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(QString aText) {
+void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(int checkboardPattern) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
@@ -806,7 +806,7 @@ void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(QString aTex
 		return;
 	}
 	pNode->DisableModifiedEventOn();
-	pNode->SetCheckerboardPattern(aText.toLatin1().constData());
+	pNode->SetCheckerboardPattern(checkboardPattern);
 	pNode->DisableModifiedEventOff();
 }
 

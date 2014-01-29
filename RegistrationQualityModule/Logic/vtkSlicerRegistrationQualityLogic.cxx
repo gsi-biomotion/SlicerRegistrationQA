@@ -597,9 +597,12 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard() {
 	vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
 			checkerboardfilterCLI->cliModuleLogic()->CreateNodeInScene();
 
+	//Convert PatternValue to string
+	std::ostringstream outPattern;
+	int PatternValue = this->RegistrationQualityNode->GetCheckerboardPattern();
+	outPattern << PatternValue << "," << PatternValue << "," << PatternValue;
 	// Set node parameters
-	cmdNode->SetParameterAsString("checkerPattern",
-								  this->RegistrationQualityNode->GetCheckerboardPattern());
+	cmdNode->SetParameterAsString("checkerPattern",outPattern.str().c_str());
 	cmdNode->SetParameterAsString("inputVolume1", referenceVolume->GetID());
 	cmdNode->SetParameterAsString("inputVolume2", warpedVolume->GetID());
 	cmdNode->SetParameterAsString("outputVolume", outputVolume->GetID());

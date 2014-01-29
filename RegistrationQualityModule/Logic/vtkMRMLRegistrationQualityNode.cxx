@@ -21,7 +21,7 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->OutputModelNodeID = NULL;
 
 	//Checkerboard Parameters
-	this->CheckerboardPattern = NULL;
+	this->CheckerboardPattern = 20;
 	this->CheckerboardNodeID = NULL;
 
 	this->FlickerOpacity = 1;
@@ -127,7 +127,7 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 		if (!strcmp(attName, "CheckerboardPattern")) {
 			std::stringstream ss;
 			ss << attValue;
-			this->SetCheckerboardPattern(ss.str().c_str());
+			ss >> this->CheckerboardPattern;
 			continue;
 		}
 		if (!strcmp(attName,"CheckerboardNodeID")) {
@@ -432,7 +432,7 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 	this->SetOutputModelNodeID(node->GetOutputModelNodeID());
 
 	this->SetCheckerboardNodeID(node->GetCheckerboardNodeID());
-	this->SetCheckerboardPattern(node->GetCheckerboardPattern());
+	this->CheckerboardPattern=node->CheckerboardPattern;
 	
 
 	this->FlickerOpacity = node->FlickerOpacity;

@@ -58,7 +58,7 @@ protected slots:
 	// Vector checks
 	void jacobianToggle();
 	// Parameters
-	void setCheckerboardPattern(QString aText);
+	void setCheckerboardPattern(int);
 	// Glyph Parameters
 	void setGlyphPointMax(double);
 	void setGlyphScale(double);
