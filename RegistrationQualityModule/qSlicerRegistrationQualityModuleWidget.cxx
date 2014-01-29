@@ -184,17 +184,17 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 			this->outputModelChanged(d->OutputModelComboBox->currentNode());
 		}
 
-		if (pNode->GetCheckerboardNodeID()) {
-			d->OutputCheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
-		} else {
-			this->checkerboardVolumeChanged(d->OutputCheckerboardComboBox->currentNode());
-		}
-		
-		if (pNode->GetSquaredDiffNodeID()) {
-			d->SquaredDiffComboBox->setCurrentNode(pNode->GetSquaredDiffNodeID());
-		} else {
-			this->squaredDiffVolumeChanged(d->SquaredDiffComboBox->currentNode());
-		}
+// 		if (pNode->GetCheckerboardNodeID()) {
+// 			d->OutputCheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
+// 		} else {
+// 			this->checkerboardVolumeChanged(d->OutputCheckerboardComboBox->currentNode());
+// 		}
+// 		
+// 		if (pNode->GetSquaredDiffNodeID()) {
+// 			d->SquaredDiffComboBox->setCurrentNode(pNode->GetSquaredDiffNodeID());
+// 		} else {
+// 			this->squaredDiffVolumeChanged(d->SquaredDiffComboBox->currentNode());
+// 		}
 
 		pNode->SetFlickerOpacity(0);
 		pNode->SetMeanValue(0);
@@ -429,34 +429,34 @@ void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* nod
 	pNode->DisableModifiedEventOff();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::checkerboardVolumeChanged(vtkMRMLNode* node)
-{
-	Q_D(qSlicerRegistrationQualityModuleWidget);
-
-	//TODO: Move into updatefrommrml?
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	if (!pNode || !this->mrmlScene() || !node) {
-		return;
-	}
-	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveCheckerboardNodeID(node->GetID());
-	pNode->DisableModifiedEventOff();
-}
-//-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::squaredDiffVolumeChanged(vtkMRMLNode* node)
-{
-	Q_D(qSlicerRegistrationQualityModuleWidget);
-
-	//TODO: Move into updatefrommrml?
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	if (!pNode || !this->mrmlScene() || !node) {
-		return;
-	}
-
-	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveSquaredDiffNodeID(node->GetID());
-	pNode->DisableModifiedEventOff();
-}
+// void qSlicerRegistrationQualityModuleWidget::checkerboardVolumeChanged(vtkMRMLNode* node)
+// {
+// 	Q_D(qSlicerRegistrationQualityModuleWidget);
+// 
+// 	//TODO: Move into updatefrommrml?
+// 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+// 	if (!pNode || !this->mrmlScene() || !node) {
+// 		return;
+// 	}
+// 	pNode->DisableModifiedEventOn();
+// 	pNode->SetAndObserveCheckerboardNodeID(node->GetID());
+// 	pNode->DisableModifiedEventOff();
+// }
+// //-----------------------------------------------------------------------------
+// void qSlicerRegistrationQualityModuleWidget::squaredDiffVolumeChanged(vtkMRMLNode* node)
+// {
+// 	Q_D(qSlicerRegistrationQualityModuleWidget);
+// 
+// 	//TODO: Move into updatefrommrml?
+// 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+// 	if (!pNode || !this->mrmlScene() || !node) {
+// 		return;
+// 	}
+// 
+// 	pNode->DisableModifiedEventOn();
+// 	pNode->SetAndObserveSquaredDiffNodeID(node->GetID());
+// 	pNode->DisableModifiedEventOff();
+// }
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::updateSourceOptions(int option) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
@@ -574,8 +574,8 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
 	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
-	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
-	connect(d->SquaredDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(squaredDiffVolumeChanged(vtkMRMLNode*)));
+//	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
+//	connect(d->SquaredDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(squaredDiffVolumeChanged(vtkMRMLNode*)));
 	
 	// Squared Difference 
 	connect(d->SquaredDiffToggle, SIGNAL(clicked()), this, SLOT (squaredDiffToggle()));
