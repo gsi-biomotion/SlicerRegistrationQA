@@ -59,7 +59,8 @@ public:
 	void Movie();
 	void Checkerboard();
 	void GenerateTransformField();
-	void SetForegroundImage(vtkMRMLSliceCompositeNode*,vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
+	void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
+	void Jacobian();
 
 public:
 	void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);

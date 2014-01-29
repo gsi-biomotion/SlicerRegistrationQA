@@ -17,9 +17,15 @@
 
 // Qt includes
 #include <QtPlugin>
+#include <QDebug>
+
+// Slicer includes
+#include <qSlicerCoreApplication.h>
+#include <qSlicerModuleManager.h>
 
 // RegistrationQuality Logic includes
 #include <vtkSlicerRegistrationQualityLogic.h>
+#include <vtkSlicerVolumesLogic.h>
 
 // RegistrationQuality includes
 #include "qSlicerRegistrationQualityModule.h"
@@ -90,6 +96,22 @@ QStringList qSlicerRegistrationQualityModule::dependencies() const {
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModule::setup() {
 	this->Superclass::setup();
+	
+	  vtkSlicerRegistrationQualityLogic* registrationQualityLogic =
+    vtkSlicerRegistrationQualityLogic::SafeDownCast(this->logic());
+	qSlicerAbstractCoreModule* volumesModule =
+	qSlicerCoreApplication::application()->moduleManager()->module("Volumes");
+	
+      if (volumesModule)
+	{
+	vtkSlicerVolumesLogic* volumesLogic = 
+	  vtkSlicerVolumesLogic::SafeDownCast(volumesModule->logic());
+	registrationQualityLogic->SetVolumesLogic(volumesLogic);
+	}
+      else
+	{
+	qWarning() << "Volumes module is not found";
+	}
 }
 
 //-----------------------------------------------------------------------------

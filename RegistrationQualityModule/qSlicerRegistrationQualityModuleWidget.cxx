@@ -593,6 +593,8 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
 
 	connect(d->CheckerboardPatternLineEdit, SIGNAL(textEdited(QString)), this, SLOT(setCheckerboardPattern(QString)));
+	
+	connect(d->JacobianToggle, SIGNAL(clicked()), this, SLOT (jacobianToggle()));
 
 	// Glyph Parameters
 	connect(d->InputGlyphPointMax, SIGNAL(valueChanged(double)), this, SLOT(setGlyphPointMax(double)));
@@ -717,6 +719,15 @@ void qSlicerRegistrationQualityModuleWidget::movieToggle(){
 	logic->Movie();
 	d->MovieToggle->setText("Start");
 	d->MovieToggle->setEnabled(true);
+}
+//-----------------------------------------------------------------------------
+// Vector checks
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::jacobianToggle(){
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+
+	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+	logic->Jacobian();
 }
 
 //-----------------------------------------------------------------------------

@@ -4,6 +4,7 @@
 // SlicerQt includes
 #include "qSlicerLoadableModule.h"
 
+
 #include "qSlicerRegistrationQualityModuleExport.h"
 
 class qSlicerRegistrationQualityModulePrivate;

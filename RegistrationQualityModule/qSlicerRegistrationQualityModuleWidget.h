@@ -55,6 +55,8 @@ protected slots:
 	void flickerToggle();
 	void flickerToggle1();
 
+	// Vector checks
+	void jacobianToggle();
 	// Parameters
 	void setCheckerboardPattern(QString aText);
 	// Glyph Parameters
