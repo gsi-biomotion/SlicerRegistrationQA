@@ -2,6 +2,7 @@
 
 
 #include <itkSquaredDifferenceImageFilter.h>
+#include <itkSqrtImageFilter.h>
 #include <itkStatisticsImageFilter.h>
 
 #include "itkPluginUtilities.h"
@@ -26,14 +27,15 @@ int DoIt( int argc, char * argv[], T )
 
   typedef itk::Image<InputPixelType,  3> InputImageType;
   typedef itk::Image<OutputPixelType, 3> OutputImageType;
+//   typedef itk::Image<double, 3> OutputImageTypeTmp;
 
   typedef itk::ImageFileReader<InputImageType>  ReaderType;
   typedef itk::ImageFileWriter<OutputImageType> WriterType;
 
     
-  typedef itk::SquaredDifferenceImageFilter<InputImageType, OutputImageType, OutputImageType> FilterType;
-  
-  typedef itk::StatisticsImageFilter<InputImageType> StatisticType;
+  typedef itk::SquaredDifferenceImageFilter<InputImageType, InputImageType, OutputImageType> FilterType;
+  typedef itk::SqrtImageFilter< OutputImageType, OutputImageType > SqrtFilterType;
+  typedef itk::StatisticsImageFilter<OutputImageType> StatisticType;
     
   typename ReaderType::Pointer reader1 = ReaderType::New();
   itk::PluginFilterWatcher watchReader1(reader1, "Read Volume 1",
@@ -58,13 +60,19 @@ int DoIt( int argc, char * argv[], T )
   filter->Update();
   itk::PluginFilterWatcher watchFilter(filter, "Calculating Squared Difference",
                                        CLPProcessInformation);
+  
+  typename SqrtFilterType::Pointer sqrtfilter = SqrtFilterType::New();
+  sqrtfilter->SetInput( filter->GetOutput() );
+  sqrtfilter->Update();
+  itk::PluginFilterWatcher watchSqrtFilter(sqrtfilter, "Calculating Square Root of Image Difference",
+                                       CLPProcessInformation);
 
   typename WriterType::Pointer writer = WriterType::New();
   itk::PluginFilterWatcher watchWriter(writer,
                                        "Write Volume",
                                        CLPProcessInformation);
   writer->SetFileName( outputVolume.c_str() );
-  writer->SetInput( filter->GetOutput() );
+  writer->SetInput( sqrtfilter->GetOutput() );
   writer->SetUseCompression(1);
   writer->Update();
   
@@ -72,7 +80,7 @@ int DoIt( int argc, char * argv[], T )
   itk::PluginFilterWatcher watchStatistic(statistic,
                                        "Calculating Statistigs",
                                        CLPProcessInformation);
-  statistic->SetInput ( filter->GetOutput() );
+  statistic->SetInput ( sqrtfilter->GetOutput() );
   statistic->Update();
   
   //TODO: How to include Mean into output?
