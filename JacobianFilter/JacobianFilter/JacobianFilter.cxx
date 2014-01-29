@@ -2,7 +2,8 @@
 #include <itkVector.h>
 
 #include <itkDisplacementFieldJacobianDeterminantFilter.h>
-#include "itkDeformationFieldJacobianDeterminantFilter.h"
+#include <itkStatisticsImageFilter.h>
+// #include "itkDeformationFieldJacobianDeterminantFilter.h"
 
 #include "itkPluginUtilities.h"
 
@@ -23,6 +24,7 @@ int DoIt( int argc, char * argv[], T )
 {
   PARSE_ARGS;
 
+//   typedef    T OutputPixelType;
   
   typedef itk::Vector< float, 3 > InputPixelType;
   typedef float OutputPixelType;
@@ -35,6 +37,7 @@ int DoIt( int argc, char * argv[], T )
 
     
   typedef itk::DisplacementFieldJacobianDeterminantFilter< InputImageType > FilterType;
+  typedef itk::StatisticsImageFilter<OutputImageType> StatisticType;
 
 
   typename ReaderType::Pointer reader = ReaderType::New();
@@ -48,6 +51,7 @@ int DoIt( int argc, char * argv[], T )
                                        CLPProcessInformation);
 
   typename WriterType::Pointer writer = WriterType::New();
+  
   itk::PluginFilterWatcher watchWriter(writer,
                                        "Write Volume",
                                        CLPProcessInformation);
@@ -55,6 +59,20 @@ int DoIt( int argc, char * argv[], T )
   writer->SetInput( filter->GetOutput() );
   writer->SetUseCompression(1);
   writer->Update();
+  
+  typename StatisticType::Pointer statistic = StatisticType::New();
+  itk::PluginFilterWatcher watchStatistic(statistic,
+                                       "Calculating Statistigs",
+                                       CLPProcessInformation);
+  statistic->SetInput ( filter->GetOutput() );
+  statistic->Update();
+  mean=statistic->GetMean();
+  std::cout << "Mean: " << mean << std::endl;
+  std::cout << "Std.: " << statistic->GetSigma() << std::endl;
+  std::cout << "Max: " << statistic->GetMaximum() << std::endl;
+  std::cout << "Min.: " << statistic->GetMinimum() << std::endl;
+  
+  //TODO: Add statistics (min, max) and add logic in Widget
   std::cout << "Finished" << std::endl;
   return EXIT_SUCCESS;
 }

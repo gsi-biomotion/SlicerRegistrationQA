@@ -25,5 +25,13 @@
       <index>1</index>
       <description><![CDATA[Output Volume]]></description>
     </image>
+    <double>
+      <name>mean</name>
+      <longflag>mean</longflag>
+      <flag>s</flag>
+      <label>Mean</label>
+      <description><![CDATA[Sigma value in physical units (e.g., mm) of the Gaussian kernel]]></description>
+      <default>1.0</default>
+    </double>
   </parameters>
 </executable>
