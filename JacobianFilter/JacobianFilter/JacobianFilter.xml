@@ -2,12 +2,12 @@
 <executable>
   <category>Filter</category>
   <title>JacobianFilter</title>
-  <description><![CDATA[This is a CLI module (based on GaussianBlurImageFilter) bundled in an extension]]></description>
+  <description><![CDATA[This is a CLI module that takes Input Vector field and Outputs Jacobian of that vector field.]]></description>
   <version>0.0.1</version>
   <documentation-url>not-existing yet</documentation-url>
   <license>Slicer</license>
   <contributor>Kristjan Anderle (GSI)</contributor>
-  <acknowledgements>This work was partially funded by NIH grant 3P41RR013218-12S1</acknowledgements>
+  <acknowledgements></acknowledgements>
   <parameters>
     <label>IO</label>
       <description><![CDATA[Input/output parameters]]></description>
