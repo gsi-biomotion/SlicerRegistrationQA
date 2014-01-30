@@ -213,7 +213,7 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference() {
 	
 	if(!this->Internal->VolumesLogic)
 	    {
-	      std::cerr << "Jacobian: ERROR: failed to get hold of Volumes logic" << std::endl;
+	      std::cerr << "SquaredDifference: ERROR: failed to get hold of Volumes logic" << std::endl;
 	      return;
 	    }
 	  
@@ -640,16 +640,16 @@ void vtkSlicerRegistrationQualityLogic::Jacobian() {
 	this->GetMRMLScene()->RemoveNode(cmdNode);
 
 	outputVolume->SetAndObserveTransformNodeID(NULL);
-	this->RegistrationQualityNode->SetCheckerboardNodeID(outputVolume->GetID());
 	
+	outputVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
 	outputVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
-	int window=2;
+	double window=0.8;
 	int level=1;
 
-	outputVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,0.8);
+	outputVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,3);
 	outputVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
 	outputVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
-	outputVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
+	
 	this->SetForegroundImage(referenceVolume,outputVolume,0.5);
 
 	return;
