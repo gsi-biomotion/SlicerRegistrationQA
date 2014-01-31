@@ -7,6 +7,7 @@
 // MRML includes
 #include <vtkMRMLSliceCompositeNode.h>
 #include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLVectorVolumeNode.h>
 // STD includes
 #include <cstdlib>
 
@@ -19,7 +20,7 @@
 #include "vtkSlicerRegistrationQualityModuleLogicExport.h"
 
 class vtkMRMLRegistrationQualityNode;
-class vtkMRMLVectorVolumeNode;
+// class vtkMRMLVectorVolumeNode;
 class vtkSlicerVolumesLogic;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality

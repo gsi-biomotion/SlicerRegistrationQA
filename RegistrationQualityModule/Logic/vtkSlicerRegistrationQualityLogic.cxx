@@ -591,7 +591,7 @@ void vtkSlicerRegistrationQualityLogic::Jacobian() {
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
-	vtkMRMLVolumeNode *vectorVolume = vtkMRMLVolumeNode::SafeDownCast(
+	vtkMRMLVectorVolumeNode *vectorVolume = vtkMRMLVectorVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetVectorVolumeNodeID()));
 // 	vtkMRMLVolumeNode *warpedVolume = vtkMRMLVolumeNode::SafeDownCast(
@@ -601,6 +601,10 @@ void vtkSlicerRegistrationQualityLogic::Jacobian() {
 // 			this->GetMRMLScene()->GetNodeByID(
 // 				this->RegistrationQualityNode->GetCheckerboardNodeID()));
 // 
+	if (!vectorVolume || !referenceVolume ) {
+	    std::cerr << "Volumes not set!" << std::endl;
+	    return;
+	}
 	  if(!this->Internal->VolumesLogic)
 	    {
 	      std::cerr << "Jacobian: ERROR: failed to get hold of Volumes logic" << std::endl;
@@ -688,12 +692,14 @@ void vtkSlicerRegistrationQualityLogic
 	ycn->SetLinkedControl(1);
 	gcn->SetLinkedControl(1);
 	// Set volumes and opacity for all three layers.
-	redSliceLogic->StartSliceCompositeNodeInteraction(
-		vtkMRMLSliceCompositeNode::ForegroundVolumeFlag
-		| vtkMRMLSliceCompositeNode::BackgroundVolumeFlag);
+
+// 	redSliceLogic->StartSliceCompositeNodeInteraction();
 	rcn->SetBackgroundVolumeID(backgroundVolume->GetID());
 	rcn->SetForegroundVolumeID(foregroundVolume->GetID());
 	rcn->SetForegroundOpacity(opacity);
+	redSliceLogic->StartSliceCompositeNodeInteraction(
+		vtkMRMLSliceCompositeNode::ForegroundVolumeFlag
+		| vtkMRMLSliceCompositeNode::BackgroundVolumeFlag);
 	redSliceLogic->EndSliceCompositeNodeInteraction();
 	return;
 }
