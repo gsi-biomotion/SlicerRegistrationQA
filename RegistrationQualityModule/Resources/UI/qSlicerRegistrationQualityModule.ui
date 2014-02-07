@@ -752,7 +752,126 @@
      <property name="collapsed" stdset="0">
       <bool>true</bool>
      </property>
-     <layout class="QGridLayout" name="gridLayout_31">
+     <layout class="QVBoxLayout" name="gridLayout_Jacobian">
+	<item>
+	  <widget class="QGroupBox" name="JacobiangroupBox">
+	    <property name="sizePolicy">
+	    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+	    <horstretch>0</horstretch>
+	    <verstretch>0</verstretch>
+	    </sizepolicy>
+	    </property>
+	    <property name="title">
+	    <string>Jacobian</string>
+	    </property>
+	    <layout class="QFormLayout" name="formLayoutJacobian">
+	      <property name="fieldGrowthPolicy">
+	      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+	      </property>
+	      <item row="1" column="0">
+	      <widget class="QLabel" name="jacobianSTDLabel">
+		<property name="sizePolicy">
+		<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+		  <horstretch>0</horstretch>
+		<verstretch>0</verstretch>
+		</sizepolicy>
+		</property>
+		<property name="text">
+		<string>Standard Deviation:</string>
+		</property>
+	      </widget>
+	      </item>
+	      <item row="0" column="1">
+	      <widget class="QDoubleSpinBox" name="jacobianMeanSpinBox">
+		<property name="disabled">
+		<bool>false</bool>
+		</property>
+		<property name="sizePolicy">
+		<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+		  <horstretch>0</horstretch>
+		  <verstretch>0</verstretch>
+		</sizepolicy>
+		</property>
+		<property name="accessibleName">
+		<string/>
+		</property>
+		<property name="readOnly">
+		<bool>true</bool>
+		</property>
+	      </widget>
+	      </item>
+	      <item row="0" column="0">
+	      <widget class="QLabel" name="jacobianMeanValueLabel">
+		<property name="enabled">
+		<bool>true</bool>
+		</property>
+		<property name="sizePolicy">
+		<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+		  <horstretch>0</horstretch>
+		  <verstretch>0</verstretch>
+		</sizepolicy>
+		</property>
+		<property name="text">
+		<string>Mean Value:</string>
+		</property>
+	      </widget>
+	      </item>
+	      <item row="1" column="1">
+	      <widget class="QDoubleSpinBox" name="jacobianSTDSpinBox">
+		<property name="disabled">
+		<bool>false</bool>
+		</property>
+		<property name="sizePolicy">
+		<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+		  <horstretch>0</horstretch>
+		  <verstretch>0</verstretch>
+		</sizepolicy>
+		</property>
+		<property name="accessibleName">
+		<string/>
+		</property>
+		<property name="readOnly">
+		<bool>true</bool>
+		</property>
+	      </widget>
+	      </item>
+	      <item row="2" column="0" colspan="2">
+		    <widget class="QPushButton" name="JacobianToggle">
+		      <property name="sizePolicy">
+		      <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+			<horstretch>50</horstretch>
+			<verstretch>0</verstretch>
+		      </sizepolicy>
+		      </property>
+		      <property name="Enabled">
+			<bool>false</bool>
+		      </property>
+		      <property name="text">
+		      <string>Calculate Jacobian</string>
+		      </property>
+		      <property name="iconSize">
+		      <size>
+			<width>48</width>
+			<height>48</height>
+		      </size>
+		      </property>
+		    </widget>
+		    </item>
+	    </layout>
+	  </widget>
+	</item>
+	<item>
+	  <widget class="QGroupBox" name="VectorgroupBox">
+	      <property name="sizePolicy">
+	      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+	      <horstretch>0</horstretch>
+	      <verstretch>0</verstretch>
+	      </sizepolicy>
+	      </property>
+	      <property name="title">
+	      <string>Vector Group</string>
+	      </property>     
+	      <layout class="QGridLayout" name="gridLayout_31">
       <item row="2" column="2">
        <widget class="QPushButton" name="GridSliceToggle">
         <property name="sizePolicy">
@@ -1050,7 +1169,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QPushButton" name="JacobianToggle">
+       <widget class="QPushButton" name="JacobianToggle1">
 	 <property name="Enabled">
 	    <bool>false</bool>
 	</property>
@@ -1105,7 +1224,10 @@
        </widget>
       </item>
      </layout>
-    </widget>
+	  </widget>
+	</item>
+     </layout>
+     </widget>
    </item>
    <item>
     <widget class="ctkCollapsibleButton" name="Parameters" native="true">

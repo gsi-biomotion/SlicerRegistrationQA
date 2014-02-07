@@ -664,6 +664,15 @@ void vtkSlicerRegistrationQualityLogic::Jacobian() {
 	outputVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
 	
 	this->SetForegroundImage(referenceVolume,outputVolume,0.5);
+	
+	vtkNew<vtkImageAccumulate> jacobianStat;
+	jacobianStat->SetInput(outputVolume->GetImageData());
+	jacobianStat->Update();
+
+	this->RegistrationQualityNode->DisableModifiedEventOn();
+	this->RegistrationQualityNode->SetJacobianMean( jacobianStat->GetMean()[0] );
+	this->RegistrationQualityNode->SetJacobianSTD( jacobianStat->GetStandardDeviation()[0] );
+	this->RegistrationQualityNode->DisableModifiedEventOff();
 
 	return;
 }

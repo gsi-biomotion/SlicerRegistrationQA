@@ -99,6 +99,17 @@ public:
 	vtkSetMacro(SquaredDiffSTD, double);
 	vtkGetMacro(SquaredDiffSTD, double);
 	
+	// Jacobian parameters:
+	vtkSetStringMacro(JacobianNodeID);
+	vtkGetStringMacro(JacobianNodeID);
+	void SetAndObserveJacobianNodeID(const char* id);
+	
+	vtkSetMacro(JacobianMean, double);
+	vtkGetMacro(JacobianMean, double);
+	
+	vtkSetMacro(JacobianSTD, double);
+	vtkGetMacro(JacobianSTD, double);
+	
 	// Glyph Parameters
 	vtkSetMacro(GlyphPointMax, int);
 	vtkGetMacro(GlyphPointMax, int);
@@ -206,6 +217,10 @@ protected:
 	char* SquaredDiffNodeID;
 	double SquaredDiffMean;
 	double SquaredDiffSTD;
+	
+	char* JacobianNodeID;
+	double JacobianMean;
+	double JacobianSTD;
 	
 	// Glyph Parameters
 	int GlyphPointMax;

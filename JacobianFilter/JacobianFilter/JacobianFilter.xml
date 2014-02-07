@@ -18,6 +18,14 @@
       <index>0</index>
       <description><![CDATA[Input vector field]]></description>
     </image>
+<!--    <transform>
+      <name>InputTransform</name>
+      <longflag>InputTransform</longflag>
+      <description>Input transform</description>
+      <label>Input B-spline transform (MRML)</label>
+      <default>None</default>
+      <channel>input</channel>
+    </transform>-->
     <image >
       <name>outputVolume</name>
       <label>Output Volume</label>
@@ -25,6 +33,13 @@
       <index>1</index>
       <description><![CDATA[Output Volume]]></description>
     </image>
+    <boolean>
+      <name>enable_log</name>
+      <label>Calculate logarithm of Jacobian?</label>
+      <default>false</default>
+      <longflag>--enablestage0</longflag>
+      <description>Check this box if you want to calculate logarithm.</description>
+    </boolean>
     <double>
       <name>mean</name>
       <longflag>mean</longflag>

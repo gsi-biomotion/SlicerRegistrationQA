@@ -30,7 +30,9 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->SquaredDiffMean = 0;
 	this->SquaredDiffSTD = 0;
 
-	
+	this->JacobianNodeID = NULL;
+	this->JacobianMean = 0;
+	this->JacobianSTD = 0;
 	
 	MovieBoxRedState = 0;
 	MovieBoxYellowState = 0;
@@ -93,6 +95,7 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetOutputModelNodeID(NULL);
 	this->SetCheckerboardNodeID(NULL);
 	this->SetSquaredDiffNodeID(NULL);
+	this->SetJacobianNodeID(NULL);
 	this->SetGlyphSliceNodeID(NULL);
 	this->SetGridSliceNodeID(NULL);
 }
@@ -154,6 +157,22 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 			std::stringstream ss;
 			ss << attValue;
 			ss >> this->SquaredDiffSTD;
+			continue;
+		}
+		if (!strcmp(attName,"JacobianNodeID")) {
+			this->SetJacobianNodeID(attValue);
+			continue;
+		}
+		if (!strcmp(attName, "JacobianMean")) {
+			std::stringstream ss;
+			ss << attValue;
+			ss >> this->JacobianMean;
+			continue;
+		}
+		if (!strcmp(attName, "JacobianSTD")) {
+			std::stringstream ss;
+			ss << attValue;
+			ss >> this->JacobianSTD;
 			continue;
 		}
 		if (!strcmp(attName,"GlyphPointMax")) {
@@ -379,6 +398,11 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 	of << indent << " SquaredDiffMean=\"" << this->SquaredDiffMean << "\"";
 	of << indent << " SquaredDiffSTD=\"" << this->SquaredDiffSTD << "\"";
 	
+	of << indent << " JacobianNodeID=\""
+			<< (this->JacobianNodeID ? this->JacobianNodeID : "NULL") << "\"";
+	of << indent << " JacobianMean=\"" << this->JacobianMean << "\"";
+	of << indent << " JacobianSTD=\"" << this->JacobianSTD << "\"";
+	
 	of << indent << " GlyphPointMax=\""<< this->GlyphPointMax << "\"";
 	of << indent << " GlyphScale=\""<< this->GlyphScale << "\"";
 	of << indent << " GlyphScaleDirectional=\"" << this->GlyphScaleDirectional << "\"";
@@ -439,6 +463,10 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 	this->SetSquaredDiffNodeID(node->GetSquaredDiffNodeID());
 	this->SquaredDiffMean = node->SquaredDiffMean;
 	this->SquaredDiffSTD = node->SquaredDiffSTD;
+	
+	this->SetJacobianNodeID(node->GetJacobianNodeID());
+	this->JacobianMean = node->JacobianMean;
+	this->JacobianSTD = node->JacobianSTD;
 	
 	this->GlyphPointMax = node->GlyphPointMax;
 	this->GlyphScaleDirectional = node->GlyphScaleDirectional;
@@ -572,6 +600,18 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveSquaredDiffNodeID(const char* 
 	}
 }
 //----------------------------------------------------------------------------
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveJacobianNodeID(const char* id) {
+	if (this->JacobianNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->JacobianNodeID, this);
+	}
+	this->SetJacobianNodeID(id);
+
+	if (id) {
+		this->Scene->AddReferencedNodeID(this->JacobianNodeID, this);
+	}
+}
+//----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::SetAndObserveGlyphSliceNodeID(const char* id) {
 	if (this->GlyphSliceNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->GlyphSliceNodeID, this);
@@ -618,6 +658,11 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 			<< (this->SquaredDiffNodeID ? this->SquaredDiffNodeID : "NULL") << "\n";
 	os << indent << " SquaredDiffMean = " << this->SquaredDiffMean << "\n";
 	os << indent << " SquaredDiffSTD = " << this->SquaredDiffMean << "\n";
+	
+	os << indent << " JacobianNodeID = "
+			<< (this->JacobianNodeID ? this->JacobianNodeID : "NULL") << "\n";
+	os << indent << " JacobianMean = " << this->JacobianMean << "\n";
+	os << indent << " JacobianSTD = " << this->JacobianMean << "\n";
 	
 	os << indent << " GlyphPointMax = " << this->GlyphPointMax << "\n";
 	os << indent << " GlyphScale = " << this->GlyphScale << "\n";

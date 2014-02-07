@@ -198,9 +198,11 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 
 		pNode->SetFlickerOpacity(0);
 		pNode->SetSquaredDiffMean(0);
-		pNode->SetSquaredDiffSTD(0);
+		pNode->SetSquaredDiffSTD(0);		
 		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
-
+		pNode->SetJacobianMean(0);
+		pNode->SetJacobianSTD(0);
+	  
 		//Update Visualization Parameters
 		d->CheckerboardPattern->setValue(pNode->GetCheckerboardPattern());
 		// Glyph Parameters
@@ -759,9 +761,13 @@ void qSlicerRegistrationQualityModuleWidget::movieToggle(){
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::jacobianToggle(){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
-
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+	
 	logic->Jacobian();
+	
+	d->jacobianMeanSpinBox->setValue(pNode->GetJacobianMean());
+	d->jacobianSTDSpinBox->setValue(pNode->GetJacobianSTD());
 }
 
 //-----------------------------------------------------------------------------

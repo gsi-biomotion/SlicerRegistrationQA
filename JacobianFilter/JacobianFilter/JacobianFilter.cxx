@@ -1,8 +1,12 @@
 #include "itkImageFileWriter.h"
 #include <itkVector.h>
+#include <itkTransform.h>
 
 #include <itkDisplacementFieldJacobianDeterminantFilter.h>
-#include <itkStatisticsImageFilter.h>
+// #include <itkStatisticsImageFilter.h>
+#include <itkLogImageFilter.h>
+// #include "itkTransformFileReader.h"
+// #include "itkTransformFileWriter.h"
 // #include "itkDeformationFieldJacobianDeterminantFilter.h"
 
 #include "itkPluginUtilities.h"
@@ -37,11 +41,28 @@ int DoIt( int argc, char * argv[], T )
 
     
   typedef itk::DisplacementFieldJacobianDeterminantFilter< InputImageType > FilterType;
-  typedef itk::StatisticsImageFilter<OutputImageType> StatisticType;
-
-
+  typedef itk::LogImageFilter< OutputImageType, OutputImageType > LogType;
+//   typedef itk::StatisticsImageFilter<OutputImageType> StatisticType;
+  
+//   typedef itk::TransformFileReader TransformReaderType;
+//   
+//   typedef itk::Transform< float > TransformType;
+  
+  
+//   typedef itk::TransformFileReader TransformReaderType;
+//   TransformReaderType::Pointer initialTransform;
+//   initialTransform = TransformReaderType::New();
+//   initialTransform->SetFileName( InputTransform.c_str() );
+//   initialTransform->Update();
+//   
+//   TransformReaderType::TransformType::Pointer initial
+//   = *(initialTransform->GetTransformList()->begin() );
+//   
+//   TransformType::OutputVectorType vector;
+// //   vector=initial->TransformVector( InputImageType );
+//   std::cout << initial->GetParameters() << std::endl;
+  
   typename ReaderType::Pointer reader = ReaderType::New();
-
   reader->SetFileName( inputVolume.c_str() );
 
   typename FilterType::Pointer filter = FilterType::New();
@@ -49,28 +70,49 @@ int DoIt( int argc, char * argv[], T )
   filter->Update();
   itk::PluginFilterWatcher watchFilter(filter, "Calculating Jacobian Displacment Field.",
                                        CLPProcessInformation);
+    
 
-  typename WriterType::Pointer writer = WriterType::New();
   
-  itk::PluginFilterWatcher watchWriter(writer,
+  if (enable_log)
+  {
+    typename LogType::Pointer logFilter = LogType::New();
+    logFilter->SetInput( filter->GetOutput() );
+    logFilter->Update();
+    itk::PluginFilterWatcher watchLogFilter(logFilter, "Calculating log of Jacobian Displacment Field.",
+					CLPProcessInformation);
+    typename WriterType::Pointer writer = WriterType::New();  
+    itk::PluginFilterWatcher watchWriter(writer,
                                        "Write Volume",
                                        CLPProcessInformation);
-  writer->SetFileName( outputVolume.c_str() );
-  writer->SetInput( filter->GetOutput() );
-  writer->SetUseCompression(1);
-  writer->Update();
-  
-  typename StatisticType::Pointer statistic = StatisticType::New();
-  itk::PluginFilterWatcher watchStatistic(statistic,
-                                       "Calculating Statistigs",
+    writer->SetFileName( outputVolume.c_str() );
+    writer->SetInput( logFilter->GetOutput() );
+    writer->SetUseCompression(1);
+    writer->Update();
+  }
+  else {
+    typename WriterType::Pointer writer = WriterType::New();
+    itk::PluginFilterWatcher watchWriter(writer,
+                                       "Write Volume",
                                        CLPProcessInformation);
-  statistic->SetInput ( filter->GetOutput() );
-  statistic->Update();
-  mean=statistic->GetMean();
-  std::cout << "Mean: " << mean << std::endl;
-  std::cout << "Std.: " << statistic->GetSigma() << std::endl;
-  std::cout << "Max: " << statistic->GetMaximum() << std::endl;
-  std::cout << "Min.: " << statistic->GetMinimum() << std::endl;
+    writer->SetFileName( outputVolume.c_str() );
+    writer->SetInput( filter->GetOutput() );
+    writer->SetUseCompression(1);
+    writer->Update();
+  }
+
+
+  
+//   typename StatisticType::Pointer statistic = StatisticType::New();
+//   itk::PluginFilterWatcher watchStatistic(statistic,
+//                                        "Calculating Statistics",
+//                                        CLPProcessInformation);
+//   statistic->SetInput ( filter->GetOutput() );
+//   statistic->Update();
+//   mean=statistic->GetMean();
+//   std::cout << "Mean: " << mean << std::endl;
+//   std::cout << "Std.: " << statistic->GetSigma() << std::endl;
+//   std::cout << "Max: " << statistic->GetMaximum() << std::endl;
+//   std::cout << "Min.: " << statistic->GetMinimum() << std::endl;
   
   //TODO: Add statistics (min, max) and add logic in Widget
   std::cout << "Finished" << std::endl;
