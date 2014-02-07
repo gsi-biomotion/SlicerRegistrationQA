@@ -42,6 +42,7 @@
 #include <vtkGeneralTransform.h>
 #include <vtkLookupTable.h>
 #include <vtkMath.h>
+#include <vtkImageAccumulate.h>
 
 
 // Glyph VTK includes
@@ -278,8 +279,16 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference() {
 	
 	this->SetForegroundImage(referenceVolume,outputVolume,0.5);	
 	
-	
-	
+	  // Get mean and std from squared difference volume
+	vtkNew<vtkImageAccumulate> sqDiffStat;
+	sqDiffStat->SetInput(outputVolume->GetImageData());
+	sqDiffStat->Update();
+
+	this->RegistrationQualityNode->DisableModifiedEventOn();
+	this->RegistrationQualityNode->SetSquaredDiffMean( sqDiffStat->GetMean()[0] );
+	this->RegistrationQualityNode->SetSquaredDiffSTD( sqDiffStat->GetStandardDeviation()[0] );
+	this->RegistrationQualityNode->DisableModifiedEventOff();
+
 	return;
 }
 

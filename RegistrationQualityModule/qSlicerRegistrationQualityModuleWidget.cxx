@@ -197,8 +197,8 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 // 		}
 
 		pNode->SetFlickerOpacity(0);
-		pNode->SetMeanValue(0);
-		pNode->SetSTDValue(0);
+		pNode->SetSquaredDiffMean(0);
+		pNode->SetSquaredDiffSTD(0);
 		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
 
 		//Update Visualization Parameters
@@ -678,8 +678,14 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::squaredDiffToggle() {
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	
 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
 	logic->SquaredDifference();
+	
+	d->squaredDiffMeanSpinBox->setValue(pNode->GetSquaredDiffMean());
+	d->squaredDiffSTDSpinBox->setValue(pNode->GetSquaredDiffSTD());
+
 }
 //-----------------------------------------------------------------------------
 // Image Checks

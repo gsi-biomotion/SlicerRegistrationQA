@@ -93,11 +93,11 @@ public:
 	vtkSetStringMacro(SquaredDiffNodeID);
 	vtkGetStringMacro(SquaredDiffNodeID);
 	void SetAndObserveSquaredDiffNodeID(const char* id);
-	vtkSetMacro(MeanValue, int);
-	vtkGetMacro(MeanValue, int);
+	vtkSetMacro(SquaredDiffMean, double);
+	vtkGetMacro(SquaredDiffMean, double);
 	
-	vtkSetMacro(STDValue, int);
-	vtkGetMacro(STDValue, int);
+	vtkSetMacro(SquaredDiffSTD, double);
+	vtkGetMacro(SquaredDiffSTD, double);
 	
 	// Glyph Parameters
 	vtkSetMacro(GlyphPointMax, int);
@@ -204,8 +204,8 @@ protected:
 	int FlickerDelay;
 	
 	char* SquaredDiffNodeID;
-	int MeanValue;
-	int STDValue;
+	double SquaredDiffMean;
+	double SquaredDiffSTD;
 	
 	// Glyph Parameters
 	int GlyphPointMax;

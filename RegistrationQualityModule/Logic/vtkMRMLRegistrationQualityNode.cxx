@@ -27,8 +27,8 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->FlickerOpacity = 1;
 	
 	this->SquaredDiffNodeID = NULL;
-	this->MeanValue = 0;
-	this->STDValue = 0;
+	this->SquaredDiffMean = 0;
+	this->SquaredDiffSTD = 0;
 
 	
 	
@@ -144,16 +144,16 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 			this->SetSquaredDiffNodeID(attValue);
 			continue;
 		}
-		if (!strcmp(attName, "MeanValue")) {
+		if (!strcmp(attName, "SquaredDiffMean")) {
 			std::stringstream ss;
 			ss << attValue;
-			ss >> this->MeanValue;
+			ss >> this->SquaredDiffMean;
 			continue;
 		}
-		if (!strcmp(attName, "STDValue")) {
+		if (!strcmp(attName, "SquaredDiffSTD")) {
 			std::stringstream ss;
 			ss << attValue;
-			ss >> this->STDValue;
+			ss >> this->SquaredDiffSTD;
 			continue;
 		}
 		if (!strcmp(attName,"GlyphPointMax")) {
@@ -376,8 +376,8 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 	
 	of << indent << " SquaredDiffNodeID=\""
 			<< (this->SquaredDiffNodeID ? this->SquaredDiffNodeID : "NULL") << "\"";
-	of << indent << " MeanValue=\"" << this->MeanValue << "\"";
-	of << indent << " STDValue=\"" << this->STDValue << "\"";
+	of << indent << " SquaredDiffMean=\"" << this->SquaredDiffMean << "\"";
+	of << indent << " SquaredDiffSTD=\"" << this->SquaredDiffSTD << "\"";
 	
 	of << indent << " GlyphPointMax=\""<< this->GlyphPointMax << "\"";
 	of << indent << " GlyphScale=\""<< this->GlyphScale << "\"";
@@ -437,8 +437,8 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 
 	this->FlickerOpacity = node->FlickerOpacity;
 	this->SetSquaredDiffNodeID(node->GetSquaredDiffNodeID());
-	this->MeanValue = node->MeanValue;
-	this->STDValue = node->STDValue;
+	this->SquaredDiffMean = node->SquaredDiffMean;
+	this->SquaredDiffSTD = node->SquaredDiffSTD;
 	
 	this->GlyphPointMax = node->GlyphPointMax;
 	this->GlyphScaleDirectional = node->GlyphScaleDirectional;
@@ -616,8 +616,8 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 	
 	os << indent << " SquaredDiffNodeID = "
 			<< (this->SquaredDiffNodeID ? this->SquaredDiffNodeID : "NULL") << "\n";
-	os << indent << " MeanValue = " << this->MeanValue << "\n";
-	os << indent << " STDValue = " << this->MeanValue << "\n";
+	os << indent << " SquaredDiffMean = " << this->SquaredDiffMean << "\n";
+	os << indent << " SquaredDiffSTD = " << this->SquaredDiffMean << "\n";
 	
 	os << indent << " GlyphPointMax = " << this->GlyphPointMax << "\n";
 	os << indent << " GlyphScale = " << this->GlyphScale << "\n";
