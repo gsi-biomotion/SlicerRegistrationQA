@@ -280,13 +280,12 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference() {
 	this->SetForegroundImage(referenceVolume,outputVolume,0.5);	
 	
 	  // Get mean and std from squared difference volume
-	vtkNew<vtkImageAccumulate> sqDiffStat;
-	sqDiffStat->SetInput(outputVolume->GetImageData());
-	sqDiffStat->Update();
+	double statisticValues[4];
+	this->CalculateStatistics(outputVolume,statisticValues);
 
 	this->RegistrationQualityNode->DisableModifiedEventOn();
-	this->RegistrationQualityNode->SetSquaredDiffMean( sqDiffStat->GetMean()[0] );
-	this->RegistrationQualityNode->SetSquaredDiffSTD( sqDiffStat->GetStandardDeviation()[0] );
+	this->RegistrationQualityNode->SetSquaredDiffMean( statisticValues[0] );
+	this->RegistrationQualityNode->SetSquaredDiffSTD( statisticValues[1] );
 	this->RegistrationQualityNode->DisableModifiedEventOff();
 
 	return;
@@ -665,17 +664,29 @@ void vtkSlicerRegistrationQualityLogic::Jacobian() {
 	
 	this->SetForegroundImage(referenceVolume,outputVolume,0.5);
 	
-	vtkNew<vtkImageAccumulate> jacobianStat;
-	jacobianStat->SetInput(outputVolume->GetImageData());
-	jacobianStat->Update();
+	double statisticValues[4]; // 1. Mean 2. STD 3. Max 4. Min
+	this->CalculateStatistics(outputVolume,statisticValues);
 
 	this->RegistrationQualityNode->DisableModifiedEventOn();
-	this->RegistrationQualityNode->SetJacobianMean( jacobianStat->GetMean()[0] );
-	this->RegistrationQualityNode->SetJacobianSTD( jacobianStat->GetStandardDeviation()[0] );
+	this->RegistrationQualityNode->SetJacobianMean( statisticValues[0] );
+	this->RegistrationQualityNode->SetJacobianSTD( statisticValues[1] );
 	this->RegistrationQualityNode->DisableModifiedEventOff();
 
 	return;
 }
+//---Calculate Statistic of image-----------------------------------
+void vtkSlicerRegistrationQualityLogic::CalculateStatistics(vtkMRMLScalarVolumeNode *inputVolume, double statisticValues[4] )
+{
+  vtkNew<vtkImageAccumulate> StatImage;
+  StatImage->SetInput(inputVolume->GetImageData());
+  StatImage->Update();
+  statisticValues[0]= StatImage->GetMean()[0];
+  statisticValues[1]= StatImage->GetStandardDeviation()[0];
+  statisticValues[2]= StatImage->GetMax()[0];
+  statisticValues[3]= StatImage->GetMin()[0];    
+}
+
+
 //---Change backroung image and set opacity-----------------------------------
 void vtkSlicerRegistrationQualityLogic
 ::SetForegroundImage(vtkMRMLScalarVolumeNode *backgroundVolume, vtkMRMLScalarVolumeNode *foregroundVolume,double opacity) {

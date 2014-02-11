@@ -62,6 +62,7 @@ public:
 	void GenerateTransformField();
 	void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
 	void Jacobian();
+	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double statisticValues[4]);
 
 public:
 	void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);
