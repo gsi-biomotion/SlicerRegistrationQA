@@ -40,13 +40,5 @@
       <longflag>--enablestage0</longflag>
       <description>Check this box if you want to calculate logarithm.</description>
     </boolean>
-    <double>
-      <name>mean</name>
-      <longflag>mean</longflag>
-      <flag>s</flag>
-      <label>Mean</label>
-      <description><![CDATA[Sigma value in physical units (e.g., mm) of the Gaussian kernel]]></description>
-      <default>1.0</default>
-    </double>
   </parameters>
 </executable>
