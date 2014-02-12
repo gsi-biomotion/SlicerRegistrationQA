@@ -196,12 +196,18 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 // 			this->squaredDiffVolumeChanged(d->SquaredDiffComboBox->currentNode());
 // 		}
 
-		pNode->SetFlickerOpacity(0);
-		pNode->SetSquaredDiffMean(0);
-		pNode->SetSquaredDiffSTD(0);		
+// 		pNode->SetFlickerOpacity(0);
+		d->squaredDiffMeanSpinBox->setValue(pNode->GetSquaredDiffStatistics()[0]);
+		d->squaredDiffSTDSpinBox->setValue(pNode->GetSquaredDiffStatistics()[1]);
+		
 		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
-		pNode->SetJacobianMean(0);
-		pNode->SetJacobianSTD(0);
+		d->jacobianMeanSpinBox->setValue(pNode->GetJacobianStatistics()[0]);
+		d->jacobianSTDSpinBox->setValue(pNode->GetJacobianStatistics()[1]);
+// 		pNode->SetInverseConsistStatistics(0,0,0,0);
+		
+		d->inverseConsistMeanSpinBox->setValue(pNode->GetInverseConsistStatistics()[0]);
+		d->inverseConsistSTDSpinBox->setValue(pNode->GetInverseConsistStatistics()[1]);
+
 	  
 		//Update Visualization Parameters
 		d->CheckerboardPattern->setValue(pNode->GetCheckerboardPattern());
@@ -281,6 +287,7 @@ void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* no
 
 	d->ApplyButton->setEnabled(true);
 	d->JacobianToggle->setEnabled(true);
+	d->InverseConsistToggle->setEnabled(true);
 	d->VolumeDisabledLabel->hide();
 
 	pNode->DisableModifiedEventOn();
@@ -332,7 +339,26 @@ void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* no
 // 	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
 // 	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
 }
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::invVectorVolumeChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
+	// TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		d->ApplyButton->setEnabled(false);
+		d->VolumeDisabledLabel->show();
+		return;
+	}
+
+	d->InverseConsistToggle->setEnabled(true);
+
+
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveInvVectorVolumeNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
+
+}
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode* node) {
 	
@@ -601,6 +627,7 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegistrationQualityParametersNode(vtkMRMLNode*)));
 
 	connect(d->InputFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(vectorVolumeChanged(vtkMRMLNode*)));
+	connect(d->InputInvFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(invVectorVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
 	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
@@ -622,9 +649,11 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
 
-	connect(d->CheckerboardPattern, SIGNAL(valueChanged(int)), this, SLOT(setCheckerboardPattern(int)));
+	connect(d->CheckerboardPattern, SIGNAL(valueChanged(double)), this, SLOT(setCheckerboardPattern(double)));
 	
 	connect(d->JacobianToggle, SIGNAL(clicked()), this, SLOT (jacobianToggle()));
+	
+	connect(d->InverseConsistToggle, SIGNAL(clicked()), this, SLOT (inverseConsistToggle()));
 
 	// Glyph Parameters
 	connect(d->InputGlyphPointMax, SIGNAL(valueChanged(double)), this, SLOT(setGlyphPointMax(double)));
@@ -685,8 +714,8 @@ void qSlicerRegistrationQualityModuleWidget::squaredDiffToggle() {
 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
 	logic->SquaredDifference();
 	
-	d->squaredDiffMeanSpinBox->setValue(pNode->GetSquaredDiffMean());
-	d->squaredDiffSTDSpinBox->setValue(pNode->GetSquaredDiffSTD());
+	d->squaredDiffMeanSpinBox->setValue(pNode->GetSquaredDiffStatistics()[0]);
+	d->squaredDiffSTDSpinBox->setValue(pNode->GetSquaredDiffStatistics()[1]);
 
 }
 //-----------------------------------------------------------------------------
@@ -701,6 +730,7 @@ void qSlicerRegistrationQualityModuleWidget::falseColorToggle(int state) {
 
 void qSlicerRegistrationQualityModuleWidget::checkerboardToggle(){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
+		
 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
 	logic->Checkerboard();
 
@@ -766,10 +796,20 @@ void qSlicerRegistrationQualityModuleWidget::jacobianToggle(){
 	
 	logic->Jacobian();
 	
-	d->jacobianMeanSpinBox->setValue(pNode->GetJacobianMean());
-	d->jacobianSTDSpinBox->setValue(pNode->GetJacobianSTD());
+	d->jacobianMeanSpinBox->setValue(pNode->GetJacobianStatistics()[0]);
+	d->jacobianSTDSpinBox->setValue(pNode->GetJacobianStatistics()[1]);
 }
-
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::inverseConsistToggle(){
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+	
+	logic->InverseConsist();
+	
+	d->inverseConsistMeanSpinBox->setValue(pNode->GetInverseConsistStatistics()[0]);
+	d->inverseConsistSTDSpinBox->setValue(pNode->GetInverseConsistStatistics()[1]);
+}
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::movieBoxRedStateChanged(int state) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
@@ -810,13 +850,14 @@ void qSlicerRegistrationQualityModuleWidget::movieBoxGreenStateChanged(int state
 }
 
 
-void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(int checkboardPattern) {
+void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(double checkboardPattern) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 	if (!pNode || !this->mrmlScene()) {
 		return;
 	}
+	
 	pNode->DisableModifiedEventOn();
 	pNode->SetCheckerboardPattern(checkboardPattern);
 	pNode->DisableModifiedEventOff();

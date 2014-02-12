@@ -26,6 +26,10 @@ public:
 	vtkSetStringMacro(VectorVolumeNodeID);
 	vtkGetStringMacro(VectorVolumeNodeID);
 	void SetAndObserveVectorVolumeNodeID(const char* id);
+	
+	vtkSetStringMacro(InvVectorVolumeNodeID);
+	vtkGetStringMacro(InvVectorVolumeNodeID);
+	void SetAndObserveInvVectorVolumeNodeID(const char* id);
 
 	vtkSetStringMacro(ReferenceVolumeNodeID);
 	vtkGetStringMacro(ReferenceVolumeNodeID);
@@ -93,22 +97,28 @@ public:
 	vtkSetStringMacro(SquaredDiffNodeID);
 	vtkGetStringMacro(SquaredDiffNodeID);
 	void SetAndObserveSquaredDiffNodeID(const char* id);
-	vtkSetMacro(SquaredDiffMean, double);
-	vtkGetMacro(SquaredDiffMean, double);
 	
-	vtkSetMacro(SquaredDiffSTD, double);
-	vtkGetMacro(SquaredDiffSTD, double);
+	vtkSetVector4Macro(SquaredDiffStatistics, double);
+	vtkGetVector4Macro(SquaredDiffStatistics, double);
+	
 	
 	// Jacobian parameters:
 	vtkSetStringMacro(JacobianNodeID);
 	vtkGetStringMacro(JacobianNodeID);
 	void SetAndObserveJacobianNodeID(const char* id);
 	
-	vtkSetMacro(JacobianMean, double);
-	vtkGetMacro(JacobianMean, double);
 	
-	vtkSetMacro(JacobianSTD, double);
-	vtkGetMacro(JacobianSTD, double);
+	vtkSetVector4Macro(JacobianStatistics, double);
+	vtkGetVector4Macro(JacobianStatistics, double);
+	
+	// Inverse Consistenciy parameters:
+	vtkSetStringMacro(InverseConsistNodeID);
+	vtkGetStringMacro(InverseConsistNodeID);
+	void SetAndObserveInverseConsistNodeID(const char* id);
+		
+	vtkSetVector4Macro(InverseConsistStatistics, double);
+	vtkGetVector4Macro(InverseConsistStatistics, double);
+	
 	
 	// Glyph Parameters
 	vtkSetMacro(GlyphPointMax, int);
@@ -199,6 +209,7 @@ protected:
 	void operator=(const vtkMRMLRegistrationQualityNode&);
 
 	char* VectorVolumeNodeID;
+	char* InvVectorVolumeNodeID;
 	char* ReferenceVolumeNodeID;
 	char* WarpedVolumeNodeID;
 	char* OutputModelNodeID;
@@ -215,12 +226,15 @@ protected:
 	int FlickerDelay;
 	
 	char* SquaredDiffNodeID;
-	double SquaredDiffMean;
-	double SquaredDiffSTD;
+	double SquaredDiffStatistics[4];
+
 	
 	char* JacobianNodeID;
-	double JacobianMean;
-	double JacobianSTD;
+	double JacobianStatistics[4];
+	
+	char* InverseConsistNodeID;
+	double InverseConsistStatistics[4];
+
 	
 	// Glyph Parameters
 	int GlyphPointMax;

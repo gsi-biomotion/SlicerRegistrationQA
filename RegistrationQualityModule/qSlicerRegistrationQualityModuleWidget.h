@@ -36,6 +36,7 @@ protected slots:
 	void updateSourceOptions(int);
 
 	void vectorVolumeChanged(vtkMRMLNode*);
+	void invVectorVolumeChanged(vtkMRMLNode*);
 	void referenceVolumeChanged(vtkMRMLNode*);
 	void warpedVolumeChanged(vtkMRMLNode*);
 	void outputModelChanged(vtkMRMLNode*);
@@ -57,8 +58,9 @@ protected slots:
 
 	// Vector checks
 	void jacobianToggle();
+	void inverseConsistToggle();
 	// Parameters
-	void setCheckerboardPattern(int);
+	void setCheckerboardPattern(double);
 	// Glyph Parameters
 	void setGlyphPointMax(double);
 	void setGlyphScale(double);

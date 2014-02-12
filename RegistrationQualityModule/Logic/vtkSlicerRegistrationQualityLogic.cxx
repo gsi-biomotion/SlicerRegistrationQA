@@ -284,8 +284,7 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference() {
 	this->CalculateStatistics(outputVolume,statisticValues);
 
 	this->RegistrationQualityNode->DisableModifiedEventOn();
-	this->RegistrationQualityNode->SetSquaredDiffMean( statisticValues[0] );
-	this->RegistrationQualityNode->SetSquaredDiffSTD( statisticValues[1] );
+	this->RegistrationQualityNode->SetSquaredDiffStatistics( statisticValues );
 	this->RegistrationQualityNode->DisableModifiedEventOff();
 
 	return;
@@ -668,8 +667,97 @@ void vtkSlicerRegistrationQualityLogic::Jacobian() {
 	this->CalculateStatistics(outputVolume,statisticValues);
 
 	this->RegistrationQualityNode->DisableModifiedEventOn();
-	this->RegistrationQualityNode->SetJacobianMean( statisticValues[0] );
-	this->RegistrationQualityNode->SetJacobianSTD( statisticValues[1] );
+	this->RegistrationQualityNode->SetJacobianStatistics( statisticValues );
+// 	this->RegistrationQualityNode->SetJacobianSTD( statisticValues[1] );
+	this->RegistrationQualityNode->DisableModifiedEventOff();
+
+	return;
+}
+//----------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::InverseConsist() {
+	
+	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
+		vtkErrorMacro("Inverse Consistency: Invalid scene or parameter set node!");
+		return;
+	}
+
+	vtkMRMLVectorVolumeNode *vectorVolume1 = vtkMRMLVectorVolumeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetVectorVolumeNodeID()));
+	vtkMRMLVectorVolumeNode *vectorVolume2 = vtkMRMLVectorVolumeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetInvVectorVolumeNodeID()));
+	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
+// 	vtkMRMLVolumeNode *warpedVolume = vtkMRMLVolumeNode::SafeDownCast(
+// 			this->GetMRMLScene()->GetNodeByID(
+// 				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
+// 	vtkMRMLVolumeNode *outputVolume = vtkMRMLVolumeNode::SafeDownCast(
+// 			this->GetMRMLScene()->GetNodeByID(
+// 				this->RegistrationQualityNode->GetCheckerboardNodeID()));
+// 
+	if (!vectorVolume1 || !vectorVolume2 || !referenceVolume ) {
+	    std::cerr << "Volumes not set!" << std::endl;
+	    return;
+	}
+	  if(!this->Internal->VolumesLogic)
+	    {
+	      std::cerr << "Inverse Consistency: ERROR: failed to get hold of Volumes logic" << std::endl;
+	      return;
+	    }
+	  
+	  vtkMRMLScalarVolumeNode *outputVolume = NULL;
+	  vtkMRMLScalarVolumeNode *svnode = vtkMRMLScalarVolumeNode::SafeDownCast(referenceVolume);
+	  std::ostringstream outSS;
+
+	  outSS << referenceVolume->GetName() << "-inverseConsist";
+	  if(svnode)
+	  {
+	    outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
+	  }
+	  else
+	  {
+	    std::cerr << "Reference volume not scalar volume!" << std::endl;
+	    return;
+	  }
+	  
+
+	qSlicerCLIModule* checkerboardfilterCLI = dynamic_cast<qSlicerCLIModule*>(
+			qSlicerCoreApplication::application()->moduleManager()->module("InverseConsistency"));
+	QString cliModuleName("InverseConsistency");
+
+	vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
+			checkerboardfilterCLI->cliModuleLogic()->CreateNodeInScene();
+
+	// Set node parameters
+	cmdNode->SetParameterAsString("inputVolume1", vectorVolume1->GetID());
+	cmdNode->SetParameterAsString("inputVolume2", vectorVolume2->GetID());
+	cmdNode->SetParameterAsString("outputVolume", outputVolume->GetID());
+
+	// Execute synchronously so that we can check the content of the file after the module execution
+	checkerboardfilterCLI->cliModuleLogic()->ApplyAndWait(cmdNode);
+
+	this->GetMRMLScene()->RemoveNode(cmdNode);
+
+	outputVolume->SetAndObserveTransformNodeID(NULL);
+	
+	outputVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
+	outputVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
+	double window=10;
+	int level=5;
+
+	outputVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,10);
+	outputVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
+	outputVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
+	
+	this->SetForegroundImage(referenceVolume,outputVolume,0.5);
+	
+	double statisticValues[4]; // 1. Mean 2. STD 3. Max 4. Min
+	this->CalculateStatistics(outputVolume,statisticValues);
+
+	this->RegistrationQualityNode->DisableModifiedEventOn();
+	this->RegistrationQualityNode->SetInverseConsistStatistics( statisticValues );
 	this->RegistrationQualityNode->DisableModifiedEventOff();
 
 	return;
