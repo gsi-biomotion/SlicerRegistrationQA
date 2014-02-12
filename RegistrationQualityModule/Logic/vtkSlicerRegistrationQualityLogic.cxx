@@ -742,7 +742,7 @@ void vtkSlicerRegistrationQualityLogic::InverseConsist() {
 
 	outputVolume->SetAndObserveTransformNodeID(NULL);
 	
-	outputVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
+	outputVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen");
 	outputVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
 	double window=10;
 	int level=5;
