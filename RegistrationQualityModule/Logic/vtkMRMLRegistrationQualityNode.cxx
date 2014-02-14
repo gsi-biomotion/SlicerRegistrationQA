@@ -23,17 +23,17 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 
 	//Checkerboard Parameters
 	this->CheckerboardPattern = 20;
-	this->CheckerboardNodeID = NULL;
+	this->CheckerboardVolumeNodeID = NULL;
 
 	this->FlickerOpacity = 1;
 	
-	this->SquaredDiffNodeID = NULL;
+	this->SquaredDiffVolumeNodeID = NULL;
 	this->SquaredDiffStatistics = {0,0,0,0};
 
-	this->JacobianNodeID = NULL;
+	this->JacobianVolumeNodeID = NULL;
 	this->JacobianStatistics = {0,0,0,0};
 	
-	this->InverseConsistNodeID = NULL;
+	this->InverseConsistVolumeNodeID = NULL;
 	this->InverseConsistStatistics = {0,0,0,0};
 	
 	MovieBoxRedState = 0;
@@ -96,9 +96,9 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetReferenceVolumeNodeID(NULL);
 	this->SetWarpedVolumeNodeID(NULL);
 	this->SetOutputModelNodeID(NULL);
-	this->SetCheckerboardNodeID(NULL);
-	this->SetSquaredDiffNodeID(NULL);
-	this->SetJacobianNodeID(NULL);
+	this->SetCheckerboardVolumeNodeID(NULL);
+	this->SetSquaredDiffVolumeNodeID(NULL);
+	this->SetJacobianVolumeNodeID(NULL);
 	this->SetGlyphSliceNodeID(NULL);
 	this->SetGridSliceNodeID(NULL);
 }
@@ -140,8 +140,8 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 			ss >> this->CheckerboardPattern;
 			continue;
 		}
-// 		if (!strcmp(attName,"CheckerboardNodeID")) {
-// 			this->SetCheckerboardNodeID(attValue);
+// 		if (!strcmp(attName,"CheckerboardVolumeNodeID")) {
+// 			this->SetCheckerboardVolumeNodeID(attValue);
 // 			continue;
 // 		}
 // 		if (!strcmp(attName,"FlickerOpacity")) {
@@ -150,8 +150,8 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 // 			ss >> this->FlickerOpacity;
 // 			continue;
 // 		}
-// 		if (!strcmp(attName,"SquaredDiffNodeID")) {
-// 			this->SetSquaredDiffNodeID(attValue);
+// 		if (!strcmp(attName,"SquaredDiffVolumeNodeID")) {
+// 			this->SetSquaredDiffVolumeNodeID(attValue);
 // 			continue;
 // 		}
 // 		if (!strcmp(attName, "SquaredDiffMean")) {
@@ -160,8 +160,8 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 // 			ss >> this->SquaredDiffMean;
 // 			continue;
 // 		}
-// 		if (!strcmp(attName,"JacobianNodeID")) {
-// 			this->SetJacobianNodeID(attValue);
+// 		if (!strcmp(attName,"JacobianVolumeNodeID")) {
+// 			this->SetJacobianVolumeNodeID(attValue);
 // 			continue;
 // 		}
 // 		if (!strcmp(attName, "JacobianStatistics")) {
@@ -385,19 +385,19 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 			<< (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\"";
 
 	of << indent << " CheckerboardPattern=\"" << this->CheckerboardPattern << "\"";
-// 	of << indent << " CheckerboardNodeID=\""
-// 			<< (this->CheckerboardNodeID ? this->CheckerboardNodeID : "NULL") << "\"";
+// 	of << indent << " CheckerboardVolumeNodeID=\""
+// 			<< (this->CheckerboardVolumeNodeID ? this->CheckerboardVolumeNodeID : "NULL") << "\"";
 // 
 // 
 // 	of << indent << " FlickerOpacity=\""<< this->FlickerOpacity << "\"";
 // 	
-// 	of << indent << " SquaredDiffNodeID=\""
-// 			<< (this->SquaredDiffNodeID ? this->SquaredDiffNodeID : "NULL") << "\"";
+// 	of << indent << " SquaredDiffVolumeNodeID=\""
+// 			<< (this->SquaredDiffVolumeNodeID ? this->SquaredDiffVolumeNodeID : "NULL") << "\"";
 // 	of << indent << " SquaredDiffMean=\"" << this->SquaredDiffMean << "\"";
 // 	of << indent << " SquaredDiffSTD=\"" << this->SquaredDiffSTD << "\"";
 // 	
-// 	of << indent << " JacobianNodeID=\""
-// 			<< (this->JacobianNodeID ? this->JacobianNodeID : "NULL") << "\"";
+// 	of << indent << " JacobianVolumeNodeID=\""
+// 			<< (this->JacobianVolumeNodeID ? this->JacobianVolumeNodeID : "NULL") << "\"";
 // 	of << indent << " JacobianStatistics=\"" << this->JacobianStatistics << "\"";
 	
 	of << indent << " GlyphPointMax=\""<< this->GlyphPointMax << "\"";
@@ -453,14 +453,14 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 	this->SetWarpedVolumeNodeID(node->GetWarpedVolumeNodeID());
 	this->SetOutputModelNodeID(node->GetOutputModelNodeID());
 
-// 	this->SetCheckerboardNodeID(node->GetCheckerboardNodeID());
+// 	this->SetCheckerboardVolumeNodeID(node->GetCheckerboardVolumeNodeID());
 	this->CheckerboardPattern=node->CheckerboardPattern;
 // 	
 // 
 // 	this->FlickerOpacity = node->FlickerOpacity;
-// 	this->SetSquaredDiffNodeID(node->GetSquaredDiffNodeID());
+// 	this->SetSquaredDiffVolumeNodeID(node->GetSquaredDiffVolumeNodeID());
 // 	
-// 	this->SetJacobianNodeID(node->GetJacobianNodeID());
+// 	this->SetJacobianVolumeNodeID(node->GetJacobianVolumeNodeID());
 // // 	this->JacobianStatistics = node->JacobianStatistics;
 
 	
@@ -587,50 +587,50 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveOutputModelNodeID(const char* 
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveCheckerboardNodeID(const char* id) {
-	if (this->CheckerboardNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->CheckerboardNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveCheckerboardVolumeNodeID(const char* id) {
+	if (this->CheckerboardVolumeNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->CheckerboardVolumeNodeID, this);
 	}
-	this->SetCheckerboardNodeID(id);
+	this->SetCheckerboardVolumeNodeID(id);
 
 	if (id) {
-		this->Scene->AddReferencedNodeID(this->CheckerboardNodeID, this);
+		this->Scene->AddReferencedNodeID(this->CheckerboardVolumeNodeID, this);
 	}
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveSquaredDiffNodeID(const char* id) {
-	if (this->SquaredDiffNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->SquaredDiffNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveSquaredDiffVolumeNodeID(const char* id) {
+	if (this->SquaredDiffVolumeNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->SquaredDiffVolumeNodeID, this);
 	}
-	this->SetSquaredDiffNodeID(id);
+	this->SetSquaredDiffVolumeNodeID(id);
 
 	if (id) {
-		this->Scene->AddReferencedNodeID(this->SquaredDiffNodeID, this);
+		this->Scene->AddReferencedNodeID(this->SquaredDiffVolumeNodeID, this);
 	}
 }
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveJacobianNodeID(const char* id) {
-	if (this->JacobianNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->JacobianNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveJacobianVolumeNodeID(const char* id) {
+	if (this->JacobianVolumeNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->JacobianVolumeNodeID, this);
 	}
-	this->SetJacobianNodeID(id);
+	this->SetJacobianVolumeNodeID(id);
 
 	if (id) {
-	  this->Scene->AddReferencedNodeID(this->JacobianNodeID, this);
+	  this->Scene->AddReferencedNodeID(this->JacobianVolumeNodeID, this);
 	}
 }
 	  
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveInverseConsistNodeID(const char* id) {
-	if (this->InverseConsistNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->InverseConsistNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveInverseConsistVolumeNodeID(const char* id) {
+	if (this->InverseConsistVolumeNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->InverseConsistVolumeNodeID, this);
 	}
-	this->SetInverseConsistNodeID(id);
+	this->SetInverseConsistVolumeNodeID(id);
 
 	if (id) {
-		this->Scene->AddReferencedNodeID(this->InverseConsistNodeID, this);
+		this->Scene->AddReferencedNodeID(this->InverseConsistVolumeNodeID, this);
 	}
 }
 
@@ -673,19 +673,19 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 
 	os << indent << " OutputModelNodeID = "
 			<< (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\n";
-// 	os << indent << " CheckerboardNodeID = "
-// 			<< (this->CheckerboardNodeID ? this->CheckerboardNodeID : "NULL") << "\n";
+// 	os << indent << " CheckerboardVolumeNodeID = "
+// 			<< (this->CheckerboardVolumeNodeID ? this->CheckerboardVolumeNodeID : "NULL") << "\n";
 	os << indent << " CheckerboardPattern = " << this->CheckerboardPattern << "\n";
 // 
 // 	os << indent << " FlickerOpacity = " << this->FlickerOpacity << "\n";
 // 	
-// 	os << indent << " SquaredDiffNodeID = "
-// 			<< (this->SquaredDiffNodeID ? this->SquaredDiffNodeID : "NULL") << "\n";
+// 	os << indent << " SquaredDiffVolumeNodeID = "
+// 			<< (this->SquaredDiffVolumeNodeID ? this->SquaredDiffVolumeNodeID : "NULL") << "\n";
 // 	os << indent << " SquaredDiffMean = " << this->SquaredDiffMean << "\n";
 // 	os << indent << " SquaredDiffSTD = " << this->SquaredDiffMean << "\n";
 // 	
-// 	os << indent << " JacobianNodeID = "
-// 			<< (this->JacobianNodeID ? this->JacobianNodeID : "NULL") << "\n";
+// 	os << indent << " JacobianVolumeNodeID = "
+// 			<< (this->JacobianVolumeNodeID ? this->JacobianVolumeNodeID : "NULL") << "\n";
 // // 	os << indent << " JacobianStatistics = " << this->JacobianStatistics << "\n";
 	
 	os << indent << " GlyphPointMax = " << this->GlyphPointMax << "\n";

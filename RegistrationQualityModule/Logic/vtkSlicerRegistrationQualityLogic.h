@@ -53,16 +53,17 @@ public:
 	 * Will either remake or account for scenario some other way
 	 */
 	
-	void SquaredDifference();
+	void SquaredDifference(int state);
 	void FalseColor(int state);
 	void Flicker(int opacity);
 	void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
 	void Movie();
-	void Checkerboard();
+	void Checkerboard(int state);
 	void GenerateTransformField();
 	void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
-	void Jacobian();
-	void InverseConsist();
+	void Jacobian(int state);
+	void InverseConsist(int state);
+	void SetDefaultDisplay(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*);
 	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double statisticValues[4]);
 
 public:

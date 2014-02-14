@@ -373,146 +373,6 @@
     </widget>
    </item>
    <item>
-    <widget class="ctkCollapsibleButton" name="SquaredDifference">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>25000</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calculation of squared difference between reference and warped image.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Squared Difference</string>
-     </property>
-     <property name="autoRepeatInterval">
-      <number>100</number>
-     </property>
-     <layout class="QVBoxLayout" name="gridLayout_SD">
-      <item>
-       <widget class="QGroupBox" name="DiffgroupBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Image Difference</string>
-        </property>
-        <layout class="QFormLayout" name="formLayoutDiff">
-         <property name="fieldGrowthPolicy">
-          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-         </property>
-         <item row="1" column="0">
-          <widget class="QLabel" name="stdLabel">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Standard Deviation:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QDoubleSpinBox" name="squaredDiffMeanSpinBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="accessibleName">
-            <string/>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="disabled" stdset="0">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="MeanValueLabel">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Mean Value:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QDoubleSpinBox" name="squaredDiffSTDSpinBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="accessibleName">
-            <string/>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="disabled" stdset="0">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0" colspan="2">
-          <widget class="QPushButton" name="SquaredDiffToggle">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-             <horstretch>50</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Calculate Square Difference</string>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>48</width>
-             <height>48</height>
-            </size>
-           </property>
-           <property name="Enabled" stdset="0">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="ctkCollapsibleButton" name="ImageChecks">
      <property name="sizePolicy">
       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
@@ -553,18 +413,6 @@
         <property name="title">
          <string>Still Checks</string>
         </property>
-        <layout class="QGridLayout" name="stillGridLayout">
-         <item row="0" column="0">
-          <widget class="QGroupBox" name="falseColorGroupBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="title">
-            <string>False Color</string>
-           </property>
            <layout class="QGridLayout" name="falseColorGridLayout">
             <item row="0" column="0">
              <widget class="QCheckBox" name="FalseColorCheckBox">
@@ -582,88 +430,147 @@
               </property>
              </widget>
             </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QGroupBox" name="checkerboardGroupBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="title">
-            <string>Checkerboard</string>
-           </property>
-           <layout class="QGridLayout" name="checkerboardGridLayout">
-            <item row="0" column="0">
-             <widget class="QLabel" name="CheckerboardLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Pattern:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0" colspan="2">
-             <widget class="QPushButton" name="CheckerboardToggle">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-                <horstretch>50</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Get Checkerboard</string>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>48</width>
-                <height>48</height>
-               </size>
-              </property>
-              <property name="Enabled" stdset="0">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="ctkSliderWidget" name="CheckerboardPattern">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>Number of boxes in checkerboard volume</string>
-              </property>
-              <property name="decimals">
-               <number>0</number>
-              </property>
-              <property name="singleStep">
-               <double>1.000000000000000</double>
-              </property>
-              <property name="pageStep">
-               <double>10.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>100.000000000000000</double>
-              </property>
-              <property name="value">
-               <double>20.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
+	    <item row="1" column="1">
+	    <widget class="QLabel" name="CheckerboardLabel">
+		  <property name="sizePolicy">
+		  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+		    <horstretch>0</horstretch>
+		    <verstretch>0</verstretch>
+		  </sizepolicy>
+		  </property>
+		  <property name="text">
+		  <string>Pattern:</string>
+		  </property>
+		</widget>
+	    </item>
+	    <item row="1" column="0">
+	    <widget class="QCheckBox" name="CheckerboardCheckBox">
+		  <property name="sizePolicy">
+		  <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+		    <horstretch>0</horstretch>
+		    <verstretch>0</verstretch>
+		  </sizepolicy>
+		  </property>
+		  <property name="text">
+		  <string>Checkerboard</string>
+		  </property>
+		  <property name="Enabled" stdset="0">
+		  <bool>false</bool>
+		  </property>
+		</widget>
+	    </item>
+	    <item row="1" column="2">
+	    <widget class="ctkSliderWidget" name="CheckerboardPattern">
+		  <property name="sizePolicy">
+		  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+		    <horstretch>0</horstretch>
+		    <verstretch>0</verstretch>
+		  </sizepolicy>
+		  </property>
+		  <property name="toolTip">
+		  <string>Number of boxes in checkerboard volume</string>
+		  </property>
+		  <property name="decimals">
+		  <number>0</number>
+		  </property>
+		  <property name="singleStep">
+		  <double>1.000000000000000</double>
+		  </property>
+		  <property name="pageStep">
+		  <double>10.000000000000000</double>
+		  </property>
+		  <property name="maximum">
+		  <double>100.000000000000000</double>
+		  </property>
+		  <property name="value">
+		  <double>20.000000000000000</double>
+		  </property>
+		</widget>
+	    </item>
+	    <item row="3" column="1">
+	      <widget class="QLabel" name="stdLabel">
+	      <property name="sizePolicy">
+		<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+		<horstretch>0</horstretch>
+		<verstretch>0</verstretch>
+		</sizepolicy>
+	      </property>
+	      <property name="text">
+		<string>Standard Deviation:</string>
+	      </property>
+	      </widget>
+	    </item>
+	    <item row="2" column="2">
+	      <widget class="QDoubleSpinBox" name="squaredDiffMeanSpinBox">
+	      <property name="sizePolicy">
+		<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+		<horstretch>0</horstretch>
+		<verstretch>0</verstretch>
+		</sizepolicy>
+	      </property>
+	      <property name="accessibleName">
+		<string/>
+	      </property>
+	      <property name="readOnly">
+		<bool>true</bool>
+	      </property>
+	      <property name="disabled" stdset="0">
+		<bool>false</bool>
+	      </property>
+	      </widget>
+	    </item>
+	    <item row="2" column="1">
+	      <widget class="QLabel" name="MeanValueLabel">
+	      <property name="enabled">
+		<bool>true</bool>
+	      </property>
+	      <property name="sizePolicy">
+		<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+		<horstretch>0</horstretch>
+		<verstretch>0</verstretch>
+		</sizepolicy>
+	      </property>
+	      <property name="text">
+		<string>Mean Value:</string>
+	      </property>
+	      </widget>
+	    </item>
+	    <item row="3" column="2">
+	      <widget class="QDoubleSpinBox" name="squaredDiffSTDSpinBox">
+	      <property name="sizePolicy">
+		<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+		<horstretch>0</horstretch>
+		<verstretch>0</verstretch>
+		</sizepolicy>
+	      </property>
+	      <property name="accessibleName">
+		<string/>
+	      </property>
+	      <property name="readOnly">
+		<bool>true</bool>
+	      </property>
+	      <property name="disabled" stdset="0">
+		<bool>false</bool>
+	      </property>
+	      </widget>
+	    </item>
+	    <item row="2" column="0">
+	      <widget class="QCheckBox" name="SquaredDiffCheckBox">
+	      <property name="sizePolicy">
+		<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+		<horstretch>50</horstretch>
+		<verstretch>0</verstretch>
+		</sizepolicy>
+	      </property>
+	      <property name="text">
+		<string>Square Difference</string>
+	      </property>
+	      <property name="Enabled" stdset="0">
+		<bool>false</bool>
+	      </property>
+	      </widget>
+	    </item>
+	   </layout>
        </widget>
       </item>
       <item>
@@ -817,11 +724,11 @@
         <property name="title">
          <string>Jacobian</string>
         </property>
-        <layout class="QFormLayout" name="formLayoutJacobian">
-         <property name="fieldGrowthPolicy">
+        <layout class="QGridLayout" name="gridLayoutJacobian">
+<!--         <property name="fieldGrowthPolicy">
           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-         </property>
-         <item row="1" column="0">
+         </property>-->
+         <item row="1" column="1">
           <widget class="QLabel" name="jacobianSTDLabel">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -834,7 +741,7 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="0" column="2">
           <widget class="QDoubleSpinBox" name="jacobianMeanSpinBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -853,7 +760,7 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
+         <item row="0" column="1">
           <widget class="QLabel" name="jacobianMeanValueLabel">
            <property name="enabled">
             <bool>true</bool>
@@ -869,7 +776,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="1" column="2">
           <widget class="QDoubleSpinBox" name="jacobianSTDSpinBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -888,8 +795,8 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0" colspan="2">
-          <widget class="QPushButton" name="JacobianToggle">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="JacobianCheckBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
              <horstretch>50</horstretch>
@@ -897,13 +804,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Calculate Jacobian</string>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>48</width>
-             <height>48</height>
-            </size>
+            <string>Jacobian of vector field</string>
            </property>
            <property name="Enabled" stdset="0">
             <bool>false</bool>
@@ -924,11 +825,8 @@
         <property name="title">
          <string>Inverse Consistency</string>
         </property>
-        <layout class="QFormLayout" name="formLayoutInverseConsist">
-         <property name="fieldGrowthPolicy">
-          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-         </property>
-         <item row="1" column="0">
+        <layout class="QGridLayout" name="gridLayoutInverseConsist">
+         <item row="1" column="1">
           <widget class="QLabel" name="inverseConsistSTDLabel">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -941,7 +839,7 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
+         <item row="0" column="2">
           <widget class="QDoubleSpinBox" name="inverseConsistMeanSpinBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -960,7 +858,7 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
+         <item row="0" column="1">
           <widget class="QLabel" name="inverseConsistMeanValueLabel">
            <property name="enabled">
             <bool>true</bool>
@@ -976,7 +874,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="1" column="2">
           <widget class="QDoubleSpinBox" name="inverseConsistSTDSpinBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -995,8 +893,8 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0" colspan="2">
-          <widget class="QPushButton" name="InverseConsistToggle">
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="InverseConsistCheckBox">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
              <horstretch>50</horstretch>
@@ -1004,13 +902,7 @@
             </sizepolicy>
            </property>
            <property name="text">
-            <string>Calculate Inverse Consistency</string>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>48</width>
-             <height>48</height>
-            </size>
+            <string>Inverse Consistency</string>
            </property>
            <property name="Enabled" stdset="0">
             <bool>false</bool>

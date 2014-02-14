@@ -82,9 +82,9 @@ public:
 	}
 
 	// Checkerboard parameters
-	vtkSetStringMacro(CheckerboardNodeID);
-	vtkGetStringMacro(CheckerboardNodeID);
-	void SetAndObserveCheckerboardNodeID(const char* id);
+	vtkSetStringMacro(CheckerboardVolumeNodeID);
+	vtkGetStringMacro(CheckerboardVolumeNodeID);
+	void SetAndObserveCheckerboardVolumeNodeID(const char* id);
 	
 	vtkSetMacro(CheckerboardPattern, int);
 	vtkGetMacro(CheckerboardPattern, int);
@@ -94,27 +94,27 @@ public:
 	vtkGetMacro(FlickerOpacity, int);
 	
 	// Squared Difference parameters:
-	vtkSetStringMacro(SquaredDiffNodeID);
-	vtkGetStringMacro(SquaredDiffNodeID);
-	void SetAndObserveSquaredDiffNodeID(const char* id);
+	vtkSetStringMacro(SquaredDiffVolumeNodeID);
+	vtkGetStringMacro(SquaredDiffVolumeNodeID);
+	void SetAndObserveSquaredDiffVolumeNodeID(const char* id);
 	
 	vtkSetVector4Macro(SquaredDiffStatistics, double);
 	vtkGetVector4Macro(SquaredDiffStatistics, double);
 	
 	
 	// Jacobian parameters:
-	vtkSetStringMacro(JacobianNodeID);
-	vtkGetStringMacro(JacobianNodeID);
-	void SetAndObserveJacobianNodeID(const char* id);
+	vtkSetStringMacro(JacobianVolumeNodeID);
+	vtkGetStringMacro(JacobianVolumeNodeID);
+	void SetAndObserveJacobianVolumeNodeID(const char* id);
 	
 	
 	vtkSetVector4Macro(JacobianStatistics, double);
 	vtkGetVector4Macro(JacobianStatistics, double);
 	
 	// Inverse Consistenciy parameters:
-	vtkSetStringMacro(InverseConsistNodeID);
-	vtkGetStringMacro(InverseConsistNodeID);
-	void SetAndObserveInverseConsistNodeID(const char* id);
+	vtkSetStringMacro(InverseConsistVolumeNodeID);
+	vtkGetStringMacro(InverseConsistVolumeNodeID);
+	void SetAndObserveInverseConsistVolumeNodeID(const char* id);
 		
 	vtkSetVector4Macro(InverseConsistStatistics, double);
 	vtkGetVector4Macro(InverseConsistStatistics, double);
@@ -219,20 +219,20 @@ protected:
 	int MovieBoxGreenState;
 	int MovieRun;
 
-	char* CheckerboardNodeID;
+	char* CheckerboardVolumeNodeID;
 	int CheckerboardPattern;
 
 	int FlickerOpacity;
 	int FlickerDelay;
 	
-	char* SquaredDiffNodeID;
+	char* SquaredDiffVolumeNodeID;
 	double SquaredDiffStatistics[4];
 
 	
-	char* JacobianNodeID;
+	char* JacobianVolumeNodeID;
 	double JacobianStatistics[4];
 	
-	char* InverseConsistNodeID;
+	char* InverseConsistVolumeNodeID;
 	double InverseConsistStatistics[4];
 
 	
