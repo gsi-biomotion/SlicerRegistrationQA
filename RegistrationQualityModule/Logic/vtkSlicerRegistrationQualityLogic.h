@@ -6,7 +6,8 @@
 
 // MRML includes
 #include <vtkMRMLSliceCompositeNode.h>
-
+#include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLVectorVolumeNode.h>
 // STD includes
 #include <cstdlib>
 
@@ -19,7 +20,7 @@
 #include "vtkSlicerRegistrationQualityModuleLogicExport.h"
 
 class vtkMRMLRegistrationQualityNode;
-class vtkMRMLVectorVolumeNode;
+// class vtkMRMLVectorVolumeNode;
 class vtkSlicerVolumesLogic;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
@@ -52,14 +53,18 @@ public:
 	 * Will either remake or account for scenario some other way
 	 */
 	
-	void ImageDifference();
+	void SquaredDifference(int state);
 	void FalseColor(int state);
 	void Flicker(int opacity);
 	void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
 	void Movie();
-	void Checkerboard();
+	void Checkerboard(int state);
 	void GenerateTransformField();
-	void SetForegroundImage(vtkMRMLSliceCompositeNode*,double opacity);
+	void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
+	void Jacobian(int state);
+	void InverseConsist(int state);
+	void SetDefaultDisplay(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*);
+	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double statisticValues[4]);
 
 public:
 	void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);

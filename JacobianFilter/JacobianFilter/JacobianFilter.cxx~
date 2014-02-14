@@ -1,13 +1,20 @@
 #include "itkImageFileWriter.h"
+#include <itkVector.h>
+#include <itkTransform.h>
 
-
-#include <itkSquaredDifferenceImageFilter.h>
+#include <itkDisplacementFieldJacobianDeterminantFilter.h>
 #include <itkStatisticsImageFilter.h>
+#include <itkLogImageFilter.h>
+#include "itkTransformFileReader.h"
+#include "itkTransformFileWriter.h"
+// #include "itkDeformationFieldJacobianDeterminantFilter.h"
 
 #include "itkPluginUtilities.h"
 
-#include "SquaredDifferenceCLP.h"
+#include "JacobianFilterCLP.h"
 
+
+#define DIMENSION 3
 // Use an anonymous namespace to keep class types and function names
 // from colliding when module is used as shared object module.  Every
 // thing should be in an anonymous namespace except for the module
@@ -21,64 +28,94 @@ int DoIt( int argc, char * argv[], T )
 {
   PARSE_ARGS;
 
-  typedef    T InputPixelType;
-  typedef    T OutputPixelType;
-
+//   typedef    T OutputPixelType;
+  
+  typedef itk::Vector< float, 3 > InputPixelType;
+  typedef float OutputPixelType;
   typedef itk::Image<InputPixelType,  3> InputImageType;
   typedef itk::Image<OutputPixelType, 3> OutputImageType;
 
+  
   typedef itk::ImageFileReader<InputImageType>  ReaderType;
   typedef itk::ImageFileWriter<OutputImageType> WriterType;
 
     
-  typedef itk::SquaredDifferenceImageFilter<InputImageType, OutputImageType, OutputImageType> FilterType;
+  typedef itk::DisplacementFieldJacobianDeterminantFilter< InputImageType > FilterType;
+  typedef itk::LogImageFilter< OutputImageType, OutputImageType > LogType;
+  typedef itk::StatisticsImageFilter<OutputImageType> StatisticType;
   
-  typedef itk::StatisticsImageFilter<InputImageType> StatisticType;
-    
-  typename ReaderType::Pointer reader1 = ReaderType::New();
-  itk::PluginFilterWatcher watchReader1(reader1, "Read Volume 1",
-                                        CLPProcessInformation);
-
-  typename ReaderType::Pointer reader2 = ReaderType::New();
-  itk::PluginFilterWatcher watchReader2(reader2,
-                                        "Read Volume 2",
-                                        CLPProcessInformation);
-  reader1->SetFileName( inputVolume1.c_str() );
-  reader2->SetFileName( inputVolume2.c_str() );
-  reader2->ReleaseDataFlagOn();
-
-  reader1->Update();
-  reader2->Update();
- 
-  //Images need the same dimensions! - copy from substract values?
+  typedef itk::TransformFileReader TransformReaderType;
   
+  typedef itk::Transform< float > TransformType;
+  
+  
+  typedef itk::TransformFileReader TransformReaderType;
+  TransformReaderType::Pointer initialTransform;
+  initialTransform = TransformReaderType::New();
+  initialTransform->SetFileName( InputTransform.c_str() );
+  initialTransform->Update();
+  
+  TransformReaderType::TransformType::Pointer initial
+  = *(initialTransform->GetTransformList()->begin() );
+  
+  TransformType::OutputVectorType vector;
+//   vector=initial->TransformVector( InputImageType );
+  std::cout << initial->GetParameters() << std::endl;
+  
+  typename ReaderType::Pointer reader = ReaderType::New();
+  reader->SetFileName( inputVolume.c_str() );
+
   typename FilterType::Pointer filter = FilterType::New();
-  filter->SetInput1( reader1->GetOutput() );
-  filter->SetInput2( reader2->GetOutput() );
-
-  itk::PluginFilterWatcher watchFilter(filter, "Calculating Squared Difference",
+  filter->SetInput( reader->GetOutput() );
+  filter->Update();
+  itk::PluginFilterWatcher watchFilter(filter, "Calculating Jacobian Displacment Field.",
                                        CLPProcessInformation);
+    
 
-  typename WriterType::Pointer writer = WriterType::New();
-  itk::PluginFilterWatcher watchWriter(writer,
+  
+  if (enable_log)
+  {
+    typename LogType::Pointer logFilter = LogType::New();
+    logFilter->SetInput( filter->GetOutput() );
+    logFilter->Update();
+    itk::PluginFilterWatcher watchLogFilter(logFilter, "Calculating log of Jacobian Displacment Field.",
+					CLPProcessInformation);
+    typename WriterType::Pointer writer = WriterType::New();  
+    itk::PluginFilterWatcher watchWriter(writer,
                                        "Write Volume",
                                        CLPProcessInformation);
-  writer->SetFileName( outputVolume.c_str() );
-  writer->SetInput( filter->GetOutput() );
-  writer->SetUseCompression(1);
-  writer->Update();
+    writer->SetFileName( outputVolume.c_str() );
+    writer->SetInput( logFilter->GetOutput() );
+    writer->SetUseCompression(1);
+    writer->Update();
+  }
+  else {
+    typename WriterType::Pointer writer = WriterType::New();
+    itk::PluginFilterWatcher watchWriter(writer,
+                                       "Write Volume",
+                                       CLPProcessInformation);
+    writer->SetFileName( outputVolume.c_str() );
+    writer->SetInput( filter->GetOutput() );
+    writer->SetUseCompression(1);
+    writer->Update();
+  }
+
+
   
   typename StatisticType::Pointer statistic = StatisticType::New();
   itk::PluginFilterWatcher watchStatistic(statistic,
-                                       "Calculating Statistigs",
+                                       "Calculating Statistics",
                                        CLPProcessInformation);
   statistic->SetInput ( filter->GetOutput() );
   statistic->Update();
-  std::cout << "Mean: " << statistic->GetMean() << std::endl;
+  mean=statistic->GetMean();
+  std::cout << "Mean: " << mean << std::endl;
   std::cout << "Std.: " << statistic->GetSigma() << std::endl;
-  std::cout << "Min: " << statistic->GetMinimum() << std::endl;
   std::cout << "Max: " << statistic->GetMaximum() << std::endl;
+  std::cout << "Min.: " << statistic->GetMinimum() << std::endl;
   
+  //TODO: Add statistics (min, max) and add logic in Widget
+  std::cout << "Finished" << std::endl;
   return EXIT_SUCCESS;
 }
 
@@ -93,7 +130,7 @@ int main( int argc, char * argv[] )
 
   try
     {
-    itk::GetImageType(inputVolume1, pixelType, componentType);
+    itk::GetImageType(inputVolume, pixelType, componentType);
 
     // This filter handles all types on input, but only produces
     // signed types

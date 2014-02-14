@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Examples</category>
+  <title>InverseConsistency</title>
+  <description><![CDATA[This is a CLI module calculating Inverse Consistency for two vector fields]]></description>
+  <version>0.0.1</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.3/Modules/InverseConsistency</documentation-url>
+  <license>Slicer</license>
+  <contributor>Kristjan Anderle (GSI)</contributor>
+  <acknowledgements></acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <image type="vector">
+      <name>inputVolume1</name>
+      <label>Input Volume 1</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description><![CDATA[Input1 vector field]]></description>
+    </image>
+    <image type="vector">
+      <name>inputVolume2</name>
+      <label>Input Volume 2</label>
+      <channel>input</channel>
+      <index>1</index>
+      <description><![CDATA[Input2 vector field]]></description>
+    </image>
+    <image >
+      <name>outputVolume</name>
+      <label>Output Volume</label>
+      <channel>output</channel>
+      <index>2</index>
+      <description><![CDATA[Output Volume]]></description>
+    </image>
+  </parameters>
+</executable>

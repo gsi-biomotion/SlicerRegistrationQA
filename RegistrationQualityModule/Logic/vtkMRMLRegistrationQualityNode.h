@@ -26,6 +26,10 @@ public:
 	vtkSetStringMacro(VectorVolumeNodeID);
 	vtkGetStringMacro(VectorVolumeNodeID);
 	void SetAndObserveVectorVolumeNodeID(const char* id);
+	
+	vtkSetStringMacro(InvVectorVolumeNodeID);
+	vtkGetStringMacro(InvVectorVolumeNodeID);
+	void SetAndObserveInvVectorVolumeNodeID(const char* id);
 
 	vtkSetStringMacro(ReferenceVolumeNodeID);
 	vtkGetStringMacro(ReferenceVolumeNodeID);
@@ -78,25 +82,43 @@ public:
 	}
 
 	// Checkerboard parameters
-	vtkSetStringMacro(CheckerboardNodeID);
-	vtkGetStringMacro(CheckerboardNodeID);
-	void SetAndObserveCheckerboardNodeID(const char* id);
-	vtkSetStringMacro(CheckerboardPattern);
-	vtkGetStringMacro(CheckerboardPattern);
+	vtkSetStringMacro(CheckerboardVolumeNodeID);
+	vtkGetStringMacro(CheckerboardVolumeNodeID);
+	void SetAndObserveCheckerboardVolumeNodeID(const char* id);
+	
+	vtkSetMacro(CheckerboardPattern, int);
+	vtkGetMacro(CheckerboardPattern, int);
 
 	
 	vtkSetMacro(FlickerOpacity, int);
 	vtkGetMacro(FlickerOpacity, int);
 	
 	// Squared Difference parameters:
-	vtkSetStringMacro(SquaredDiffNodeID);
-	vtkGetStringMacro(SquaredDiffNodeID);
-	void SetAndObserveSquaredDiffNodeID(const char* id);
-	vtkSetMacro(MeanValue, int);
-	vtkGetMacro(MeanValue, int);
+	vtkSetStringMacro(SquaredDiffVolumeNodeID);
+	vtkGetStringMacro(SquaredDiffVolumeNodeID);
+	void SetAndObserveSquaredDiffVolumeNodeID(const char* id);
 	
-	vtkSetMacro(STDValue, int);
-	vtkGetMacro(STDValue, int);
+	vtkSetVector4Macro(SquaredDiffStatistics, double);
+	vtkGetVector4Macro(SquaredDiffStatistics, double);
+	
+	
+	// Jacobian parameters:
+	vtkSetStringMacro(JacobianVolumeNodeID);
+	vtkGetStringMacro(JacobianVolumeNodeID);
+	void SetAndObserveJacobianVolumeNodeID(const char* id);
+	
+	
+	vtkSetVector4Macro(JacobianStatistics, double);
+	vtkGetVector4Macro(JacobianStatistics, double);
+	
+	// Inverse Consistenciy parameters:
+	vtkSetStringMacro(InverseConsistVolumeNodeID);
+	vtkGetStringMacro(InverseConsistVolumeNodeID);
+	void SetAndObserveInverseConsistVolumeNodeID(const char* id);
+		
+	vtkSetVector4Macro(InverseConsistStatistics, double);
+	vtkGetVector4Macro(InverseConsistStatistics, double);
+	
 	
 	// Glyph Parameters
 	vtkSetMacro(GlyphPointMax, int);
@@ -187,6 +209,7 @@ protected:
 	void operator=(const vtkMRMLRegistrationQualityNode&);
 
 	char* VectorVolumeNodeID;
+	char* InvVectorVolumeNodeID;
 	char* ReferenceVolumeNodeID;
 	char* WarpedVolumeNodeID;
 	char* OutputModelNodeID;
@@ -196,15 +219,22 @@ protected:
 	int MovieBoxGreenState;
 	int MovieRun;
 
-	char* CheckerboardNodeID;
-	char* CheckerboardPattern;
+	char* CheckerboardVolumeNodeID;
+	int CheckerboardPattern;
 
 	int FlickerOpacity;
 	int FlickerDelay;
 	
-	char* SquaredDiffNodeID;
-	int MeanValue;
-	int STDValue;
+	char* SquaredDiffVolumeNodeID;
+	double SquaredDiffStatistics[4];
+
+	
+	char* JacobianVolumeNodeID;
+	double JacobianStatistics[4];
+	
+	char* InverseConsistVolumeNodeID;
+	double InverseConsistStatistics[4];
+
 	
 	// Glyph Parameters
 	int GlyphPointMax;

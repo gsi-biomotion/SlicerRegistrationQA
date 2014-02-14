@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Filter</category>
+  <title>JacobianFilter</title>
+  <description><![CDATA[This is a CLI module that takes Input Vector field and Outputs Jacobian of that vector field.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>not-existing yet</documentation-url>
+  <license>Slicer</license>
+  <contributor>Kristjan Anderle (GSI)</contributor>
+  <acknowledgements></acknowledgements>
+  <parameters>
+    <label>IO</label>
+      <description><![CDATA[Input/output parameters]]></description>
+    <image type="vector">
+      <name>inputVolume</name>
+      <label>Input Volume</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description><![CDATA[Input vector field]]></description>
+    </image>
+<!--    <transform>
+      <name>InputTransform</name>
+      <longflag>InputTransform</longflag>
+      <description>Input transform</description>
+      <label>Input B-spline transform (MRML)</label>
+      <default>None</default>
+      <channel>input</channel>
+    </transform>-->
+    <image >
+      <name>outputVolume</name>
+      <label>Output Volume</label>
+      <channel>output</channel>
+      <index>1</index>
+      <description><![CDATA[Output Volume]]></description>
+    </image>
+    <boolean>
+      <name>enable_log</name>
+      <label>Calculate logarithm of Jacobian?</label>
+      <default>false</default>
+      <longflag>--enablestage0</longflag>
+      <description>Check this box if you want to calculate logarithm.</description>
+    </boolean>
+    <double>
+      <name>mean</name>
+      <longflag>mean</longflag>
+      <flag>s</flag>
+      <label>Mean</label>
+      <description><![CDATA[Sigma value in physical units (e.g., mm) of the Gaussian kernel]]></description>
+      <default>1.0</default>
+    </double>
+  </parameters>
+</executable>
