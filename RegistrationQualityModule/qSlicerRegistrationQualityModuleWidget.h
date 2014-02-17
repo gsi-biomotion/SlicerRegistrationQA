@@ -36,6 +36,7 @@ protected slots:
 	void updateSourceOptions(int);
 
 	void vectorVolumeChanged(vtkMRMLNode*);
+	void invVectorVolumeChanged(vtkMRMLNode*);
 	void referenceVolumeChanged(vtkMRMLNode*);
 	void warpedVolumeChanged(vtkMRMLNode*);
 	void outputModelChanged(vtkMRMLNode*);
@@ -44,17 +45,23 @@ protected slots:
 	void movieBoxYellowStateChanged(int state);
 	void movieBoxGreenStateChanged(int state);
 
-	void checkerboardVolumeChanged(vtkMRMLNode*);
+// 	void checkerboardVolumeChanged(vtkMRMLNode*);
+// 	void squaredDiffVolumeChanged(vtkMRMLNode*);
+	
+	void squaredDiffStateChanged(int state);
 	// Image Checks
-	void falseColorToggle();
-	void checkerboardToggle();
+	void falseColorStateChanged(int state);
+	void checkerboardStateChanged(int state);
 	void movieToggle();
 	void flickerDelayChanged(int);
 	void flickerToggle();
 	void flickerToggle1();
 
+	// Vector checks
+	void jacobianStateChanged(int state);
+	void inverseConsistStateChanged(int state);
 	// Parameters
-	void setCheckerboardPattern(QString aText);
+	void setCheckerboardPattern(double);
 	// Glyph Parameters
 	void setGlyphPointMax(double);
 	void setGlyphScale(double);
@@ -100,6 +107,7 @@ protected slots:
 	void setGridSliceNode(vtkMRMLNode*);
 	void setGridSliceScale(double);
 	void setGridSliceDensity(double);
+
 
 protected:
 	QScopedPointer<qSlicerRegistrationQualityModuleWidgetPrivate> d_ptr;

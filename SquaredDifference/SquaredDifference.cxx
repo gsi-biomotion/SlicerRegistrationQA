@@ -2,7 +2,7 @@
 
 
 #include <itkSquaredDifferenceImageFilter.h>
-#include <itkStatisticsImageFilter.h>
+#include <itkSqrtImageFilter.h>
 
 #include "itkPluginUtilities.h"
 
@@ -26,14 +26,14 @@ int DoIt( int argc, char * argv[], T )
 
   typedef itk::Image<InputPixelType,  3> InputImageType;
   typedef itk::Image<OutputPixelType, 3> OutputImageType;
+//   typedef itk::Image<double, 3> OutputImageTypeTmp;
 
   typedef itk::ImageFileReader<InputImageType>  ReaderType;
   typedef itk::ImageFileWriter<OutputImageType> WriterType;
 
     
-  typedef itk::SquaredDifferenceImageFilter<InputImageType, OutputImageType, OutputImageType> FilterType;
-  
-  typedef itk::StatisticsImageFilter<InputImageType> StatisticType;
+  typedef itk::SquaredDifferenceImageFilter<InputImageType, InputImageType, OutputImageType> FilterType;
+  typedef itk::SqrtImageFilter< OutputImageType, OutputImageType > SqrtFilterType;
     
   typename ReaderType::Pointer reader1 = ReaderType::New();
   itk::PluginFilterWatcher watchReader1(reader1, "Read Volume 1",
@@ -55,8 +55,14 @@ int DoIt( int argc, char * argv[], T )
   typename FilterType::Pointer filter = FilterType::New();
   filter->SetInput1( reader1->GetOutput() );
   filter->SetInput2( reader2->GetOutput() );
-
+  filter->Update();
   itk::PluginFilterWatcher watchFilter(filter, "Calculating Squared Difference",
+                                       CLPProcessInformation);
+  
+  typename SqrtFilterType::Pointer sqrtfilter = SqrtFilterType::New();
+  sqrtfilter->SetInput( filter->GetOutput() );
+  sqrtfilter->Update();
+  itk::PluginFilterWatcher watchSqrtFilter(sqrtfilter, "Calculating Square Root of Image Difference",
                                        CLPProcessInformation);
 
   typename WriterType::Pointer writer = WriterType::New();
@@ -64,20 +70,10 @@ int DoIt( int argc, char * argv[], T )
                                        "Write Volume",
                                        CLPProcessInformation);
   writer->SetFileName( outputVolume.c_str() );
-  writer->SetInput( filter->GetOutput() );
+  writer->SetInput( sqrtfilter->GetOutput() );
   writer->SetUseCompression(1);
   writer->Update();
   
-  typename StatisticType::Pointer statistic = StatisticType::New();
-  itk::PluginFilterWatcher watchStatistic(statistic,
-                                       "Calculating Statistigs",
-                                       CLPProcessInformation);
-  statistic->SetInput ( filter->GetOutput() );
-  statistic->Update();
-  std::cout << "Mean: " << statistic->GetMean() << std::endl;
-  std::cout << "Std.: " << statistic->GetSigma() << std::endl;
-//   std::cout << "Min: " << statistic->GetMinimum() << std::endl;
-//   std::cout << "Max: " << statistic->GetMaximum() << std::endl;
   
   return EXIT_SUCCESS;
 }
@@ -106,10 +102,10 @@ int main( int argc, char * argv[] )
         return DoIt( argc, argv, static_cast<char>(0) );
         break;
       case itk::ImageIOBase::USHORT:
-        return DoIt( argc, argv, static_cast<unsigned short>(0) );
+        return DoIt( argc, argv, static_cast<unsigned int>(0) );
         break;
       case itk::ImageIOBase::SHORT:
-        return DoIt( argc, argv, static_cast<short>(0) );
+        return DoIt( argc, argv, static_cast<int>(0) );
         break;
       case itk::ImageIOBase::UINT:
         return DoIt( argc, argv, static_cast<unsigned int>(0) );

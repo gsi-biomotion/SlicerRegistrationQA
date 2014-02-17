@@ -184,18 +184,33 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 			this->outputModelChanged(d->OutputModelComboBox->currentNode());
 		}
 
-		if (pNode->GetCheckerboardNodeID()) {
-			d->OutputCheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
-		} else {
-			this->checkerboardVolumeChanged(d->OutputCheckerboardComboBox->currentNode());
-		}
+// 		if (pNode->GetCheckerboardNodeID()) {
+// 			d->OutputCheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
+// 		} else {
+// 			this->checkerboardVolumeChanged(d->OutputCheckerboardComboBox->currentNode());
+// 		}
+// 		
+// 		if (pNode->GetSquaredDiffNodeID()) {
+// 			d->SquaredDiffComboBox->setCurrentNode(pNode->GetSquaredDiffNodeID());
+// 		} else {
+// 			this->squaredDiffVolumeChanged(d->SquaredDiffComboBox->currentNode());
+// 		}
 
-		pNode->SetFlickerOpacity(0);
-		d->FlickerDelayBox->setValue(pNode->GetFlickerDelay());
+// 		pNode->SetFlickerOpacity(0);
+		d->squaredDiffMeanSpinBox->setValue(pNode->GetSquaredDiffStatistics()[0]);
+		d->squaredDiffSTDSpinBox->setValue(pNode->GetSquaredDiffStatistics()[1]);
+		
 		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
+		d->jacobianMeanSpinBox->setValue(pNode->GetJacobianStatistics()[0]);
+		d->jacobianSTDSpinBox->setValue(pNode->GetJacobianStatistics()[1]);
+// 		pNode->SetInverseConsistStatistics(0,0,0,0);
+		
+		d->inverseConsistMeanSpinBox->setValue(pNode->GetInverseConsistStatistics()[0]);
+		d->inverseConsistSTDSpinBox->setValue(pNode->GetInverseConsistStatistics()[1]);
 
+	  
 		//Update Visualization Parameters
-		d->CheckerboardPatternLineEdit->setText(pNode->GetCheckerboardPattern());
+		d->CheckerboardPattern->setValue(pNode->GetCheckerboardPattern());
 		// Glyph Parameters
 		d->InputGlyphPointMax->setValue(pNode->GetGlyphPointMax());
 		d->InputGlyphSeed->setValue(pNode->GetGlyphSeed());
@@ -271,64 +286,91 @@ void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* no
 	}
 
 	d->ApplyButton->setEnabled(true);
+	d->JacobianCheckBox->setEnabled(true);
+	d->InverseConsistCheckBox->setEnabled(true);
 	d->VolumeDisabledLabel->hide();
 
 	pNode->DisableModifiedEventOn();
 	pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();
 
-	double maxNorm = 0;
+// 	double maxNorm = 0;
 
 	// What to do if there is more than one array? Would there be more than one array?
-	if (strcmp(node->GetClassName(), "vtkMRMLVectorVolumeNode") == 0) {
-		d->InputReferenceComboBox->setEnabled(false);
-		maxNorm = vtkMRMLVectorVolumeNode::SafeDownCast(node)->GetImageData()->GetPointData()->GetArray(0)->GetMaxNorm();
-	} else if (	strcmp(node->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
-				strcmp(node->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
-				strcmp(node->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
-		d->InputReferenceComboBox->setEnabled(true);
+// 	if (strcmp(node->GetClassName(), "vtkMRMLVectorVolumeNode") == 0) {
+// 		d->InputReferenceComboBox->setEnabled(false);
+// 		maxNorm = vtkMRMLVectorVolumeNode::SafeDownCast(node)->GetImageData()->GetPointData()->GetArray(0)->GetMaxNorm();
+// 	} else if (	strcmp(node->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
+// 				strcmp(node->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
+// 				strcmp(node->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
+// 		d->InputReferenceComboBox->setEnabled(true);
+// 
+// 		vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetReferenceVolumeNodeID()));
+// 		if (referenceVolumeNode == NULL) {
+// 			return;
+// 		}
+// 
+// 		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
+// 		QProgressDialog *convertProgress = new QProgressDialog(qSlicerApplication::application()->mainWindow());
+// 		convertProgress->setModal(true);
+// 		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
+// 		convertProgress->show();
+// 		convertProgress->setLabelText("Converting transform to vector volume...");
+// 
+// 		convertProgress->setValue(20);
+// 		d->logic()->GenerateTransformField();
+// 
+// 		convertProgress->setValue(80);
+// 		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
+// 
+// 		convertProgress->setValue(100);
+// 		delete convertProgress;
+// 	}
 
-		vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetReferenceVolumeNodeID()));
-		if (referenceVolumeNode == NULL) {
-			return;
-		}
+// 	pNode->SetGlyphThresholdMax(maxNorm);
+// 	d->InputGlyphThreshold->setMaximum(maxNorm);
+// 	d->InputGlyphThreshold->setMaximumValue(maxNorm);
+// 
+// 	pNode->SetContourMax(maxNorm);
+// 	d->InputContourRange->setMaximum(maxNorm);
+// 	d->InputContourRange->setMaximumValue(maxNorm);
+// 
+// 	pNode->SetGlyphSliceThresholdMax(maxNorm);
+// 	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
+// 	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
+}
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::invVectorVolumeChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
-		QProgressDialog *convertProgress = new QProgressDialog(qSlicerApplication::application()->mainWindow());
-		convertProgress->setModal(true);
-		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
-		convertProgress->show();
-		convertProgress->setLabelText("Converting transform to vector volume...");
-
-		convertProgress->setValue(20);
-		d->logic()->GenerateTransformField();
-
-		convertProgress->setValue(80);
-		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
-
-		convertProgress->setValue(100);
-		delete convertProgress;
+	// TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		d->ApplyButton->setEnabled(false);
+		d->VolumeDisabledLabel->show();
+		return;
 	}
 
-	pNode->SetGlyphThresholdMax(maxNorm);
-	d->InputGlyphThreshold->setMaximum(maxNorm);
-	d->InputGlyphThreshold->setMaximumValue(maxNorm);
+	d->InverseConsistCheckBox->setEnabled(true);
 
-	pNode->SetContourMax(maxNorm);
-	d->InputContourRange->setMaximum(maxNorm);
-	d->InputContourRange->setMaximumValue(maxNorm);
 
-	pNode->SetGlyphSliceThresholdMax(maxNorm);
-	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
-	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveInvVectorVolumeNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
+
 }
-
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode* node) {
+	
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 
 	//TODO: Move into updatefrommrml?
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	
+// 	//TODO: Check somewhere if referenceVolume or warpedVolume exist
+// 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+// 	logic->ImageDifference();
+	
 	if (!pNode || !this->mrmlScene() || !node) {
 		return;
 	}
@@ -337,45 +379,59 @@ void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode*
 	pNode->SetAndObserveReferenceVolumeNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();
 
-	double maxNorm = 0;
-
-	vtkSmartPointer<vtkMRMLTransformNode> vectorVolumeNode = vtkMRMLTransformNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetVectorVolumeNodeID()));
-	if (vectorVolumeNode == NULL) {
-		return;
+	bool currentState;
+	vtkSmartPointer<vtkMRMLVolumeNode> warpedVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetWarpedVolumeNodeID()));
+	if (warpedVolumeNode == NULL) {
+	    currentState=false;
 	}
-
-	if ( strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
-		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
-		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
-
-		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
-		QProgressDialog *convertProgress =  new QProgressDialog(qSlicerApplication::application()->mainWindow());
-		convertProgress->setModal(true);
-		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
-		convertProgress->show();
-		convertProgress->setLabelText("Converting transform to vector volume...");
-
-		convertProgress->setValue(20);
-		d->logic()->GenerateTransformField();
-
-		convertProgress->setValue(80);
-		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
-
-		convertProgress->setValue(100);
-		delete convertProgress;
+	else{
+	  currentState=true;
 	}
+		
+	d->SquaredDiffCheckBox->setEnabled(currentState);
+	d->FalseColorCheckBox->setEnabled(currentState);
+	d->CheckerboardCheckBox->setEnabled(currentState);
+	d->MovieToggle->setEnabled(currentState);
+	d->FlickerToggle->setEnabled(currentState);
 
-	pNode->SetGlyphThresholdMax(maxNorm);
-	d->InputGlyphThreshold->setMaximum(maxNorm);
-	d->InputGlyphThreshold->setMaximumValue(maxNorm);
-
-	pNode->SetContourMax(maxNorm);
-	d->InputContourRange->setMaximum(maxNorm);
-	d->InputContourRange->setMaximumValue(maxNorm);
-
-	pNode->SetGlyphSliceThresholdMax(maxNorm);
-	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
-	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
+// 	vtkSmartPointer<vtkMRMLTransformNode> vectorVolumeNode = vtkMRMLTransformNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetVectorVolumeNodeID()));
+// 	if (vectorVolumeNode == NULL) {
+// 		return;
+// 	}
+// 
+// 	if ( strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
+// 		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
+// 		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
+// 
+// 		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
+// 		QProgressDialog *convertProgress =  new QProgressDialog(qSlicerApplication::application()->mainWindow());
+// 		convertProgress->setModal(true);
+// 		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
+// 		convertProgress->show();
+// 		convertProgress->setLabelText("Converting transform to vector volume...");
+// 
+// 		convertProgress->setValue(20);
+// 		d->logic()->GenerateTransformField();
+// 
+// 		convertProgress->setValue(80);
+// 		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
+// 
+// 		convertProgress->setValue(100);
+// 		delete convertProgress;
+// 	}
+// 
+// 	pNode->SetGlyphThresholdMax(maxNorm);
+// 	d->InputGlyphThreshold->setMaximum(maxNorm);
+// 	d->InputGlyphThreshold->setMaximumValue(maxNorm);
+// 
+// 	pNode->SetContourMax(maxNorm);
+// 	d->InputContourRange->setMaximum(maxNorm);
+// 	d->InputContourRange->setMaximumValue(maxNorm);
+// 
+// 	pNode->SetGlyphSliceThresholdMax(maxNorm);
+// 	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
+// 	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
+	
 }
 
 //-----------------------------------------------------------------------------
@@ -391,6 +447,23 @@ void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* no
 	pNode->DisableModifiedEventOn();
 	pNode->SetAndObserveWarpedVolumeNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();
+		
+	bool currentState;
+	vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetReferenceVolumeNodeID()));
+	if (referenceVolumeNode == NULL) {
+	    currentState=false;
+	}
+	else{
+	  currentState=true;
+	}
+		
+	d->SquaredDiffCheckBox->setEnabled(currentState);
+	d->FalseColorCheckBox->setEnabled(currentState);
+	d->CheckerboardCheckBox->setEnabled(currentState);
+	d->MovieToggle->setEnabled(currentState);
+	d->FlickerToggle->setEnabled(currentState);
+// 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+// 	logic->ImageDifference();
 }
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* node) {
@@ -412,20 +485,34 @@ void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* nod
 	pNode->DisableModifiedEventOff();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::checkerboardVolumeChanged(vtkMRMLNode* node)
-{
-	Q_D(qSlicerRegistrationQualityModuleWidget);
-
-	//TODO: Move into updatefrommrml?
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	if (!pNode || !this->mrmlScene() || !node) {
-		return;
-	}
-
-	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveCheckerboardNodeID(node->GetID());
-	pNode->DisableModifiedEventOff();
-}
+// void qSlicerRegistrationQualityModuleWidget::checkerboardVolumeChanged(vtkMRMLNode* node)
+// {
+// 	Q_D(qSlicerRegistrationQualityModuleWidget);
+// 
+// 	//TODO: Move into updatefrommrml?
+// 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+// 	if (!pNode || !this->mrmlScene() || !node) {
+// 		return;
+// 	}
+// 	pNode->DisableModifiedEventOn();
+// 	pNode->SetAndObserveCheckerboardNodeID(node->GetID());
+// 	pNode->DisableModifiedEventOff();
+// }
+// //-----------------------------------------------------------------------------
+// void qSlicerRegistrationQualityModuleWidget::squaredDiffVolumeChanged(vtkMRMLNode* node)
+// {
+// 	Q_D(qSlicerRegistrationQualityModuleWidget);
+// 
+// 	//TODO: Move into updatefrommrml?
+// 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+// 	if (!pNode || !this->mrmlScene() || !node) {
+// 		return;
+// 	}
+// 
+// 	pNode->DisableModifiedEventOn();
+// 	pNode->SetAndObserveSquaredDiffNodeID(node->GetID());
+// 	pNode->DisableModifiedEventOff();
+// }
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::updateSourceOptions(int option) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
@@ -540,14 +627,19 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegistrationQualityParametersNode(vtkMRMLNode*)));
 
 	connect(d->InputFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(vectorVolumeChanged(vtkMRMLNode*)));
+	connect(d->InputInvFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(invVectorVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
 	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
-	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
-
+//	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
+//	connect(d->SquaredDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(squaredDiffVolumeChanged(vtkMRMLNode*)));
+	
+	// Squared Difference 
+	connect(d->SquaredDiffCheckBox, SIGNAL(stateChanged(int)), this, SLOT (squaredDiffStateChanged(int)));
 	// Image Checks
-	connect(d->FalseColorToggle, SIGNAL(clicked()), this, SLOT (falseColorToggle()));
-	connect(d->CheckerboardToggle, SIGNAL(clicked()), this, SLOT (checkerboardToggle()));
+	
+	connect(d->FalseColorCheckBox, SIGNAL(stateChanged(int)), this, SLOT (falseColorStateChanged(int)));
+	connect(d->CheckerboardCheckBox, SIGNAL(stateChanged(int)), this, SLOT (checkerboardStateChanged(int)));
 
 	connect(d->MovieToggle, SIGNAL(clicked()), this, SLOT (movieToggle()));
 	connect(d->movieBoxRed, SIGNAL(stateChanged(int)), this, SLOT (movieBoxRedStateChanged(int)));
@@ -556,9 +648,12 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
-	connect(d->FlickerDelayBox, SIGNAL(valueChanged(int)), this, SLOT(flickerDelayChanged(int)));
 
-	connect(d->CheckerboardPatternLineEdit, SIGNAL(textEdited(QString)), this, SLOT(setCheckerboardPattern(QString)));
+	connect(d->CheckerboardPattern, SIGNAL(valueChanged(double)), this, SLOT(setCheckerboardPattern(double)));
+	
+	connect(d->JacobianCheckBox, SIGNAL(stateChanged(int)), this, SLOT (jacobianStateChanged(int)));
+	
+	connect(d->InverseConsistCheckBox, SIGNAL(stateChanged(int)), this, SLOT (inverseConsistStateChanged(int)));
 
 	// Glyph Parameters
 	connect(d->InputGlyphPointMax, SIGNAL(valueChanged(double)), this, SLOT(setGlyphPointMax(double)));
@@ -610,42 +705,52 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 }
 
 //-----------------------------------------------------------------------------
+// Squared Difference
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::squaredDiffStateChanged(int state) {
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	
+	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+	logic->SquaredDifference(state);
+	
+	if (state){
+	  d->squaredDiffMeanSpinBox->setValue(pNode->GetSquaredDiffStatistics()[0]);
+	  d->squaredDiffSTDSpinBox->setValue(pNode->GetSquaredDiffStatistics()[1]);
+	  }
+	else{
+	  d->squaredDiffMeanSpinBox->setValue(0);
+	  d->squaredDiffSTDSpinBox->setValue(0);  
+	  }
+
+}
+//-----------------------------------------------------------------------------
 // Image Checks
 //-----------------------------------------------------------------------------
 
-void qSlicerRegistrationQualityModuleWidget::falseColorToggle() {
+void qSlicerRegistrationQualityModuleWidget::falseColorStateChanged(int state) {
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
-	logic->FalseColor();
+	logic->FalseColor(state);
 }
 
-void qSlicerRegistrationQualityModuleWidget::checkerboardToggle(){
+void qSlicerRegistrationQualityModuleWidget::checkerboardStateChanged(int state){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+
+	
 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	logic->Checkerboard(state);
 
-	logic->Checkerboard();
-	std::cerr << "Let'see. " << pNode->GetCheckerboardPattern() << std::endl;
-}
-
-void qSlicerRegistrationQualityModuleWidget::flickerDelayChanged(int delay){
-	Q_D(const qSlicerRegistrationQualityModuleWidget);
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	pNode->SetFlickerDelay(delay);
-	cout << "FlickerDelay changed: " << delay << endl;
-	if(delay<2000) d->FlickerDelayBox->setSingleStep(100);
-	else if(delay<5000) d->FlickerDelayBox->setSingleStep(500);
-	else d->FlickerDelayBox->setSingleStep(1000);
 }
 
 void qSlicerRegistrationQualityModuleWidget::flickerToggle(){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
 	if(!flickerTimer->isActive()) {
 // 		cerr << "Starting timer" << endl;
 		flickerToggle1();
-		flickerTimer->start(pNode->GetFlickerDelay());
+		flickerTimer->start(500);
 	} else {
 // 		cerr << "Stopping timer" << endl;
 		flickerTimer->stop();
@@ -659,8 +764,6 @@ void qSlicerRegistrationQualityModuleWidget::flickerToggle1(){
 // 	cerr << "Timer timeout" << endl;
 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-
-	flickerTimer->setInterval(pNode->GetFlickerDelay());
 
 	if (pNode->GetFlickerOpacity()!=0 && pNode->GetFlickerOpacity()!=1) {
 		pNode->SetFlickerOpacity(1);
@@ -691,7 +794,42 @@ void qSlicerRegistrationQualityModuleWidget::movieToggle(){
 	d->MovieToggle->setText("Start");
 	d->MovieToggle->setEnabled(true);
 }
-
+//-----------------------------------------------------------------------------
+// Vector checks
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::jacobianStateChanged(int state){
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+	
+	logic->Jacobian(state);
+	
+	if (state){
+	  d->jacobianMeanSpinBox->setValue(pNode->GetJacobianStatistics()[0]);
+	  d->jacobianSTDSpinBox->setValue(pNode->GetJacobianStatistics()[1]);
+	}
+	else{
+	  d->jacobianMeanSpinBox->setValue(0);
+	  d->jacobianSTDSpinBox->setValue(0);	  
+	}
+}
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::inverseConsistStateChanged(int state){
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	vtkSlicerRegistrationQualityLogic *logic = d->logic();
+	
+	logic->InverseConsist(state);
+	
+	if (state){
+	  d->inverseConsistMeanSpinBox->setValue(pNode->GetInverseConsistStatistics()[0]);
+	  d->inverseConsistSTDSpinBox->setValue(pNode->GetInverseConsistStatistics()[1]);
+	}
+	else{
+	  d->inverseConsistMeanSpinBox->setValue(0);
+	  d->inverseConsistSTDSpinBox->setValue(0);
+	}
+}
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::movieBoxRedStateChanged(int state) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
@@ -732,15 +870,16 @@ void qSlicerRegistrationQualityModuleWidget::movieBoxGreenStateChanged(int state
 }
 
 
-void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(QString aText) {
+void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(double checkboardPattern) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 	if (!pNode || !this->mrmlScene()) {
 		return;
 	}
+	
 	pNode->DisableModifiedEventOn();
-	pNode->SetCheckerboardPattern(aText.toLatin1().constData());
+	pNode->SetCheckerboardPattern(checkboardPattern);
 	pNode->DisableModifiedEventOff();
 }
 
