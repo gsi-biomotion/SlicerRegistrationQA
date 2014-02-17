@@ -47,13 +47,12 @@ protected slots:
 
 // 	void checkerboardVolumeChanged(vtkMRMLNode*);
 // 	void squaredDiffVolumeChanged(vtkMRMLNode*);
-	
+
 	void squaredDiffStateChanged(int state);
 	// Image Checks
 	void falseColorStateChanged(int state);
 	void checkerboardStateChanged(int state);
 	void movieToggle();
-	void flickerDelayChanged(int);
 	void flickerToggle();
 	void flickerToggle1();
 

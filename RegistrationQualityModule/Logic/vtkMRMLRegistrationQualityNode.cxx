@@ -26,16 +26,16 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->CheckerboardVolumeNodeID = NULL;
 
 	this->FlickerOpacity = 1;
-	
+
 	this->SquaredDiffVolumeNodeID = NULL;
-	this->SquaredDiffStatistics = {0,0,0,0};
+	SquaredDiffStatistics[0] = SquaredDiffStatistics[1] = SquaredDiffStatistics[2] = SquaredDiffStatistics[3] = 0;
 
 	this->JacobianVolumeNodeID = NULL;
-	this->JacobianStatistics = {0,0,0,0};
-	
+	JacobianStatistics[0] = JacobianStatistics[1] = JacobianStatistics[2] = JacobianStatistics[3] = 0;
+
 	this->InverseConsistVolumeNodeID = NULL;
-	this->InverseConsistStatistics = {0,0,0,0};
-	
+	InverseConsistStatistics[0] = InverseConsistStatistics[1] = InverseConsistStatistics[2] = InverseConsistStatistics[3] = 0;
+
 	MovieBoxRedState = 0;
 	MovieBoxYellowState = 0;
 	MovieBoxGreenState = 0;
@@ -387,19 +387,19 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 	of << indent << " CheckerboardPattern=\"" << this->CheckerboardPattern << "\"";
 // 	of << indent << " CheckerboardVolumeNodeID=\""
 // 			<< (this->CheckerboardVolumeNodeID ? this->CheckerboardVolumeNodeID : "NULL") << "\"";
-// 
-// 
+//
+//
 // 	of << indent << " FlickerOpacity=\""<< this->FlickerOpacity << "\"";
-// 	
+//
 // 	of << indent << " SquaredDiffVolumeNodeID=\""
 // 			<< (this->SquaredDiffVolumeNodeID ? this->SquaredDiffVolumeNodeID : "NULL") << "\"";
 // 	of << indent << " SquaredDiffMean=\"" << this->SquaredDiffMean << "\"";
 // 	of << indent << " SquaredDiffSTD=\"" << this->SquaredDiffSTD << "\"";
-// 	
+//
 // 	of << indent << " JacobianVolumeNodeID=\""
 // 			<< (this->JacobianVolumeNodeID ? this->JacobianVolumeNodeID : "NULL") << "\"";
 // 	of << indent << " JacobianStatistics=\"" << this->JacobianStatistics << "\"";
-	
+
 	of << indent << " GlyphPointMax=\""<< this->GlyphPointMax << "\"";
 	of << indent << " GlyphScale=\""<< this->GlyphScale << "\"";
 	of << indent << " GlyphScaleDirectional=\"" << this->GlyphScaleDirectional << "\"";
@@ -455,15 +455,15 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 
 // 	this->SetCheckerboardVolumeNodeID(node->GetCheckerboardVolumeNodeID());
 	this->CheckerboardPattern=node->CheckerboardPattern;
-// 	
-// 
+//
+//
 // 	this->FlickerOpacity = node->FlickerOpacity;
 // 	this->SetSquaredDiffVolumeNodeID(node->GetSquaredDiffVolumeNodeID());
-// 	
+//
 // 	this->SetJacobianVolumeNodeID(node->GetJacobianVolumeNodeID());
 // // 	this->JacobianStatistics = node->JacobianStatistics;
 
-	
+
 	this->GlyphPointMax = node->GlyphPointMax;
 	this->GlyphScaleDirectional = node->GlyphScaleDirectional;
 	this->GlyphScaleIsotropic = node->GlyphScaleIsotropic;
@@ -621,7 +621,7 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveJacobianVolumeNodeID(const cha
 	  this->Scene->AddReferencedNodeID(this->JacobianVolumeNodeID, this);
 	}
 }
-	  
+
 //----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::SetAndObserveInverseConsistVolumeNodeID(const char* id) {
 	if (this->InverseConsistVolumeNodeID) {
@@ -676,18 +676,18 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 // 	os << indent << " CheckerboardVolumeNodeID = "
 // 			<< (this->CheckerboardVolumeNodeID ? this->CheckerboardVolumeNodeID : "NULL") << "\n";
 	os << indent << " CheckerboardPattern = " << this->CheckerboardPattern << "\n";
-// 
+//
 // 	os << indent << " FlickerOpacity = " << this->FlickerOpacity << "\n";
-// 	
+//
 // 	os << indent << " SquaredDiffVolumeNodeID = "
 // 			<< (this->SquaredDiffVolumeNodeID ? this->SquaredDiffVolumeNodeID : "NULL") << "\n";
 // 	os << indent << " SquaredDiffMean = " << this->SquaredDiffMean << "\n";
 // 	os << indent << " SquaredDiffSTD = " << this->SquaredDiffMean << "\n";
-// 	
+//
 // 	os << indent << " JacobianVolumeNodeID = "
 // 			<< (this->JacobianVolumeNodeID ? this->JacobianVolumeNodeID : "NULL") << "\n";
 // // 	os << indent << " JacobianStatistics = " << this->JacobianStatistics << "\n";
-	
+
 	os << indent << " GlyphPointMax = " << this->GlyphPointMax << "\n";
 	os << indent << " GlyphScale = " << this->GlyphScale << "\n";
 	os << indent << " GlyphScaleDirectional = " << this->GlyphScaleDirectional << "\n";
