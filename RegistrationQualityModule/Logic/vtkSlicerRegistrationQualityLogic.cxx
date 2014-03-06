@@ -512,7 +512,6 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 		vtkErrorMacro("Checkerboard: Invalid scene or parameter set node!");
 		return;
 	}
-
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
@@ -523,74 +522,68 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 // 			this->GetMRMLScene()->GetNodeByID(
 // 				this->RegistrationQualityNode->GetCheckerboardVolumeNodeID()));
 
+	if (!referenceVolume || !warpedVolume) {
+		std::cerr << "Reference or warped volume not set!" << std::endl;
+		return;
+	}
 
 	if (!state) {
 	      	this->SetDefaultDisplay(referenceVolume,warpedVolume);
 		return;
 	}
 
-	if (!this->RegistrationQualityNode->GetCheckerboardVolumeNodeID())
-	{
-	    if(!this->Internal->VolumesLogic)
-	      {
-		std::cerr << "CheckerboardPattern: ERROR: failed to get hold of Volumes logic" << std::endl;
+	if (!this->RegistrationQualityNode->GetCheckerboardVolumeNodeID()) {
+		if(!this->Internal->VolumesLogic) {
+			std::cerr << "CheckerboardPattern: ERROR: failed to get hold of Volumes logic" << std::endl;
+			return;
+		}
+
+		int PatternValue = this->RegistrationQualityNode->GetCheckerboardPattern();
+		std::ostringstream outSS;
+		outSS << referenceVolume->GetName() << "_CheckerboardPattern_"<< PatternValue;
+		vtkMRMLScalarVolumeNode *outputVolume = this->Internal->VolumesLogic->CloneVolume(
+			this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
+
+
+		//   outputVolume->SetName(outSS.str().c_str());
+		if (!referenceVolume || !warpedVolume || !outputVolume) {
+			std::cerr << "Volumes not set!" << std::endl;
+			// 		  throw;
+			return;
+		}
+		qSlicerCLIModule* checkerboardfilterCLI = dynamic_cast<qSlicerCLIModule*>(
+			qSlicerCoreApplication::application()->moduleManager()->module("CheckerBoardFilter"));
+		QString cliModuleName("CheckerBoardFilter");
+
+		vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
+		checkerboardfilterCLI->cliModuleLogic()->CreateNodeInScene();
+
+		//Convert PatternValue to string
+		std::ostringstream outPattern;
+		outPattern << PatternValue << "," << PatternValue << "," << PatternValue;
+		// Set node parameters
+		cmdNode->SetParameterAsString("checkerPattern",outPattern.str().c_str());
+		cmdNode->SetParameterAsString("inputVolume1", referenceVolume->GetID());
+		cmdNode->SetParameterAsString("inputVolume2", warpedVolume->GetID());
+		cmdNode->SetParameterAsString("outputVolume", outputVolume->GetID());
+
+		// Execute synchronously so that we can check the content of the file after the module execution
+		checkerboardfilterCLI->cliModuleLogic()->ApplyAndWait(cmdNode);
+
+		this->GetMRMLScene()->RemoveNode(cmdNode);
+
+		outputVolume->SetAndObserveTransformNodeID(NULL);
+		this->RegistrationQualityNode->SetCheckerboardVolumeNodeID(outputVolume->GetID());
+		std::cerr << "Setting checkerboard pattern." << std::endl;
 		return;
-	      }
-  //
-	    int PatternValue = this->RegistrationQualityNode->GetCheckerboardPattern();
-	    std::ostringstream outSS;
-	    vtkMRMLScalarVolumeNode *svnode = vtkMRMLScalarVolumeNode::SafeDownCast(referenceVolume);
-	    vtkMRMLVolumeNode *outputVolume = NULL;
-	    outSS << referenceVolume->GetName() << "_CheckerboardPattern_"<< PatternValue;
-	    if(svnode)
-	    {
-	      outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
-	    }
-	    else
-	    {
-	      std::cerr << "Reference volume not scalar volume!" << std::endl;
-	      return;
-	    }
-
-	  //   outputVolume->SetName(outSS.str().c_str());
-	  if (!referenceVolume || !warpedVolume || !outputVolume) {
-		  std::cerr << "Volumes not set!" << std::endl;
-		  return;
-	  }
-	  qSlicerCLIModule* checkerboardfilterCLI = dynamic_cast<qSlicerCLIModule*>(
-			  qSlicerCoreApplication::application()->moduleManager()->module("CheckerBoardFilter"));
-	  QString cliModuleName("CheckerBoardFilter");
-
-	  vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
-			  checkerboardfilterCLI->cliModuleLogic()->CreateNodeInScene();
-
-	  //Convert PatternValue to string
-	  std::ostringstream outPattern;
-	  outPattern << PatternValue << "," << PatternValue << "," << PatternValue;
-	  // Set node parameters
-	  cmdNode->SetParameterAsString("checkerPattern",outPattern.str().c_str());
-	  cmdNode->SetParameterAsString("inputVolume1", referenceVolume->GetID());
-	  cmdNode->SetParameterAsString("inputVolume2", warpedVolume->GetID());
-	  cmdNode->SetParameterAsString("outputVolume", outputVolume->GetID());
-
-	  // Execute synchronously so that we can check the content of the file after the module execution
-	  checkerboardfilterCLI->cliModuleLogic()->ApplyAndWait(cmdNode);
-
-	  this->GetMRMLScene()->RemoveNode(cmdNode);
-
-	  outputVolume->SetAndObserveTransformNodeID(NULL);
-	  this->RegistrationQualityNode->SetCheckerboardVolumeNodeID(outputVolume->GetID());
-	  std::cerr << "Setting checkerboard pattern." << std::endl;
-	  return;
 	}
 
 	vtkMRMLScalarVolumeNode *checkerboardVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetCheckerboardVolumeNodeID()));
 	this->SetForegroundImage(checkerboardVolume,referenceVolume,0);
-
-
 }
+
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::Jacobian(int state) {
 

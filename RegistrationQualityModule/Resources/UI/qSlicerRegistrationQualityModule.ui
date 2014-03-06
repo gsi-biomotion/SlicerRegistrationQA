@@ -1,1181 +1,1181 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>qSlicerRegistrationQualityModule</class>
- <widget class="qSlicerWidget" name="qSlicerRegistrationQualityModule">
-  <property name="windowModality">
-   <enum>Qt::NonModal</enum>
-  </property>
-  <property name="enabled">
-   <bool>true</bool>
-  </property>
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>470</width>
-    <height>1415</height>
-   </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
-  <property name="font">
-   <font>
-    <weight>50</weight>
-    <bold>false</bold>
-    <strikeout>false</strikeout>
-    <kerning>true</kerning>
-   </font>
-  </property>
-  <property name="windowTitle">
-   <string>Registration Quality Module</string>
-  </property>
-  <property name="windowIcon">
-   <iconset resource="../qSlicerRegistrationQualityModule.qrc">
-    <normaloff>:/Icons/RegistrationQualityIcon.png</normaloff>:/Icons/RegistrationQualityIcon.png</iconset>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="ctkCollapsibleButton" name="ParameterSetCollapsibleButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Parameter Set</string>
-     </property>
-     <layout class="QFormLayout" name="formLayout_3">
-      <item row="0" column="1">
-       <widget class="qMRMLNodeComboBox" name="ParameterComboBox">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="nodeTypes">
-         <stringlist>
-          <string>vtkMRMLRegistrationQualityNode</string>
-         </stringlist>
-        </property>
-        <property name="showHidden">
-         <bool>true</bool>
-        </property>
-        <property name="renameEnabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="ctkCollapsibleButton" name="IO">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="cursor">
-      <cursorShape>ArrowCursor</cursorShape>
-     </property>
-     <property name="text">
-      <string>IO</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
-      <property name="topMargin">
-       <number>9</number>
-      </property>
-      <property name="bottomMargin">
-       <number>9</number>
-      </property>
-      <item>
-       <widget class="QGroupBox" name="groupBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Input</string>
-        </property>
-        <layout class="QFormLayout" name="formLayout">
-         <property name="fieldGrowthPolicy">
-          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-         </property>
-         <item row="2" column="0">
-          <widget class="QLabel" name="InputVolumeLabel">
-           <property name="toolTip">
-            <string>Input deformation field as a vector volume</string>
-           </property>
-           <property name="text">
-            <string>Deformation Field</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-	   <widget class="qMRMLNodeComboBox" name="InputFieldComboBox">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>Input deformation field as a vector volume</string>
-           </property>
-           <property name="nodeTypes">
-            <stringlist>
-             <string>vtkMRMLVectorVolumeNode</string>
-             <string>vtkMRMLTransformNode</string>
-            </stringlist>
-           </property>
-           <property name="baseName">
-            <string/>
-           </property>
-           <property name="noneEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="addEnabled">
-            <bool>false</bool>
-           </property>
-           <property name="removeEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="editEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="renameEnabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-	 <item row="3" column="0">
-          <widget class="QLabel" name="InputVolumeLabel_inv">
-           <property name="toolTip">
-            <string>Input deformation field as a vector volume</string>
-           </property>
-           <property name="text">
-            <string>Inverse Deformation Field</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="qMRMLNodeComboBox" name="InputInvFieldComboBox">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>Input deformation field as a vector volume</string>
-           </property>
-           <property name="nodeTypes">
-            <stringlist>
-             <string>vtkMRMLVectorVolumeNode</string>
-             <string>vtkMRMLTransformNode</string>
-            </stringlist>
-           </property>
-           <property name="baseName">
-            <string/>
-           </property>
-           <property name="noneEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="addEnabled">
-            <bool>false</bool>
-           </property>
-           <property name="removeEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="editEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="renameEnabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="InputVolumeLabel_2">
-           <property name="toolTip">
-            <string>Reference image for visualizing transform nodes (will only use size, orientation and position)</string>
-           </property>
-           <property name="text">
-            <string>Reference Image</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="qMRMLNodeComboBox" name="InputReferenceComboBox">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reference image for visualizing transform nodes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="nodeTypes">
-            <stringlist>
-             <string>vtkMRMLScalarVolumeNode</string>
-            </stringlist>
-           </property>
-           <property name="baseName">
-            <string/>
-           </property>
-           <property name="noneEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="addEnabled">
-            <bool>false</bool>
-           </property>
-           <property name="removeEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="editEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="renameEnabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="Input_VolumeLabel_3">
-           <property name="toolTip">
-            <string>Warped image for visualizing transform nodes</string>
-           </property>
-           <property name="text">
-            <string>Warped Image</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="qMRMLNodeComboBox" name="InputWarpedComboBox">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Warped image for visualizing transform nodes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="nodeTypes">
-            <stringlist>
-             <string>vtkMRMLScalarVolumeNode</string>
-            </stringlist>
-           </property>
-           <property name="baseName">
-            <string/>
-           </property>
-           <property name="noneEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="addEnabled">
-            <bool>false</bool>
-           </property>
-           <property name="removeEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="editEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="renameEnabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_2">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Output</string>
-        </property>
-        <layout class="QFormLayout" name="formLayout_4">
-         <property name="fieldGrowthPolicy">
-          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-         </property>
-         <item row="0" column="0">
-          <widget class="QLabel" name="OutputModelLabel">
-           <property name="text">
-            <string>Output HTML</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="qMRMLNodeComboBox" name="OutputModelComboBox">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>Output model visualizing deformation field</string>
-           </property>
-           <property name="nodeTypes">
-            <stringlist>
-             <string>vtkMRMLModelNode</string>
-            </stringlist>
-           </property>
-           <property name="noneEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="editEnabled">
-            <bool>false</bool>
-           </property>
-           <property name="renameEnabled">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="ctkCollapsibleButton" name="ImageChecks">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>25000</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Options for visualization of deformation field and images&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Image Checks</string>
-     </property>
-     <property name="autoRepeatInterval">
-      <number>100</number>
-     </property>
-     <layout class="QVBoxLayout" name="gridLayout_2">
-      <item>
-       <widget class="QGroupBox" name="StillGroupBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Still Checks</string>
-        </property>
-           <layout class="QGridLayout" name="falseColorGridLayout">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="FalseColorCheckBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>False Color</string>
-              </property>
-              <property name="Enabled" stdset="0">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-			<item row="0" column="1" colspan="2">
-				<widget class="QLabel" name="StillErrorLabel">
+	<class>qSlicerRegistrationQualityModule</class>
+	<widget class="qSlicerWidget" name="qSlicerRegistrationQualityModule">
+		<property name="windowModality">
+			<enum>Qt::NonModal</enum>
+		</property>
+		<property name="enabled">
+			<bool>true</bool>
+		</property>
+		<property name="geometry">
+			<rect>
+				<x>0</x>
+				<y>0</y>
+				<width>470</width>
+				<height>1415</height>
+			</rect>
+		</property>
+		<property name="sizePolicy">
+			<sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+				<horstretch>0</horstretch>
+				<verstretch>0</verstretch>
+			</sizepolicy>
+		</property>
+		<property name="font">
+			<font>
+				<weight>50</weight>
+				<bold>false</bold>
+				<strikeout>false</strikeout>
+				<kerning>true</kerning>
+			</font>
+		</property>
+		<property name="windowTitle">
+			<string>Registration Quality Module</string>
+		</property>
+		<property name="windowIcon">
+			<iconset resource="../qSlicerRegistrationQualityModule.qrc">
+				<normaloff>:/Icons/RegistrationQualityIcon.png</normaloff>:/Icons/RegistrationQualityIcon.png</iconset>
+		</property>
+		<layout class="QVBoxLayout" name="verticalLayout">
+			<item>
+				<widget class="ctkCollapsibleButton" name="ParameterSetCollapsibleButton">
+					<property name="sizePolicy">
+						<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+							<horstretch>0</horstretch>
+							<verstretch>0</verstretch>
+						</sizepolicy>
+					</property>
 					<property name="text">
-						<string>
-							&lt;span style=&quot; color:#ff0000;&quot;&gt;
-								No input volume selected
-							&lt;/span&gt;
-						</string>
+						<string>Parameter Set</string>
+					</property>
+					<layout class="QFormLayout" name="formLayout_3">
+						<item row="0" column="1">
+							<widget class="qMRMLNodeComboBox" name="ParameterComboBox">
+								<property name="enabled">
+									<bool>false</bool>
+								</property>
+								<property name="sizePolicy">
+									<sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+										<horstretch>0</horstretch>
+										<verstretch>0</verstretch>
+									</sizepolicy>
+								</property>
+								<property name="nodeTypes">
+									<stringlist>
+										<string>vtkMRMLRegistrationQualityNode</string>
+									</stringlist>
+								</property>
+								<property name="showHidden">
+									<bool>true</bool>
+								</property>
+								<property name="renameEnabled">
+									<bool>false</bool>
+								</property>
+							</widget>
+						</item>
+					</layout>
+				</widget>
+			</item>
+			<item>
+				<widget class="ctkCollapsibleButton" name="IO">
+					<property name="sizePolicy">
+						<sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+							<horstretch>0</horstretch>
+							<verstretch>0</verstretch>
+						</sizepolicy>
+					</property>
+					<property name="cursor">
+						<cursorShape>ArrowCursor</cursorShape>
+					</property>
+					<property name="text">
+						<string>IO</string>
+					</property>
+					<layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+						<property name="topMargin">
+							<number>9</number>
+						</property>
+						<property name="bottomMargin">
+							<number>9</number>
+						</property>
+						<item>
+							<widget class="QGroupBox" name="groupBox">
+								<property name="sizePolicy">
+									<sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+										<horstretch>0</horstretch>
+										<verstretch>0</verstretch>
+									</sizepolicy>
+								</property>
+								<property name="title">
+									<string>Input</string>
+								</property>
+								<layout class="QFormLayout" name="formLayout">
+									<property name="fieldGrowthPolicy">
+										<enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+									</property>
+									<item row="2" column="0">
+										<widget class="QLabel" name="InputVolumeLabel">
+											<property name="toolTip">
+												<string>Input deformation field as a vector volume</string>
+											</property>
+											<property name="text">
+												<string>Deformation Field</string>
+											</property>
+										</widget>
+									</item>
+									<item row="2" column="1">
+										<widget class="qMRMLNodeComboBox" name="InputFieldComboBox">
+											<property name="enabled">
+												<bool>false</bool>
+											</property>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="toolTip">
+												<string>Input deformation field as a vector volume</string>
+											</property>
+											<property name="nodeTypes">
+												<stringlist>
+													<string>vtkMRMLVectorVolumeNode</string>
+													<string>vtkMRMLTransformNode</string>
+												</stringlist>
+											</property>
+											<property name="baseName">
+												<string></string>
+											</property>
+											<property name="noneEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="addEnabled">
+												<bool>false</bool>
+											</property>
+											<property name="removeEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="editEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="renameEnabled">
+												<bool>true</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="3" column="0">
+										<widget class="QLabel" name="InputVolumeLabel_inv">
+											<property name="toolTip">
+												<string>Input deformation field as a vector volume</string>
+											</property>
+											<property name="text">
+												<string>Inverse Deformation Field</string>
+											</property>
+										</widget>
+									</item>
+									<item row="3" column="1">
+										<widget class="qMRMLNodeComboBox" name="InputInvFieldComboBox">
+											<property name="enabled">
+												<bool>false</bool>
+											</property>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="toolTip">
+												<string>Input deformation field as a vector volume</string>
+											</property>
+											<property name="nodeTypes">
+												<stringlist>
+													<string>vtkMRMLVectorVolumeNode</string>
+													<string>vtkMRMLTransformNode</string>
+												</stringlist>
+											</property>
+											<property name="baseName">
+												<string></string>
+											</property>
+											<property name="noneEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="addEnabled">
+												<bool>false</bool>
+											</property>
+											<property name="removeEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="editEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="renameEnabled">
+												<bool>true</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="0">
+										<widget class="QLabel" name="InputVolumeLabel_2">
+											<property name="toolTip">
+												<string>Reference image for visualizing transform nodes (will only use size, orientation and position)</string>
+											</property>
+											<property name="text">
+												<string>Reference Image</string>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="1">
+										<widget class="qMRMLNodeComboBox" name="InputReferenceComboBox">
+											<property name="enabled">
+												<bool>false</bool>
+											</property>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="toolTip">
+												<string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reference image for visualizing transform nodes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+											</property>
+											<property name="nodeTypes">
+												<stringlist>
+													<string>vtkMRMLScalarVolumeNode</string>
+												</stringlist>
+											</property>
+											<property name="baseName">
+												<string></string>
+											</property>
+											<property name="noneEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="addEnabled">
+												<bool>false</bool>
+											</property>
+											<property name="removeEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="editEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="renameEnabled">
+												<bool>true</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="1" column="0">
+										<widget class="QLabel" name="Input_VolumeLabel_3">
+											<property name="toolTip">
+												<string>Warped image for visualizing transform nodes</string>
+											</property>
+											<property name="text">
+												<string>Warped Image</string>
+											</property>
+										</widget>
+									</item>
+									<item row="1" column="1">
+										<widget class="qMRMLNodeComboBox" name="InputWarpedComboBox">
+											<property name="enabled">
+												<bool>false</bool>
+											</property>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="toolTip">
+												<string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Warped image for visualizing transform nodes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+											</property>
+											<property name="nodeTypes">
+												<stringlist>
+													<string>vtkMRMLScalarVolumeNode</string>
+												</stringlist>
+											</property>
+											<property name="baseName">
+												<string></string>
+											</property>
+											<property name="noneEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="addEnabled">
+												<bool>false</bool>
+											</property>
+											<property name="removeEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="editEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="renameEnabled">
+												<bool>true</bool>
+											</property>
+										</widget>
+									</item>
+								</layout>
+							</widget>
+						</item>
+						<item>
+							<widget class="QGroupBox" name="groupBox_2">
+								<property name="sizePolicy">
+									<sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+										<horstretch>0</horstretch>
+										<verstretch>0</verstretch>
+									</sizepolicy>
+								</property>
+								<property name="title">
+									<string>Output</string>
+								</property>
+								<layout class="QFormLayout" name="formLayout_4">
+									<property name="fieldGrowthPolicy">
+										<enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+									</property>
+									<item row="0" column="0">
+										<widget class="QLabel" name="OutputModelLabel">
+											<property name="text">
+												<string>Output HTML</string>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="1">
+										<widget class="qMRMLNodeComboBox" name="OutputModelComboBox">
+											<property name="enabled">
+												<bool>false</bool>
+											</property>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="toolTip">
+												<string>Output model visualizing deformation field</string>
+											</property>
+											<property name="nodeTypes">
+												<stringlist>
+													<string>vtkMRMLModelNode</string>
+												</stringlist>
+											</property>
+											<property name="noneEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="editEnabled">
+												<bool>false</bool>
+											</property>
+											<property name="renameEnabled">
+												<bool>true</bool>
+											</property>
+										</widget>
+									</item>
+								</layout>
+							</widget>
+						</item>
+					</layout>
+				</widget>
+			</item>
+			<item>
+				<widget class="ctkCollapsibleButton" name="ImageChecks">
+					<property name="sizePolicy">
+						<sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+							<horstretch>0</horstretch>
+							<verstretch>0</verstretch>
+						</sizepolicy>
+					</property>
+					<property name="minimumSize">
+						<size>
+							<width>0</width>
+							<height>0</height>
+						</size>
+					</property>
+					<property name="maximumSize">
+						<size>
+							<width>16777215</width>
+							<height>25000</height>
+						</size>
+					</property>
+					<property name="toolTip">
+						<string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Options for visualization of deformation field and images&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+					</property>
+					<property name="text">
+						<string>Image Checks</string>
+					</property>
+					<property name="autoRepeatInterval">
+						<number>100</number>
+					</property>
+					<layout class="QVBoxLayout" name="gridLayout_2">
+						<item>
+							<widget class="QGroupBox" name="StillGroupBox">
+								<property name="sizePolicy">
+									<sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+										<horstretch>0</horstretch>
+										<verstretch>0</verstretch>
+									</sizepolicy>
+								</property>
+								<property name="title">
+									<string>Still Checks</string>
+								</property>
+								<layout class="QGridLayout" name="falseColorGridLayout">
+									<item row="0" column="0">
+										<widget class="QCheckBox" name="FalseColorCheckBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>False Color</string>
+											</property>
+											<property name="Enabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="1" colspan="2">
+										<widget class="QLabel" name="StillErrorLabel">
+											<property name="text">
+												<string>
+													&lt;span style=&quot; color:#ff0000;&quot;&gt;
+													No input volume selected
+													&lt;/span&gt;
+												</string>
+											</property>
+										</widget>
+									</item>
+									<item row="1" column="1">
+										<widget class="QLabel" name="CheckerboardLabel">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Pattern:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="1" column="0">
+										<widget class="QCheckBox" name="CheckerboardCheckBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Checkerboard</string>
+											</property>
+											<property name="Enabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="1" column="2">
+										<widget class="ctkSliderWidget" name="CheckerboardPattern">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="toolTip">
+												<string>Number of boxes in checkerboard volume</string>
+											</property>
+											<property name="decimals">
+												<number>0</number>
+											</property>
+											<property name="singleStep">
+												<double>1.000000000000000</double>
+											</property>
+											<property name="pageStep">
+												<double>10.000000000000000</double>
+											</property>
+											<property name="maximum">
+												<double>100.000000000000000</double>
+											</property>
+											<property name="value">
+												<double>20.000000000000000</double>
+											</property>
+										</widget>
+									</item>
+									<item row="3" column="1">
+										<widget class="QLabel" name="stdLabel">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Standard Deviation:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="2" column="2">
+										<widget class="QDoubleSpinBox" name="squaredDiffMeanSpinBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="accessibleName">
+												<string></string>
+											</property>
+											<property name="readOnly">
+												<bool>true</bool>
+											</property>
+											<property name="disabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="2" column="1">
+										<widget class="QLabel" name="MeanValueLabel">
+											<property name="enabled">
+												<bool>true</bool>
+											</property>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Mean Value:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="3" column="2">
+										<widget class="QDoubleSpinBox" name="squaredDiffSTDSpinBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="accessibleName">
+												<string></string>
+											</property>
+											<property name="readOnly">
+												<bool>true</bool>
+											</property>
+											<property name="disabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="2" column="0">
+										<widget class="QCheckBox" name="SquaredDiffCheckBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+													<horstretch>50</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Square Difference</string>
+											</property>
+											<property name="Enabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+								</layout>
+							</widget>
+						</item>
+						<item>
+							<widget class="QGroupBox" name="movieGroupBox">
+								<property name="sizePolicy">
+									<sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+										<horstretch>0</horstretch>
+										<verstretch>0</verstretch>
+									</sizepolicy>
+								</property>
+								<property name="title">
+									<string>Moving Checks</string>
+								</property>
+								<layout class="QGridLayout" name="movieFormLayout">
+									<item row="0" column="0">
+										<widget class="ctkCheckBox" name="movieBoxRed">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string></string>
+											</property>
+											<property name="icon">
+												<iconset resource="../qSlicerRegistrationQualityModule.qrc">
+													<normaloff>:/Icons/RedIcon.png</normaloff>:/Icons/RedIcon.png</iconset>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="1">
+										<widget class="ctkCheckBox" name="movieBoxYellow">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string></string>
+											</property>
+											<property name="icon">
+												<iconset resource="../qSlicerRegistrationQualityModule.qrc">
+													<normaloff>:/Icons/YellowIcon.png</normaloff>:/Icons/YellowIcon.png</iconset>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="2">
+										<widget class="ctkCheckBox" name="movieBoxGreen">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string></string>
+											</property>
+											<property name="icon">
+												<iconset resource="../qSlicerRegistrationQualityModule.qrc">
+													<normaloff>:/Icons/GreenIcon.png</normaloff>:/Icons/GreenIcon.png</iconset>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="3" colspan="2">
+										<widget class="QPushButton" name="MovieToggle">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+													<horstretch>50</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Start</string>
+											</property>
+											<property name="iconSize">
+												<size>
+													<width>48</width>
+													<height>48</height>
+												</size>
+											</property>
+											<property name="Enabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="5">
+										<widget class="QPushButton" name="FlickerToggle">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+													<horstretch>50</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Flicker</string>
+											</property>
+											<property name="iconSize">
+												<size>
+													<width>48</width>
+													<height>48</height>
+												</size>
+											</property>
+											<property name="Enabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+								</layout>
+							</widget>
+						</item>
+					</layout>
+				</widget>
+			</item>
+			<item>
+				<widget class="ctkCollapsibleButton" name="VectorFieldChecks">
+					<property name="enabled">
+						<bool>true</bool>
+					</property>
+					<property name="sizePolicy">
+						<sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+							<horstretch>0</horstretch>
+							<verstretch>0</verstretch>
+						</sizepolicy>
+					</property>
+					<property name="maximumSize">
+						<size>
+							<width>16777215</width>
+							<height>500</height>
+						</size>
+					</property>
+					<property name="toolTip">
+						<string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Options for visualization and quantification of deformation field&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+					</property>
+					<property name="text">
+						<string>Vector Field Checks</string>
+					</property>
+					<property name="collapsed">
+						<bool>false</bool>
+					</property>
+					<layout class="QVBoxLayout" name="gridLayout_Jacobian">
+						<item>
+							<widget class="QGroupBox" name="JacobiangroupBox">
+								<property name="sizePolicy">
+									<sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+										<horstretch>0</horstretch>
+										<verstretch>0</verstretch>
+									</sizepolicy>
+								</property>
+								<property name="title">
+									<string>Jacobian</string>
+								</property>
+								<layout class="QGridLayout" name="gridLayoutJacobian">
+									<!--         <property name="fieldGrowthPolicy">
+									<enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+									</property>-->
+									<item row="1" column="1">
+										<widget class="QLabel" name="jacobianSTDLabel">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Standard Deviation:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="2">
+										<widget class="QDoubleSpinBox" name="jacobianMeanSpinBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="accessibleName">
+												<string></string>
+											</property>
+											<property name="readOnly">
+												<bool>true</bool>
+											</property>
+											<property name="disabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="1">
+										<widget class="QLabel" name="jacobianMeanValueLabel">
+											<property name="enabled">
+												<bool>true</bool>
+											</property>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Mean Value:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="1" column="2">
+										<widget class="QDoubleSpinBox" name="jacobianSTDSpinBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="accessibleName">
+												<string></string>
+											</property>
+											<property name="readOnly">
+												<bool>true</bool>
+											</property>
+											<property name="disabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="0">
+										<widget class="QCheckBox" name="JacobianCheckBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+													<horstretch>50</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Jacobian of vector field</string>
+											</property>
+											<property name="Enabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+								</layout>
+							</widget>
+						</item>
+						<item>
+							<widget class="QGroupBox" name="InverseConsistgroupBox">
+								<property name="sizePolicy">
+									<sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+										<horstretch>0</horstretch>
+										<verstretch>0</verstretch>
+									</sizepolicy>
+								</property>
+								<property name="title">
+									<string>Inverse Consistency</string>
+								</property>
+								<layout class="QGridLayout" name="gridLayoutInverseConsist">
+									<item row="1" column="1">
+										<widget class="QLabel" name="inverseConsistSTDLabel">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Standard Deviation:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="2">
+										<widget class="QDoubleSpinBox" name="inverseConsistMeanSpinBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="accessibleName">
+												<string></string>
+											</property>
+											<property name="readOnly">
+												<bool>true</bool>
+											</property>
+											<property name="disabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="1">
+										<widget class="QLabel" name="inverseConsistMeanValueLabel">
+											<property name="enabled">
+												<bool>true</bool>
+											</property>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Mean Value:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="1" column="2">
+										<widget class="QDoubleSpinBox" name="inverseConsistSTDSpinBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="accessibleName">
+												<string></string>
+											</property>
+											<property name="readOnly">
+												<bool>true</bool>
+											</property>
+											<property name="disabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="0">
+										<widget class="QCheckBox" name="InverseConsistCheckBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+													<horstretch>50</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Inverse Consistency</string>
+											</property>
+											<property name="Enabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+								</layout>
+							</widget>
+						</item>
+					</layout>
+				</widget>
+			</item>
+			<item>
+				<spacer name="verticalSpacer_2">
+					<property name="orientation">
+						<enum>Qt::Vertical</enum>
+					</property>
+					<property name="sizeType">
+						<enum>QSizePolicy::MinimumExpanding</enum>
+					</property>
+					<property name="sizeHint" stdset="0">
+						<size>
+							<width>10</width>
+							<height>10</height>
+						</size>
+					</property>
+				</spacer>
+			</item>
+			<item>
+				<widget class="Line" name="line">
+					<property name="orientation">
+						<enum>Qt::Horizontal</enum>
 					</property>
 				</widget>
 			</item>
-	    <item row="1" column="1">
-	    <widget class="QLabel" name="CheckerboardLabel">
-		  <property name="sizePolicy">
-		  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-		    <horstretch>0</horstretch>
-		    <verstretch>0</verstretch>
-		  </sizepolicy>
-		  </property>
-		  <property name="text">
-		  <string>Pattern:</string>
-		  </property>
-		</widget>
-	    </item>
-	    <item row="1" column="0">
-	    <widget class="QCheckBox" name="CheckerboardCheckBox">
-		  <property name="sizePolicy">
-		  <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-		    <horstretch>0</horstretch>
-		    <verstretch>0</verstretch>
-		  </sizepolicy>
-		  </property>
-		  <property name="text">
-		  <string>Checkerboard</string>
-		  </property>
-		  <property name="Enabled" stdset="0">
-		  <bool>false</bool>
-		  </property>
-		</widget>
-	    </item>
-	    <item row="1" column="2">
-	    <widget class="ctkSliderWidget" name="CheckerboardPattern">
-		  <property name="sizePolicy">
-		  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-		    <horstretch>0</horstretch>
-		    <verstretch>0</verstretch>
-		  </sizepolicy>
-		  </property>
-		  <property name="toolTip">
-		  <string>Number of boxes in checkerboard volume</string>
-		  </property>
-		  <property name="decimals">
-		  <number>0</number>
-		  </property>
-		  <property name="singleStep">
-		  <double>1.000000000000000</double>
-		  </property>
-		  <property name="pageStep">
-		  <double>10.000000000000000</double>
-		  </property>
-		  <property name="maximum">
-		  <double>100.000000000000000</double>
-		  </property>
-		  <property name="value">
-		  <double>20.000000000000000</double>
-		  </property>
-		</widget>
-	    </item>
-	    <item row="3" column="1">
-	      <widget class="QLabel" name="stdLabel">
-	      <property name="sizePolicy">
-		<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-		<horstretch>0</horstretch>
-		<verstretch>0</verstretch>
-		</sizepolicy>
-	      </property>
-	      <property name="text">
-		<string>Standard Deviation:</string>
-	      </property>
-	      </widget>
-	    </item>
-	    <item row="2" column="2">
-	      <widget class="QDoubleSpinBox" name="squaredDiffMeanSpinBox">
-	      <property name="sizePolicy">
-		<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-		<horstretch>0</horstretch>
-		<verstretch>0</verstretch>
-		</sizepolicy>
-	      </property>
-	      <property name="accessibleName">
-		<string/>
-	      </property>
-	      <property name="readOnly">
-		<bool>true</bool>
-	      </property>
-	      <property name="disabled" stdset="0">
-		<bool>false</bool>
-	      </property>
-	      </widget>
-	    </item>
-	    <item row="2" column="1">
-	      <widget class="QLabel" name="MeanValueLabel">
-	      <property name="enabled">
-		<bool>true</bool>
-	      </property>
-	      <property name="sizePolicy">
-		<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-		<horstretch>0</horstretch>
-		<verstretch>0</verstretch>
-		</sizepolicy>
-	      </property>
-	      <property name="text">
-		<string>Mean Value:</string>
-	      </property>
-	      </widget>
-	    </item>
-	    <item row="3" column="2">
-	      <widget class="QDoubleSpinBox" name="squaredDiffSTDSpinBox">
-	      <property name="sizePolicy">
-		<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-		<horstretch>0</horstretch>
-		<verstretch>0</verstretch>
-		</sizepolicy>
-	      </property>
-	      <property name="accessibleName">
-		<string/>
-	      </property>
-	      <property name="readOnly">
-		<bool>true</bool>
-	      </property>
-	      <property name="disabled" stdset="0">
-		<bool>false</bool>
-	      </property>
-	      </widget>
-	    </item>
-	    <item row="2" column="0">
-	      <widget class="QCheckBox" name="SquaredDiffCheckBox">
-	      <property name="sizePolicy">
-		<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-		<horstretch>50</horstretch>
-		<verstretch>0</verstretch>
-		</sizepolicy>
-	      </property>
-	      <property name="text">
-		<string>Square Difference</string>
-	      </property>
-	      <property name="Enabled" stdset="0">
-		<bool>false</bool>
-	      </property>
-	      </widget>
-	    </item>
-	   </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="movieGroupBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Moving Checks</string>
-        </property>
-        <layout class="QGridLayout" name="movieFormLayout">
-         <item row="0" column="0">
-          <widget class="ctkCheckBox" name="movieBoxRed">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../qSlicerRegistrationQualityModule.qrc">
-             <normaloff>:/Icons/RedIcon.png</normaloff>:/Icons/RedIcon.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="ctkCheckBox" name="movieBoxYellow">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../qSlicerRegistrationQualityModule.qrc">
-             <normaloff>:/Icons/YellowIcon.png</normaloff>:/Icons/YellowIcon.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="ctkCheckBox" name="movieBoxGreen">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../qSlicerRegistrationQualityModule.qrc">
-             <normaloff>:/Icons/GreenIcon.png</normaloff>:/Icons/GreenIcon.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="3" colspan="2">
-          <widget class="QPushButton" name="MovieToggle">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-             <horstretch>50</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Start</string>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>48</width>
-             <height>48</height>
-            </size>
-           </property>
-           <property name="Enabled" stdset="0">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="5">
-          <widget class="QPushButton" name="FlickerToggle">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-             <horstretch>50</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Flicker</string>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>48</width>
-             <height>48</height>
-            </size>
-           </property>
-           <property name="Enabled" stdset="0">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="ctkCollapsibleButton" name="VectorFieldChecks">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>500</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Options for visualization and quantification of deformation field&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Vector Field Checks</string>
-     </property>
-     <property name="collapsed">
-      <bool>false</bool>
-     </property>
-     <layout class="QVBoxLayout" name="gridLayout_Jacobian">
-      <item>
-       <widget class="QGroupBox" name="JacobiangroupBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Jacobian</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayoutJacobian">
-<!--         <property name="fieldGrowthPolicy">
-          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-         </property>-->
-         <item row="1" column="1">
-          <widget class="QLabel" name="jacobianSTDLabel">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Standard Deviation:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QDoubleSpinBox" name="jacobianMeanSpinBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="accessibleName">
-            <string/>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="disabled" stdset="0">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLabel" name="jacobianMeanValueLabel">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Mean Value:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QDoubleSpinBox" name="jacobianSTDSpinBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="accessibleName">
-            <string/>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="disabled" stdset="0">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="JacobianCheckBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-             <horstretch>50</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Jacobian of vector field</string>
-           </property>
-           <property name="Enabled" stdset="0">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="InverseConsistgroupBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Inverse Consistency</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayoutInverseConsist">
-         <item row="1" column="1">
-          <widget class="QLabel" name="inverseConsistSTDLabel">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Standard Deviation:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QDoubleSpinBox" name="inverseConsistMeanSpinBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="accessibleName">
-            <string/>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="disabled" stdset="0">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLabel" name="inverseConsistMeanValueLabel">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Mean Value:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QDoubleSpinBox" name="inverseConsistSTDSpinBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="accessibleName">
-            <string/>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="disabled" stdset="0">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QCheckBox" name="InverseConsistCheckBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-             <horstretch>50</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Inverse Consistency</string>
-           </property>
-           <property name="Enabled" stdset="0">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::MinimumExpanding</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>10</width>
-       <height>10</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-  </layout>
- </widget>
- <customwidgets>
-  <customwidget>
-   <class>qMRMLNodeComboBox</class>
-   <extends>QWidget</extends>
-   <header>qMRMLNodeComboBox.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>qSlicerWidget</class>
-   <extends>QWidget</extends>
-   <header>qSlicerWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ctkCheckBox</class>
-   <extends>QCheckBox</extends>
-   <header>ctkCheckBox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ctkCollapsibleButton</class>
-   <extends>QWidget</extends>
-   <header>ctkCollapsibleButton.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ctkCollapsibleGroupBox</class>
-   <extends>QGroupBox</extends>
-   <header>ctkCollapsibleGroupBox.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ctkComboBox</class>
-   <extends>QComboBox</extends>
-   <header>ctkComboBox.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ctkRangeWidget</class>
-   <extends>QWidget</extends>
-   <header>ctkRangeWidget.h</header>
-  </customwidget>
-  <customwidget>
-   <class>ctkSliderWidget</class>
-   <extends>QWidget</extends>
-   <header>ctkSliderWidget.h</header>
-  </customwidget>
- </customwidgets>
- <resources>
-  <include location="../qSlicerRegistrationQualityModule.qrc"/>
- </resources>
- <connections>
-  <connection>
-   <sender>qSlicerRegistrationQualityModule</sender>
-   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>InputFieldComboBox</receiver>
-   <slot>setMRMLScene(vtkMRMLScene*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>277</x>
-     <y>6</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>315</x>
-     <y>150</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>qSlicerRegistrationQualityModule</sender>
-   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>InputInvFieldComboBox</receiver>
-   <slot>setMRMLScene(vtkMRMLScene*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>277</x>
-     <y>6</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>315</x>
-     <y>150</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>qSlicerRegistrationQualityModule</sender>
-   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>OutputModelComboBox</receiver>
-   <slot>setMRMLScene(vtkMRMLScene*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>208</x>
-     <y>780</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>332</x>
-     <y>235</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>qSlicerRegistrationQualityModule</sender>
-   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>ParameterComboBox</receiver>
-   <slot>setMRMLScene(vtkMRMLScene*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>69</x>
-     <y>7</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>253</x>
-     <y>60</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ImageChecks</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>BlockBox</receiver>
-   <slot>setFocus()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>334</x>
-     <y>401</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>108</x>
-     <y>463</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ImageChecks</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>ContourBox</receiver>
-   <slot>show()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>334</x>
-     <y>401</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>108</x>
-     <y>463</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ImageChecks</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>BlockBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>334</x>
-     <y>401</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>108</x>
-     <y>463</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>qSlicerRegistrationQualityModule</sender>
-   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>InputReferenceComboBox</receiver>
-   <slot>setMRMLScene(vtkMRMLScene*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>130</x>
-     <y>6</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>152</x>
-     <y>172</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>qSlicerRegistrationQualityModule</sender>
-   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>InputWarpedComboBox</receiver>
-   <slot>setMRMLScene(vtkMRMLScene*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>130</x>
-     <y>6</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>152</x>
-     <y>172</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>qSlicerRegistrationQualityModule</sender>
-   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>GlyphSliceComboBox</receiver>
-   <slot>setMRMLScene(vtkMRMLScene*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>0</x>
-     <y>1268</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>202</x>
-     <y>880</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>qSlicerRegistrationQualityModule</sender>
-   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>GridSliceComboBox</receiver>
-   <slot>setMRMLScene(vtkMRMLScene*)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>358</x>
-     <y>1288</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>217</x>
-     <y>1097</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+		</layout>
+	</widget>
+	<customwidgets>
+		<customwidget>
+			<class>qMRMLNodeComboBox</class>
+			<extends>QWidget</extends>
+			<header>qMRMLNodeComboBox.h</header>
+			<container>1</container>
+		</customwidget>
+		<customwidget>
+			<class>qSlicerWidget</class>
+			<extends>QWidget</extends>
+			<header>qSlicerWidget.h</header>
+			<container>1</container>
+		</customwidget>
+		<customwidget>
+			<class>ctkCheckBox</class>
+			<extends>QCheckBox</extends>
+			<header>ctkCheckBox.h</header>
+		</customwidget>
+		<customwidget>
+			<class>ctkCollapsibleButton</class>
+			<extends>QWidget</extends>
+			<header>ctkCollapsibleButton.h</header>
+			<container>1</container>
+		</customwidget>
+		<customwidget>
+			<class>ctkCollapsibleGroupBox</class>
+			<extends>QGroupBox</extends>
+			<header>ctkCollapsibleGroupBox.h</header>
+			<container>1</container>
+		</customwidget>
+		<customwidget>
+			<class>ctkComboBox</class>
+			<extends>QComboBox</extends>
+			<header>ctkComboBox.h</header>
+		</customwidget>
+		<customwidget>
+			<class>ctkRangeWidget</class>
+			<extends>QWidget</extends>
+			<header>ctkRangeWidget.h</header>
+		</customwidget>
+		<customwidget>
+			<class>ctkSliderWidget</class>
+			<extends>QWidget</extends>
+			<header>ctkSliderWidget.h</header>
+		</customwidget>
+	</customwidgets>
+	<resources>
+		<include location="../qSlicerRegistrationQualityModule.qrc"></include>
+	</resources>
+	<connections>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>InputFieldComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>277</x>
+					<y>6</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>315</x>
+					<y>150</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>InputInvFieldComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>277</x>
+					<y>6</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>315</x>
+					<y>150</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>OutputModelComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>208</x>
+					<y>780</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>332</x>
+					<y>235</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>ParameterComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>69</x>
+					<y>7</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>253</x>
+					<y>60</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>ImageChecks</sender>
+			<signal>toggled(bool)</signal>
+			<receiver>BlockBox</receiver>
+			<slot>setFocus()</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>334</x>
+					<y>401</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>108</x>
+					<y>463</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>ImageChecks</sender>
+			<signal>toggled(bool)</signal>
+			<receiver>ContourBox</receiver>
+			<slot>show()</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>334</x>
+					<y>401</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>108</x>
+					<y>463</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>ImageChecks</sender>
+			<signal>toggled(bool)</signal>
+			<receiver>BlockBox</receiver>
+			<slot>setEnabled(bool)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>334</x>
+					<y>401</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>108</x>
+					<y>463</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>InputReferenceComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>130</x>
+					<y>6</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>152</x>
+					<y>172</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>InputWarpedComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>130</x>
+					<y>6</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>152</x>
+					<y>172</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>GlyphSliceComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>0</x>
+					<y>1268</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>202</x>
+					<y>880</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>GridSliceComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>358</x>
+					<y>1288</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>217</x>
+					<y>1097</y>
+				</hint>
+			</hints>
+		</connection>
+	</connections>
 </ui>
