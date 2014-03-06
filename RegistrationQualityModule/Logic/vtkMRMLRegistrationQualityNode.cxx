@@ -41,52 +41,6 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	MovieBoxGreenState = 0;
 	MovieRun = 0;
 
-	//Glyph Parameters
-	this->GlyphPointMax = 2000;
-	this->GlyphScale = 1;
-	this->GlyphScaleDirectional = true;
-	this->GlyphScaleIsotropic = false;
-	this->GlyphThresholdMax = 0;
-	this->GlyphThresholdMin = 0;
-	this->GlyphSeed = 687848400;
-	this->GlyphSourceOption = 0;
-	//Arrow Parameters
-	this->GlyphArrowTipLength = 0.35;
-	this->GlyphArrowTipRadius = 0.5;
-	this->GlyphArrowShaftRadius = 0.15;
-	this->GlyphArrowResolution = 6;
-	//Cone Parameters
-	this->GlyphConeHeight = 1.0;
-	this->GlyphConeRadius = 0.6;
-	this->GlyphConeResolution = 6;
-	//Sphere Parameters
-	this->GlyphSphereResolution = 6;
-
-	//Grid Parameters
-	this->GridScale = 1;
-	this->GridDensity = 6;
-
-	//Block Parameters
-	this->BlockScale = 1;
-	this->BlockDisplacementCheck = 0;
-
-	//Contour Parameters
-	this->ContourNumber = 10;
-	this->ContourMin = 0;
-	this->ContourMax = 6;
-
-	//Glyph Slice Parameters
-	this->GlyphSliceNodeID = NULL;
-	this->GlyphSlicePointMax = 6000;
-	this->GlyphSliceThresholdMax = 0;
-	this->GlyphSliceThresholdMin = 0;
-	this->GlyphSliceScale = 1;
-	this->GlyphSliceSeed = 687848400;
-
-	//Grid Slice Parameters
-	this->GridSliceNodeID = NULL;
-	this->GridSliceScale = 1;
-	this->GridSliceDensity = 6;
 }
 
 //----------------------------------------------------------------------------
@@ -99,8 +53,6 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetCheckerboardVolumeNodeID(NULL);
 	this->SetSquaredDiffVolumeNodeID(NULL);
 	this->SetJacobianVolumeNodeID(NULL);
-	this->SetGlyphSliceNodeID(NULL);
-	this->SetGridSliceNodeID(NULL);
 }
 
 //----------------------------------------------------------------------------
@@ -170,199 +122,6 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 // 			ss >> this->JacobianStatistics;
 // 			continue;
 // 		}
-
-		if (!strcmp(attName,"GlyphPointMax")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphPointMax;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphScale")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphScale;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphScaleDirectional")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphScaleDirectional;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphScaleIsotropic")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphScaleIsotropic;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphThresholdMax")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphThresholdMax;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphThresholdMin")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphThresholdMin;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphSeed")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphSeed;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphSourceOption")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphSourceOption;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphArrowTipLength")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphArrowTipLength;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphArrowTipRadius")){
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphArrowTipRadius;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphArrowShaftRadius")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphArrowShaftRadius;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphArrowResolution")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphArrowResolution;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphConeHeight")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphConeHeight;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphConeRadius")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphConeRadius;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphConeResolution")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphConeResolution;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphSphereResolution")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphSphereResolution;
-			continue;
-		}
-		if (!strcmp(attName,"GridScale")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GridScale;
-			continue;
-		}
-		if (!strcmp(attName,"GridDensity")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GridDensity;
-			continue;
-		}
-		if (!strcmp(attName,"BlockScale")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->BlockScale;
-			continue;
-		}
-		if (!strcmp(attName,"BlockDisplacementCheck")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->BlockDisplacementCheck;
-			continue;
-		}
-		if (!strcmp(attName,"ContourNumber")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->ContourNumber;
-			continue;
-		}
-		if (!strcmp(attName,"ContourMin")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->ContourMin;
-			continue;
-		}
-		if (!strcmp(attName,"ContourMax")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->ContourMax;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphSliceNodeID")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphSliceNodeID;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphSlicePointMax")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphSlicePointMax;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphSliceThresholdMax")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphSliceThresholdMax;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphSliceThresholdMin")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphSliceThresholdMin;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphSliceScale")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphSliceScale;
-			continue;
-		}
-		if (!strcmp(attName,"GlyphSliceSeed")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GlyphSliceSeed;
-			continue;
-		}
-		if (!strcmp(attName,"GridSliceNodeID")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GridSliceNodeID;
-			continue;
-		}
-		if (!strcmp(attName,"GridSliceScale")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GridSliceScale;
-			continue;
-		}
-		if (!strcmp(attName,"GridSliceDensity")) {
-			std::stringstream ss;
-			ss << attValue;
-			ss >> this->GridSliceDensity;
-			continue;
-		}
 	}
 
 	this->WriteXML(std::cout,1);
@@ -399,46 +158,6 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 // 	of << indent << " JacobianVolumeNodeID=\""
 // 			<< (this->JacobianVolumeNodeID ? this->JacobianVolumeNodeID : "NULL") << "\"";
 // 	of << indent << " JacobianStatistics=\"" << this->JacobianStatistics << "\"";
-
-	of << indent << " GlyphPointMax=\""<< this->GlyphPointMax << "\"";
-	of << indent << " GlyphScale=\""<< this->GlyphScale << "\"";
-	of << indent << " GlyphScaleDirectional=\"" << this->GlyphScaleDirectional << "\"";
-	of << indent << " GlyphScaleIsotropic=\"" << this->GlyphScaleIsotropic << "\"";
-	of << indent << " GlyphThresholdMax=\""<< this->GlyphThresholdMax << "\"";
-	of << indent << " GlyphThresholdMin=\""<< this->GlyphThresholdMin << "\"";
-	of << indent << " GlyphSeed=\""<< this->GlyphSeed << "\"";
-	of << indent << " GlyphSourceOption=\""<< this->GlyphSourceOption << "\"";
-	of << indent << " GlyphArrowTipLength=\"" << this->GlyphArrowTipLength << "\"";
-	of << indent << " GlyphArrowTipRadius=\""<< this->GlyphArrowTipRadius << "\"";
-	of << indent << " GlyphArrowShaftRadius=\"" << this->GlyphArrowShaftRadius << "\"";
-	of << indent << " GlyphArrowResolution=\"" << this->GlyphArrowResolution << "\"";
-	of << indent << " GlyphConeHeight=\"" << this->GlyphConeHeight << "\"";
-	of << indent << " GlyphConeRadius=\"" << this->GlyphConeRadius << "\"";
-	of << indent << " GlyphConeResolution=\"" << this->GlyphConeResolution << "\"";
-	of << indent << " GlyphSphereResolution=\"" << this->GlyphSphereResolution << "\"";
-
-	of << indent << " GridScale=\""<< this->GridScale << "\"";
-	of << indent << " GridDensity=\""<< this->GridDensity << "\"";
-
-	of << indent << " BlockScale=\""<< this->BlockScale << "\"";
-	of << indent << " BlockDisplacementCheck=\""<< this->BlockDisplacementCheck << "\"";
-
-	of << indent << " ContourNumber=\""<< this->ContourNumber << "\"";
-	of << indent << " ContourMin=\""<< this->ContourMin << "\"";
-	of << indent << " ContourMax=\""<< this->ContourMax << "\"";
-
-	of << indent << " GlyphSliceNodeID=\""
-			<< (this->GlyphSliceNodeID ? this->GlyphSliceNodeID : "NULL") << "\"";
-	of << indent << " GlyphSlicePointMax=\""<< this->GlyphSlicePointMax << "\"";
-	of << indent << " GlyphSliceThresholdMax=\""<< this->GlyphSliceThresholdMax << "\"";
-	of << indent << " GlyphSliceThresholdMin=\""<< this->GlyphSliceThresholdMin << "\"";
-	of << indent << " GlyphSliceScale=\""<< this->GlyphSliceScale << "\"";
-	of << indent << " GlyphSliceSeed=\""<< this->GlyphSliceSeed << "\"";
-
-	of << indent << " GridSliceNodeID=\""
-			<< (this->GridSliceNodeID ? this->GridSliceNodeID : "NULL") << "\"";
-	of << indent << " GridSliceScale=\""<< this->GridSliceScale << "\"";
-	of << indent << " GridSliceDensity=\""<< this->GridSliceDensity << "\"";
 }
 
 //----------------------------------------------------------------------------
@@ -463,44 +182,6 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 // 	this->SetJacobianVolumeNodeID(node->GetJacobianVolumeNodeID());
 // // 	this->JacobianStatistics = node->JacobianStatistics;
 
-
-	this->GlyphPointMax = node->GlyphPointMax;
-	this->GlyphScaleDirectional = node->GlyphScaleDirectional;
-	this->GlyphScaleIsotropic = node->GlyphScaleIsotropic;
-	this->GlyphThresholdMax = node->GlyphThresholdMax;
-	this->GlyphThresholdMin = node->GlyphThresholdMin;
-	this->GlyphSeed = node->GlyphSeed;
-	this->GlyphSourceOption = node->GlyphSourceOption;
-	this->GlyphArrowTipLength = node->GlyphArrowTipLength;
-	this->GlyphArrowTipRadius = node->GlyphArrowTipRadius;
-	this->GlyphArrowShaftRadius = node->GlyphArrowShaftRadius;
-	this->GlyphArrowResolution = node->GlyphArrowResolution;
-	this->GlyphConeHeight = node->GlyphConeHeight;
-	this->GlyphConeRadius = node->GlyphConeRadius;
-	this->GlyphConeResolution = node->GlyphConeResolution;
-	this->GlyphSphereResolution = node->GlyphSphereResolution;
-
-	this->GridScale = node->GridScale;
-	this->GridDensity = node->GridDensity;
-
-	this->BlockScale = node->BlockScale;
-	this->BlockDisplacementCheck = node->BlockDisplacementCheck;
-
-	this->ContourNumber = node->ContourNumber;
-	this->ContourMin = node->ContourMin;
-	this->ContourMax = node->ContourMax;
-
-	this->GlyphSliceNodeID = (node->GetGlyphSliceNodeID());
-	this->GlyphSlicePointMax = node->GlyphSlicePointMax;
-	this->GlyphSliceThresholdMax = node->GlyphSliceThresholdMax;
-	this->GlyphSliceThresholdMin = node->GlyphSliceThresholdMin;
-	this->GlyphSliceScale = node->GlyphSliceScale;
-	this->GlyphSliceSeed = node->GlyphSliceSeed;
-
-	this->GridSliceNodeID = (node->GetGridSliceNodeID());
-	this->GridSliceScale = node->GridSliceScale;
-	this->GridSliceDensity = node->GridSliceDensity;
-
 	this->DisableModifiedEventOff();
 	this->InvokePendingModifiedEvent();
 }
@@ -516,14 +197,6 @@ void vtkMRMLRegistrationQualityNode::UpdateReferenceID(const char *oldID, const 
 
 	if (this->OutputModelNodeID && !strcmp(oldID, this->OutputModelNodeID)) {
 		this->SetAndObserveOutputModelNodeID(newID);
-	}
-
-	if (this->GlyphSliceNodeID && !strcmp(oldID, this->GlyphSliceNodeID)) {
-		this->SetAndObserveGlyphSliceNodeID(newID);
-	}
-
-	if (this->GridSliceNodeID && !strcmp(oldID, this->GridSliceNodeID)) {
-		this->SetAndObserveGridSliceNodeID(newID);
 	}
 }
 
@@ -635,30 +308,6 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveInverseConsistVolumeNodeID(con
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveGlyphSliceNodeID(const char* id) {
-	if (this->GlyphSliceNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->GlyphSliceNodeID, this);
-	}
-	this->SetGlyphSliceNodeID(id);
-
-	if (id) {
-		this->Scene->AddReferencedNodeID(this->GlyphSliceNodeID, this);
-	}
-}
-
-//----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveGridSliceNodeID(const char* id) {
-	if (this->GridSliceNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->GridSliceNodeID, this);
-	}
-	this->SetGridSliceNodeID(id);
-
-	if (id) {
-		this->Scene->AddReferencedNodeID(this->GridSliceNodeID, this);
-	}
-}
-
-//----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 	Superclass::PrintSelf(os,indent);
 
@@ -687,45 +336,5 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 // 	os << indent << " JacobianVolumeNodeID = "
 // 			<< (this->JacobianVolumeNodeID ? this->JacobianVolumeNodeID : "NULL") << "\n";
 // // 	os << indent << " JacobianStatistics = " << this->JacobianStatistics << "\n";
-
-	os << indent << " GlyphPointMax = " << this->GlyphPointMax << "\n";
-	os << indent << " GlyphScale = " << this->GlyphScale << "\n";
-	os << indent << " GlyphScaleDirectional = " << this->GlyphScaleDirectional << "\n";
-	os << indent << " GlyphScaleIsotropic =  " << this->GlyphScaleIsotropic << "\n";
-	//   os << indent << " GlyphThresholdMax = "<< this->GlyphThresholdMax << "\n";
-	os << indent << " GlyphThresholdMin = "<< this->GlyphThresholdMin << "\n";
-	os << indent << " GlyphSeed = "<< this->GlyphSeed << "\n";
-	os << indent << " GlyphSourceOption = "<< this->GlyphSourceOption << "\n";
-	os << indent << "   GlyphArrowTipLength = " << this->GlyphArrowTipLength << "\n";
-	os << indent << "   GlyphArrowTipRadius = "<< this->GlyphArrowTipRadius << "\n";
-	os << indent << "   GlyphArrowShaftRadius =  " << this->GlyphArrowShaftRadius << "\n";
-	os << indent << "   GlyphArrowResolution = " << this->GlyphArrowResolution << "\n";
-	os << indent << "   GlyphConeHeight = " << this->GlyphConeHeight << "\n";
-	os << indent << "   GlyphConeRadius = " << this->GlyphConeRadius << "\n";
-	os << indent << "   GlyphConeResolution = " << this->GlyphConeResolution << "\n";
-	os << indent << "   GlyphSphereResolution = " << this->GlyphSphereResolution << "\n";
-
-	os << indent << " GridScale = "<< this->GridScale << "\n";
-	os << indent << " GridDensity = "<< this->GridDensity << "\n";
-
-	os << indent << " BlockScale = "<< this->BlockScale << "\n";
-	os << indent << " BlockDisplacementCheck = "<< this->BlockDisplacementCheck << "\n";
-
-	os << indent << " ContourNumber = "<< this->ContourNumber << "\n";
-	os << indent << " ContourMin = "<< this->ContourMin << "\n";
-	os << indent << " ContourMax = "<< this->ContourMax << "\n";
-
-	os << indent << " GlyphSliceNodeID = "
-			<< (this->GlyphSliceNodeID ? this->GlyphSliceNodeID : "NULL") << "\n";
-	os << indent << " GlyphSlicePointMax = "<< this->GlyphSlicePointMax << "\n";
-	os << indent << " GlyphSliceThresholdMax = "<< this->GlyphSliceThresholdMax << "\n";
-	os << indent << " GlyphSliceThresholdMin = "<< this->GlyphSliceThresholdMin << "\n";
-	os << indent << " GlyphSliceScale = "<< this->GlyphSliceScale << "\n";
-	os << indent << " GlyphSliceSeed = "<< this->GlyphSliceSeed << "\n";
-
-	os << indent << " GridSliceNodeID = "
-			<< (this->GridSliceNodeID ? this->GridSliceNodeID : "NULL") << "\n";
-	os << indent << " GridSliceScale = "<< this->GridSliceScale << "\n";
-	os << indent << " GridSliceDensity = "<< this->GridSliceDensity << "\n";
 }
 
