@@ -2,7 +2,6 @@
 
 // RegistrationQuality includes
 #include "vtkMRMLRegistrationQualityNode.h"
-#include "vtkDFVGlyph3D.h"
 
 // SlicerQt Includes
 #include "qSlicerApplication.h"
@@ -43,34 +42,6 @@
 #include <vtkLookupTable.h>
 #include <vtkMath.h>
 #include <vtkImageAccumulate.h>
-
-
-// Glyph VTK includes
-#include <vtkArrowSource.h>
-#include <vtkConeSource.h>
-#include <vtkSphereSource.h>
-
-// Grid VTK includes
-#include <vtkCellArray.h>
-#include <vtkFloatArray.h>
-#include <vtkPoints.h>
-#include <vtkLine.h>
-#include <vtkWarpVector.h>
-
-// Block VTK includes
-#include <vtkGeometryFilter.h>
-#include <vtkVectorDot.h>
-#include <vtkPolyDataNormals.h>
-
-// Contour VTK includes
-#include <vtkMarchingCubes.h>
-
-// Glyph Slice VTK includes
-#include <vtkGlyphSource2D.h>
-#include <vtkRibbonFilter.h>
-
-// Grid Slice VTK includes
-#include <vtkAppendPolyData.h>
 
 // STD includes
 #include <iostream>
