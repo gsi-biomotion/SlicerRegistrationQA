@@ -432,12 +432,29 @@
 									</item>
 									<item row="0" column="1" colspan="2">
 										<widget class="QLabel" name="StillErrorLabel">
+											<property name="palette">
+												<palette>
+													<active>
+														<colorrole role="WindowText">
+															<brush brushstyle="SolidPattern">
+																<color alpha="255">
+																	<red>255</red>
+																	<green>0</green>
+																	<blue>0</blue>
+																</color>
+															</brush>
+														</colorrole>
+													</active>
+												</palette>
+											</property>
+											<property name="font">
+												<font>
+													<weight>75</weight>
+													<bold>true</bold>
+												</font>
+											</property>
 											<property name="text">
-												<string>
-													&lt;span style=&quot; color:#ff0000;&quot;&gt;
-													No input volume selected
-													&lt;/span&gt;
-												</string>
+												<string></string>
 											</property>
 										</widget>
 									</item>

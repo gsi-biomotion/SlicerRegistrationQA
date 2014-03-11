@@ -286,10 +286,9 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference(int state) {
 //--- Image Checks -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
-		vtkErrorMacro("FalseColor: Invalid scene or parameter set node!");
-		return;
+		vtkErrorMacro("Invalid scene or parameter set node!");
+		throw std::runtime_error("Internal Error, see command line!");
 	}
-	std::cerr << "Setting false color." << std::endl;
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
@@ -300,38 +299,26 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
 
 	if (!referenceVolume || !warpedVolume) {
-		vtkErrorMacro("Falsecolor: Invalid reference or warped volume!");
-		return;
+		throw std::runtime_error("Reference or warped volume not set!");
 	}
+
 	//TODO: Volumes go back to gray value - perhaps we should rembemer previous color settings?
 	if (!state) {
-	      	this->SetDefaultDisplay(referenceVolume,warpedVolume);
+		SetDefaultDisplay(referenceVolume,warpedVolume);
 		return;
 	}
-	referenceVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeWarmTint1");
-	warpedVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeCoolTint1");
+
+	vtkMRMLScalarVolumeDisplayNode *referenceVolumeDisplayNode = referenceVolume->GetScalarVolumeDisplayNode();
+	vtkMRMLScalarVolumeDisplayNode *warpedVolumeDisplayNode = warpedVolume->GetScalarVolumeDisplayNode();
+
+	referenceVolumeDisplayNode->SetAndObserveColorNodeID("vtkMRMLColorTableNodeWarmTint1");
+	warpedVolumeDisplayNode->SetAndObserveColorNodeID("vtkMRMLColorTableNodeCoolTint1");
+
 	// Set window and level the same for warped and reference volume.
-	warpedVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
-	double window, level;
-	window = referenceVolume->GetScalarVolumeDisplayNode()->GetWindow();
-	level = referenceVolume->GetScalarVolumeDisplayNode()->GetLevel();
+	warpedVolumeDisplayNode->AutoWindowLevelOff();
+	warpedVolumeDisplayNode->SetWindow( referenceVolumeDisplayNode->GetWindow() );
+	warpedVolumeDisplayNode->SetLevel( referenceVolumeDisplayNode->GetLevel() );
 
-	warpedVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
-	warpedVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
-
-// 	// Set warped image in background
-// 	qSlicerApplication *app = qSlicerApplication::application();
-// 	qSlicerLayoutManager *layoutManager = app->layoutManager();
-//
-// 	if (!layoutManager) {
-// 		return;
-// 	}
-
-	//TODO Bad Solution. Linking layers somehow doesn't work - it only changes one (red) slice.
-// 	this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed")),referenceVolume,warpedVolume,0.5);
-// 	this->SetForegroundImage(vtkMRMLSliceCompositeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow")),referenceVolume,warpedVolume,0.5);
 	this->SetForegroundImage(referenceVolume,warpedVolume,0.5);
 
 	return;
@@ -357,41 +344,6 @@ void vtkSlicerRegistrationQualityLogic::Flicker(int opacity) {
 		return;
 	}
 
-// 	// Set warped image in background
-// 	qSlicerApplication * app = qSlicerApplication::application();
-// 	qSlicerLayoutManager * layoutManager = app->layoutManager();
-//
-// 	if (!layoutManager) {
-// 		return;
-// 	}
-//
-// 	vtkMRMLSliceCompositeNode *rcn = vtkMRMLSliceCompositeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeRed"));
-// 	vtkMRMLSliceCompositeNode *ycn = vtkMRMLSliceCompositeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeYellow"));
-// 	vtkMRMLSliceCompositeNode *gcn = vtkMRMLSliceCompositeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID("vtkMRMLSliceCompositeNodeGreen"));
-//
-// 	vtkMRMLSliceLogic* redSliceLogic = rcn != NULL ?
-// 			GetMRMLApplicationLogic()->GetSliceLogicByLayoutName(rcn->GetLayoutName()) : NULL;
-// 	if (redSliceLogic == NULL) {
-// 		vtkErrorMacro("Flicker: Invalid SliceLogic!");
-// 		return;
-// 	}
-//
-// 	// Link Slice Controls
-// 	rcn->SetLinkedControl(1);
-// 	ycn->SetLinkedControl(1);
-// 	gcn->SetLinkedControl(1);
-//
-// 	// Set volumes and opacity for all three layers.
-// 	redSliceLogic->StartSliceCompositeNodeInteraction(
-// 		vtkMRMLSliceCompositeNode::ForegroundVolumeFlag
-// 		| vtkMRMLSliceCompositeNode::BackgroundVolumeFlag);
-// 	rcn->SetBackgroundVolumeID(referenceVolume->GetID());
-// 	rcn->SetForegroundVolumeID(warpedVolume->GetID());
-// 	rcn->SetForegroundOpacity(opacity);
-// 	redSliceLogic->EndSliceCompositeNodeInteraction();
 	this->SetForegroundImage(referenceVolume,warpedVolume,opacity);
 
 	return;
@@ -509,8 +461,8 @@ void vtkSlicerRegistrationQualityLogic::Movie() {
 void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 	//   Calling checkerboardfilter cli. Logic has been copied and modified from CropVolumeLogic onApply.
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
-		vtkErrorMacro("Checkerboard: Invalid scene or parameter set node!");
-		return;
+		vtkErrorMacro("Invalid scene or parameter set node!");
+		throw std::runtime_error("Internal Error, see command line!");
 	}
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
@@ -518,24 +470,20 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
-// 	vtkMRMLVolumeNode *outputVolume = vtkMRMLVolumeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID(
-// 				this->RegistrationQualityNode->GetCheckerboardVolumeNodeID()));
-
-	if (!referenceVolume || !warpedVolume) {
-		std::cerr << "Reference or warped volume not set!" << std::endl;
-		return;
-	}
 
 	if (!state) {
 	      	this->SetDefaultDisplay(referenceVolume,warpedVolume);
 		return;
 	}
 
+	if (!referenceVolume || !warpedVolume) {
+		throw std::runtime_error("Reference or warped volume not set!");
+	}
+
 	if (!this->RegistrationQualityNode->GetCheckerboardVolumeNodeID()) {
 		if(!this->Internal->VolumesLogic) {
-			std::cerr << "CheckerboardPattern: ERROR: failed to get hold of Volumes logic" << std::endl;
-			return;
+			vtkErrorMacro("Failed to get hold of Volumes logic!");
+			throw std::runtime_error("Internal Error, see command line!");
 		}
 
 		int PatternValue = this->RegistrationQualityNode->GetCheckerboardPattern();
@@ -543,20 +491,20 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 		outSS << referenceVolume->GetName() << "_CheckerboardPattern_"<< PatternValue;
 		vtkMRMLScalarVolumeNode *outputVolume = this->Internal->VolumesLogic->CloneVolume(
 			this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
-
-
-		//   outputVolume->SetName(outSS.str().c_str());
-		if (!referenceVolume || !warpedVolume || !outputVolume) {
-			std::cerr << "Volumes not set!" << std::endl;
-			// 		  throw;
-			return;
+		if (!outputVolume) {
+			vtkErrorMacro("Could not create Checkerboard volume!");
+			throw std::runtime_error("Internal Error, see command line!");
 		}
+
 		qSlicerCLIModule* checkerboardfilterCLI = dynamic_cast<qSlicerCLIModule*>(
 			qSlicerCoreApplication::application()->moduleManager()->module("CheckerBoardFilter"));
-		QString cliModuleName("CheckerBoardFilter");
+		if (!checkerboardfilterCLI) {
+			vtkErrorMacro("No Checkerboard Filter module!");
+			throw std::runtime_error("Internal Error, see command line!");
+		}
 
 		vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
-		checkerboardfilterCLI->cliModuleLogic()->CreateNodeInScene();
+			checkerboardfilterCLI->cliModuleLogic()->CreateNodeInScene();
 
 		//Convert PatternValue to string
 		std::ostringstream outPattern;
@@ -574,7 +522,6 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 
 		outputVolume->SetAndObserveTransformNodeID(NULL);
 		this->RegistrationQualityNode->SetCheckerboardVolumeNodeID(outputVolume->GetID());
-		std::cerr << "Setting checkerboard pattern." << std::endl;
 		return;
 	}
 
@@ -588,8 +535,8 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 void vtkSlicerRegistrationQualityLogic::Jacobian(int state) {
 
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
-		vtkErrorMacro("Jacobian: Invalid scene or parameter set node!");
-		return;
+		vtkErrorMacro("Invalid scene or parameter set node!");
+		throw std::runtime_error("Internal Error, see command line!");
 	}
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
@@ -599,78 +546,58 @@ void vtkSlicerRegistrationQualityLogic::Jacobian(int state) {
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetVectorVolumeNodeID()));
 
-// 	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID(
-// 				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
-// 	vtkMRMLVolumeNode *outputVolume = vtkMRMLVolumeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID(
-// 				this->RegistrationQualityNode->GetCheckerboardVolumeNodeID()));
-//
-
-
 	if (!vectorVolume || !referenceVolume ) {
-	    std::cerr << "Volumes not set!" << std::endl;
-	    return;
+		throw std::runtime_error("Reference volume or vector field not set!");
 	}
 
 	if (!state) {
-
-	  vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
+		vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
-	      	this->SetDefaultDisplay(referenceVolume,warpedVolume);
+		this->SetDefaultDisplay(referenceVolume,warpedVolume);
 		return;
 	}
 
 	if (!this->RegistrationQualityNode->GetJacobianVolumeNodeID()){
 
-	  if(!this->Internal->VolumesLogic)
-	    {
-	      std::cerr << "Jacobian: ERROR: failed to get hold of Volumes logic" << std::endl;
-	      return;
-	    }
+		if(!this->Internal->VolumesLogic) {
+			vtkErrorMacro("Failed to get hold of Volumes logic!");
+			throw std::runtime_error("Internal Error, see command line!");
+		}
 
+		std::ostringstream outSS;
+		outSS << referenceVolume->GetName() << "_Jacobian";
 
-	  vtkMRMLScalarVolumeNode *outputVolume = NULL;
-	  vtkMRMLScalarVolumeNode *svnode = vtkMRMLScalarVolumeNode::SafeDownCast(referenceVolume);
-	  std::ostringstream outSS;
+		vtkMRMLScalarVolumeNode *outputVolume = this->Internal->VolumesLogic->CloneVolume(
+			this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
 
-	  outSS << referenceVolume->GetName() << "-jacobian";
-	  if(svnode)
-	  {
-	    outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
-	  }
-	  else
-	  {
-	    std::cerr << "Reference volume not scalar volume!" << std::endl;
-	    return;
-	  }
-
-
-	qSlicerCLIModule* checkerboardfilterCLI = dynamic_cast<qSlicerCLIModule*>(
+		qSlicerCLIModule* jacobianfilterCLI = dynamic_cast<qSlicerCLIModule*>(
 			qSlicerCoreApplication::application()->moduleManager()->module("JacobianFilter"));
-	QString cliModuleName("JacobianFilter");
+		if (!jacobianfilterCLI) {
+			vtkErrorMacro("No Jacobian Filter module!");
+			throw std::runtime_error("Internal Error, see command line!");
+		}
 
-	vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
-			checkerboardfilterCLI->cliModuleLogic()->CreateNodeInScene();
+		vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
+			jacobianfilterCLI->cliModuleLogic()->CreateNodeInScene();
 
-	// Set node parameters
-	cmdNode->SetParameterAsString("inputVolume", vectorVolume->GetID());
-	cmdNode->SetParameterAsString("outputVolume", outputVolume->GetID());
+		// Set node parameters
+		cmdNode->SetParameterAsString("inputVolume", vectorVolume->GetID());
+		cmdNode->SetParameterAsString("outputVolume", outputVolume->GetID());
 
-	// Execute synchronously so that we can check the content of the file after the module execution
-	checkerboardfilterCLI->cliModuleLogic()->ApplyAndWait(cmdNode);
+		// Execute synchronously so that we can check the content of the file after the module execution
+		jacobianfilterCLI->cliModuleLogic()->ApplyAndWait(cmdNode);
 
-	this->GetMRMLScene()->RemoveNode(cmdNode);
+		this->GetMRMLScene()->RemoveNode(cmdNode);
 
-	outputVolume->SetAndObserveTransformNodeID(NULL);
-	this->RegistrationQualityNode->SetJacobianVolumeNodeID(outputVolume->GetID());
+		outputVolume->SetAndObserveTransformNodeID(NULL);
+		this->RegistrationQualityNode->SetJacobianVolumeNodeID(outputVolume->GetID());
 
 	}
 
 	vtkMRMLScalarVolumeNode *jacobianVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetJacobianVolumeNodeID()));
+		this->GetMRMLScene()->GetNodeByID(
+			this->RegistrationQualityNode->GetJacobianVolumeNodeID()));
 
 	jacobianVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
 	jacobianVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
@@ -688,7 +615,7 @@ void vtkSlicerRegistrationQualityLogic::Jacobian(int state) {
 
 	this->RegistrationQualityNode->DisableModifiedEventOn();
 	this->RegistrationQualityNode->SetJacobianStatistics( statisticValues );
-// 	this->RegistrationQualityNode->SetJacobianSTD( statisticValues[1] );
+	// 	this->RegistrationQualityNode->SetJacobianSTD( statisticValues[1] );
 	this->RegistrationQualityNode->DisableModifiedEventOff();
 
 	return;
@@ -811,46 +738,45 @@ void vtkSlicerRegistrationQualityLogic::SetDefaultDisplay(vtkMRMLScalarVolumeNod
 
 
 	if (!backgroundVolume || !foregroundVolume) {
-		vtkErrorMacro("SetDefaultDisplay: Invalid volumes!");
+		// 		vtkErrorMacro("SetDefaultDisplay: Invalid volumes!");
+		this->SetForegroundImage(backgroundVolume,foregroundVolume,0.5);
 		return;
 	}
 	//TODO: Volumes go back to gray value - perhaps we should rembemer previous color settings?
-	 backgroundVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
-	 foregroundVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
+	backgroundVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
+	foregroundVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
 
 	// Set window and level the same for warped and reference volume.
 	foregroundVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
-// 	double window, level;
-// 	window = backgroundVolume->GetScalarVolumeDisplayNode()->GetWindow();
-// 	level = backgroundVolume->GetScalarVolumeDisplayNode()->GetLevel();
+	// 	double window, level;
+	// 	window = backgroundVolume->GetScalarVolumeDisplayNode()->GetWindow();
+	// 	level = backgroundVolume->GetScalarVolumeDisplayNode()->GetLevel();
 	foregroundVolume->GetScalarVolumeDisplayNode()->SetWindow(backgroundVolume->GetScalarVolumeDisplayNode()->GetWindow());
 	foregroundVolume->GetScalarVolumeDisplayNode()->SetLevel(backgroundVolume->GetScalarVolumeDisplayNode()->GetLevel());
 	this->SetForegroundImage(backgroundVolume,foregroundVolume,0.5);
 
 	return;
 }
+
 //---Calculate Statistic of image-----------------------------------
-void vtkSlicerRegistrationQualityLogic::CalculateStatistics(vtkMRMLScalarVolumeNode *inputVolume, double statisticValues[4] )
-{
-  vtkNew<vtkImageAccumulate> StatImage;
-  StatImage->SetInput(inputVolume->GetImageData());
-  StatImage->Update();
-  statisticValues[0]= StatImage->GetMean()[0];
-  statisticValues[1]= StatImage->GetStandardDeviation()[0];
-  statisticValues[2]= StatImage->GetMax()[0];
-  statisticValues[3]= StatImage->GetMin()[0];
+void vtkSlicerRegistrationQualityLogic
+::CalculateStatistics(vtkMRMLScalarVolumeNode *inputVolume, double statisticValues[4] ) {
+	vtkNew<vtkImageAccumulate> StatImage;
+	StatImage->SetInput(inputVolume->GetImageData());
+	StatImage->Update();
+	statisticValues[0]= StatImage->GetMean()[0];
+	statisticValues[1]= StatImage->GetStandardDeviation()[0];
+	statisticValues[2]= StatImage->GetMax()[0];
+	statisticValues[3]= StatImage->GetMin()[0];
 }
 
 
 //---Change backroung image and set opacity-----------------------------------
 void vtkSlicerRegistrationQualityLogic
-::SetForegroundImage(vtkMRMLScalarVolumeNode *backgroundVolume, vtkMRMLScalarVolumeNode *foregroundVolume,double opacity) {
-		// Set warped image in background
+::SetForegroundImage(vtkMRMLScalarVolumeNode *backgroundVolume,
+					 vtkMRMLScalarVolumeNode *foregroundVolume,
+					 double opacity) {
 
-	if (!backgroundVolume || !foregroundVolume) {
-		vtkErrorMacro("SetForegroundImage: Invalid reference or warped volume!");
-		return;
-	}
 	qSlicerApplication * app = qSlicerApplication::application();
 	qSlicerLayoutManager * layoutManager = app->layoutManager();
 
@@ -875,11 +801,20 @@ void vtkSlicerRegistrationQualityLogic
 	rcn->SetLinkedControl(1);
 	ycn->SetLinkedControl(1);
 	gcn->SetLinkedControl(1);
-	// Set volumes and opacity for all three layers.
 
-// 	redSliceLogic->StartSliceCompositeNodeInteraction();
-	rcn->SetBackgroundVolumeID(backgroundVolume->GetID());
-	rcn->SetForegroundVolumeID(foregroundVolume->GetID());
+	// Set volumes and opacity for all three layers.
+	if (backgroundVolume) {
+		rcn->SetBackgroundVolumeID(backgroundVolume->GetID());
+	} else {
+		rcn->SetBackgroundVolumeID(NULL);
+	}
+
+	if (foregroundVolume) {
+		rcn->SetForegroundVolumeID(foregroundVolume->GetID());
+	} else {
+		rcn->SetForegroundVolumeID(NULL);
+	}
+
 	rcn->SetForegroundOpacity(opacity);
 	redSliceLogic->StartSliceCompositeNodeInteraction(
 		vtkMRMLSliceCompositeNode::ForegroundVolumeFlag

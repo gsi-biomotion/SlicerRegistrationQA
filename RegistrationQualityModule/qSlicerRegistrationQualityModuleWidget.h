@@ -45,17 +45,17 @@ protected slots:
 // 	void checkerboardVolumeChanged(vtkMRMLNode*);
 // 	void squaredDiffVolumeChanged(vtkMRMLNode*);
 
-	void squaredDiffStateChanged(int state);
+	void squaredDiffClicked(bool state);
 	// Image Checks
-	void falseColorStateChanged(int state);
-	void checkerboardStateChanged(int state);
+	void falseColorClicked(bool state);
+	void checkerboardClicked(bool state);
 	void movieToggle();
 	void flickerToggle();
 	void flickerToggle1();
 
 	// Vector checks
-	void jacobianStateChanged(int state);
-	void inverseConsistStateChanged(int state);
+	void jacobianClicked(bool state);
+	void inverseConsistClicked(bool state);
 	// Parameters
 	void setCheckerboardPattern(double);
 
