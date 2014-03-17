@@ -48,6 +48,8 @@
 #include <cassert>
 #include <math.h>
 
+#include <tinyxml.h>
+
 class vtkSlicerRegistrationQualityLogic::vtkInternal {
 public:
 	vtkInternal();
@@ -282,12 +284,32 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference(int state) {
 	return;
 }
 
+void dump(TiXmlNode* n) {
+	if(!n) return;
+	int type = n->Type();
+	cout << "Type=" << type << endl;
+	cout << n->Value() << endl;
+	if(type==4) {
+		cout << n->ToText()->Value() << endl;
+	}
+	for(TiXmlNode *child=n->FirstChild(); child!=0;child=child->NextSibling()) {
+		dump(child);
+	}
+}
+
 
 //--- Image Checks -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
 		vtkErrorMacro("Invalid scene or parameter set node!");
 		throw std::runtime_error("Internal Error, see command line!");
+	}
+
+	TiXmlDocument doc("/home/brandtts/test.xml");
+	if(doc.LoadFile()) {
+		dump(&doc);
+	} else {
+		cout << "Fehler beim laden" << endl;
 	}
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
