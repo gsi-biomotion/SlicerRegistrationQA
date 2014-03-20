@@ -1,6 +1,6 @@
 #include "itkImageFileWriter.h"
 #include <itkImageRegionIterator.h>
-#include <itkVectorLinearInterpolateImageFunction.h>
+#include <itkVectorLinearInterpolateNearestNeighborExtrapolateImageFunction.h>
 #include <itkContinuousIndex.h>
 #include "itkPoint.h"
 #include "itkIndex.h"
@@ -31,7 +31,7 @@ int DoIt( int argc, char * argv[], T )
     
   typedef itk::ImageFileReader<InputImageType>  ReaderType;
   typedef itk::ImageFileWriter<OutputImageType> WriterType;
-  typedef itk::VectorLinearInterpolateImageFunction<InputImageType, double> InterpolateType;
+  typedef itk::VectorLinearInterpolateNearestNeighborExtrapolateImageFunction<InputImageType, double> InterpolateType;
   typedef itk::ImageRegionIterator<OutputImageType> IteratorType;
 
     
