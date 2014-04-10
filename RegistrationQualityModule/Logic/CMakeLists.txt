@@ -10,8 +10,6 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   vtkSlicer${MODULE_NAME}Logic.cxx
   vtkSlicer${MODULE_NAME}Logic.h
-  vtkDFVGlyph3D.cxx
-  vtkDFVGlyph3D.h
   vtkMRMLRegistrationQualityNode.cxx
   vtkMRMLRegistrationQualityNode.h
   )
