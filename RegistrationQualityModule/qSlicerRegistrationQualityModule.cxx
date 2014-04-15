@@ -26,6 +26,7 @@
 // RegistrationQuality Logic includes
 #include <vtkSlicerRegistrationQualityLogic.h>
 #include <vtkSlicerVolumesLogic.h>
+// #include <vtkSlicerDoseVolumeHistogramLogic.h>
 
 // RegistrationQuality includes
 #include "qSlicerRegistrationQualityModule.h"
@@ -112,6 +113,22 @@ void qSlicerRegistrationQualityModule::setup() {
 	{
 	qWarning() << "Volumes module is not found";
 	}
+	
+// 	 vtkSlicerRegistrationQualityLogic* registrationQualityLogic =
+//     vtkSlicerRegistrationQualityLogic::SafeDownCast(this->logic());
+// 	qSlicerAbstractCoreModule* dvhModule =
+// 	qSlicerCoreApplication::application()->moduleManager()->module("DoseVolumeHistogram");
+// 	
+//       if (dvhModule)
+// 	{
+// 	vtkSlicerVolumesLogic* dvhLogic = 
+// 	  vtkSlicerVolumesLogic::SafeDownCast(dvhModule->logic());
+// 	registrationQualityLogic->SetDoseVolumeHistogramLogic(dvhLogic);
+// 	}
+//       else
+// 	{
+// 	qWarning() << "Dose Volume Histogram module is not found";
+// 	}
 }
 
 //-----------------------------------------------------------------------------
