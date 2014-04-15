@@ -3,7 +3,8 @@
 
 #include <itkSquaredDifferenceImageFilter.h>
 #include <itkSqrtImageFilter.h>
-
+#include "itkBSplineInterpolateImageFunction.h"
+#include "itkResampleImageFilter.h"
 #include "itkPluginUtilities.h"
 
 #include "SquaredDifferenceCLP.h"
@@ -31,7 +32,8 @@ int DoIt( int argc, char * argv[], T )
   typedef itk::ImageFileReader<InputImageType>  ReaderType;
   typedef itk::ImageFileWriter<OutputImageType> WriterType;
 
-    
+  typedef itk::BSplineInterpolateImageFunction<InputImageType> Interpolator;
+  typedef itk::ResampleImageFilter<InputImageType, OutputImageType> ResampleType;
   typedef itk::SquaredDifferenceImageFilter<InputImageType, InputImageType, OutputImageType> FilterType;
   typedef itk::SqrtImageFilter< OutputImageType, OutputImageType > SqrtFilterType;
     
@@ -50,11 +52,21 @@ int DoIt( int argc, char * argv[], T )
   reader1->Update();
   reader2->Update();
  
-  //Images need the same dimensions! - copy from substract values?
+  //Copied from AddScalarVolumes module - resamples 2nd image to paramaters from 1st
+  typename Interpolator::Pointer interp = Interpolator::New();
+  interp->SetInputImage(reader2->GetOutput() );
+  interp->SetSplineOrder(order);
+
+  typename ResampleType::Pointer resample = ResampleType::New();
+  resample->SetInput(reader2->GetOutput() );
+  resample->SetOutputParametersFromImage(reader1->GetOutput() );
+  resample->SetInterpolator( interp );
+  resample->SetDefaultPixelValue( 0 );
+  resample->ReleaseDataFlagOn();
   
   typename FilterType::Pointer filter = FilterType::New();
   filter->SetInput1( reader1->GetOutput() );
-  filter->SetInput2( reader2->GetOutput() );
+  filter->SetInput2( resample->GetOutput() );
   filter->Update();
   itk::PluginFilterWatcher watchFilter(filter, "Calculating Squared Difference",
                                        CLPProcessInformation);

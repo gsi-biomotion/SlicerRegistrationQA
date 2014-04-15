@@ -32,13 +32,20 @@
       <index>2</index>
       <description><![CDATA[Squared Difference Volume]]></description>
     </image>
-    <double>
-      <name>sigma</name>
-      <longflag>sigma</longflag>
-      <flag>s</flag>
-      <label>Sigma</label>
-      <description><![CDATA[Sigma value in physical units (e.g., mm) of the Gaussian kernel]]></description>
-      <default>1.0</default>
-    </double>
   </parameters>
+   <parameters>
+    <label>Controls</label>
+    <description><![CDATA[Control how the module operates]]></description>
+    <integer-enumeration>
+      <name>order</name>
+      <label>Interpolation order</label>
+      <default>1</default>
+      <element>0</element>
+      <element>1</element>
+      <element>2</element>
+      <element>3</element>
+      <longflag>order</longflag>
+      <description><![CDATA[Interpolation order if two images are in different coordinate frames or have different sampling.]]></description>
+    </integer-enumeration>
+    </parameters>
 </executable>
