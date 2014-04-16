@@ -1,6 +1,6 @@
 
 #-----------------------------------------------------------------------------
-set(MODULE_NAME SquaredDifference)
+set(MODULE_NAME AbsoluteDifference)
 
 #-----------------------------------------------------------------------------
 set(MODULE_INCLUDE_DIRECTORIES
@@ -18,7 +18,8 @@ SEMMacroBuildCLI(
   NAME ${MODULE_NAME}
   TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
   INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
-  ADDITIONAL_SRCS ${MODULE_SRCS}
+  ADDITIONAL_SRCS
+    ConvertSlicerROIToRegion.cxx
   )
 
 #-----------------------------------------------------------------------------

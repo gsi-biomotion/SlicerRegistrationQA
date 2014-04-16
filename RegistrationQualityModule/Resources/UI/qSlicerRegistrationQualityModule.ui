@@ -529,7 +529,7 @@
 										</widget>
 									</item>
 									<item row="2" column="2">
-										<widget class="QDoubleSpinBox" name="squaredDiffMeanSpinBox">
+										<widget class="QDoubleSpinBox" name="absoluteDiffMeanSpinBox">
 											<property name="sizePolicy">
 												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
 													<horstretch>0</horstretch>
@@ -564,7 +564,7 @@
 										</widget>
 									</item>
 									<item row="3" column="2">
-										<widget class="QDoubleSpinBox" name="squaredDiffSTDSpinBox">
+										<widget class="QDoubleSpinBox" name="absoluteDiffSTDSpinBox">
 											<property name="sizePolicy">
 												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
 													<horstretch>0</horstretch>
@@ -583,7 +583,7 @@
 										</widget>
 									</item>
 									<item row="2" column="0">
-										<widget class="QCheckBox" name="SquaredDiffCheckBox">
+										<widget class="QCheckBox" name="AbsoluteDiffCheckBox">
 											<property name="sizePolicy">
 												<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
 													<horstretch>50</horstretch>
@@ -591,7 +591,7 @@
 												</sizepolicy>
 											</property>
 											<property name="text">
-												<string>Square Difference</string>
+												<string>Absolute Difference</string>
 											</property>
 											<property name="Enabled" stdset="0">
 												<bool>false</bool>

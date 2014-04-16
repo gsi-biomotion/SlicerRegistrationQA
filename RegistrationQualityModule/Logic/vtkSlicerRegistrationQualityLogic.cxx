@@ -164,9 +164,9 @@ void vtkSlicerRegistrationQualityLogic::OnMRMLSceneEndClose() {
 	this->Modified();
 }
 
-void vtkSlicerRegistrationQualityLogic::SquaredDifference(int state) {
+void vtkSlicerRegistrationQualityLogic::AbsoluteDifference(int state) {
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
-	    vtkErrorMacro("SquaredDifference: Invalid scene or parameter set node!");
+	    vtkErrorMacro("AbsoluteDifference: Invalid scene or parameter set node!");
 	    return;
 	}
 
@@ -181,9 +181,9 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference(int state) {
 
 // 	vtkMRMLScalarVolumeNode *outputVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 // 			this->GetMRMLScene()->GetNodeByID(
-// 				this->RegistrationQualityNode->GetSquaredDiffVolumeNodeID()));
+// 				this->RegistrationQualityNode->GetAbsoluteDiffVolumeNodeID()));
 	if (!referenceVolume || !warpedVolume ) {
-		vtkErrorMacro("SquaredDifference: Invalid reference or warped volume!");
+		vtkErrorMacro("AbsoluteDifference: Invalid reference or warped volume!");
 		return;
 	}
 
@@ -193,10 +193,10 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference(int state) {
 	}
 
 
-	if (!this->RegistrationQualityNode->GetSquaredDiffVolumeNodeID()){
+	if (!this->RegistrationQualityNode->GetAbsoluteDiffVolumeNodeID()){
 	  if(!this->Internal->VolumesLogic)
 	      {
-		std::cerr << "SquaredDifference: ERROR: failed to get hold of Volumes logic" << std::endl;
+		std::cerr << "AbsoluteDifference: ERROR: failed to get hold of Volumes logic" << std::endl;
 		return;
 	      }
 
@@ -216,23 +216,23 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference(int state) {
 	    }
 
 	  if ( !outputVolume ) {
-		  vtkErrorMacro("SquaredDifference: No output volume set!");
+		  vtkErrorMacro("AbsoluteDifference: No output volume set!");
 		  return;
 	  }
-	  //Check dimensions of both volume, they must be the same.
-	  vtkSmartPointer<vtkImageData> imageDataRef = referenceVolume->GetImageData();
-	  vtkSmartPointer<vtkImageData> imageDataWarp = warpedVolume->GetImageData();
-	    int* dimsRef = imageDataRef->GetDimensions();
-	    int* dimsWarp = imageDataWarp->GetDimensions();
-	  // int dims[3]; // can't do this
-	  if (dimsRef[0] != dimsWarp[0] || dimsRef[1] != dimsWarp[1] || dimsRef[2] != dimsWarp[2] ) {
-	    vtkErrorMacro("SquaredDifference: Dimensions of Reference and Warped image don't match'!");
-	    return;
-	  }
+// 	  //Check dimensions of both volume, they must be the same.
+// 	  vtkSmartPointer<vtkImageData> imageDataRef = referenceVolume->GetImageData();
+// 	  vtkSmartPointer<vtkImageData> imageDataWarp = warpedVolume->GetImageData();
+// 	    int* dimsRef = imageDataRef->GetDimensions();
+// 	    int* dimsWarp = imageDataWarp->GetDimensions();
+// 	  // int dims[3]; // can't do this
+// 	  if (dimsRef[0] != dimsWarp[0] || dimsRef[1] != dimsWarp[1] || dimsRef[2] != dimsWarp[2] ) {
+// 	    vtkErrorMacro("AbsoluteDifference: Dimensions of Reference and Warped image don't match'!");
+// 	    return;
+// 	  }
 
 	  qSlicerCLIModule* checkerboardfilterCLI = dynamic_cast<qSlicerCLIModule*>(
-			  qSlicerCoreApplication::application()->moduleManager()->module("SquaredDifference"));
-	  QString cliModuleName("SquaredDifference");
+			  qSlicerCoreApplication::application()->moduleManager()->module("AbsoluteDifference"));
+	  QString cliModuleName("AbsoluteDifference");
 
 	  vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
 			  checkerboardfilterCLI->cliModuleLogic()->CreateNodeInScene();
@@ -248,16 +248,16 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference(int state) {
 	  this->GetMRMLScene()->RemoveNode(cmdNode);
 
 	  outputVolume->SetAndObserveTransformNodeID(NULL);
-	  this->RegistrationQualityNode->SetSquaredDiffVolumeNodeID(outputVolume->GetID());
+	  this->RegistrationQualityNode->SetAbsoluteDiffVolumeNodeID(outputVolume->GetID());
 	}
 
 
 	vtkMRMLScalarVolumeNode *squaredDiffVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetSquaredDiffVolumeNodeID()));
+				this->RegistrationQualityNode->GetAbsoluteDiffVolumeNodeID()));
 
 	if ( !squaredDiffVolume ) {
-		vtkErrorMacro("SquaredDifference: No output volume set!");
+		vtkErrorMacro("AbsoluteDifference: No output volume set!");
 		return;
 	}
 	squaredDiffVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
@@ -276,7 +276,7 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference(int state) {
 	this->CalculateStatistics(squaredDiffVolume,statisticValues);
 
 	this->RegistrationQualityNode->DisableModifiedEventOn();
-	this->RegistrationQualityNode->SetSquaredDiffStatistics( statisticValues );
+	this->RegistrationQualityNode->SetAbsoluteDiffStatistics( statisticValues );
 	this->RegistrationQualityNode->DisableModifiedEventOff();
 
 	return;

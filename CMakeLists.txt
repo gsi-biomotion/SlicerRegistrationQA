@@ -17,7 +17,7 @@ include(${Slicer_USE_FILE})
 
 #-----------------------------------------------------------------------------
 add_subdirectory(RegistrationQualityModule)
-add_subdirectory(SquaredDifference)
+add_subdirectory(AbsoluteDifference)
 add_subdirectory(JacobianFilter)
 add_subdirectory(InverseConsistency)
 

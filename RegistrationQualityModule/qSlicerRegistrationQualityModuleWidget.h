@@ -43,9 +43,9 @@ protected slots:
 	void movieBoxGreenStateChanged(int state);
 
 // 	void checkerboardVolumeChanged(vtkMRMLNode*);
-// 	void squaredDiffVolumeChanged(vtkMRMLNode*);
+// 	void absoluteDiffVolumeChanged(vtkMRMLNode*);
 
-	void squaredDiffClicked(bool state);
+	void absoluteDiffClicked(bool state);
 	// Image Checks
 	void falseColorClicked(bool state);
 	void checkerboardClicked(bool state);

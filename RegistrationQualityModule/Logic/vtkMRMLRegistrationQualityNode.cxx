@@ -27,8 +27,8 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 
 	this->FlickerOpacity = 1;
 
-	this->SquaredDiffVolumeNodeID = NULL;
-	SquaredDiffStatistics[0] = SquaredDiffStatistics[1] = SquaredDiffStatistics[2] = SquaredDiffStatistics[3] = 0;
+	this->AbsoluteDiffVolumeNodeID = NULL;
+	AbsoluteDiffStatistics[0] = AbsoluteDiffStatistics[1] = AbsoluteDiffStatistics[2] = AbsoluteDiffStatistics[3] = 0;
 
 	this->JacobianVolumeNodeID = NULL;
 	JacobianStatistics[0] = JacobianStatistics[1] = JacobianStatistics[2] = JacobianStatistics[3] = 0;
@@ -51,7 +51,7 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetWarpedVolumeNodeID(NULL);
 	this->SetOutputModelNodeID(NULL);
 	this->SetCheckerboardVolumeNodeID(NULL);
-	this->SetSquaredDiffVolumeNodeID(NULL);
+	this->SetAbsoluteDiffVolumeNodeID(NULL);
 	this->SetJacobianVolumeNodeID(NULL);
 }
 
@@ -102,14 +102,14 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 // 			ss >> this->FlickerOpacity;
 // 			continue;
 // 		}
-// 		if (!strcmp(attName,"SquaredDiffVolumeNodeID")) {
-// 			this->SetSquaredDiffVolumeNodeID(attValue);
+// 		if (!strcmp(attName,"AbsoluteDiffVolumeNodeID")) {
+// 			this->SetAbsoluteDiffVolumeNodeID(attValue);
 // 			continue;
 // 		}
-// 		if (!strcmp(attName, "SquaredDiffMean")) {
+// 		if (!strcmp(attName, "AbsoluteDiffMean")) {
 // 			std::stringstream ss;
 // 			ss << attValue;
-// 			ss >> this->SquaredDiffMean;
+// 			ss >> this->AbsoluteDiffMean;
 // 			continue;
 // 		}
 // 		if (!strcmp(attName,"JacobianVolumeNodeID")) {
@@ -150,10 +150,10 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 //
 // 	of << indent << " FlickerOpacity=\""<< this->FlickerOpacity << "\"";
 //
-// 	of << indent << " SquaredDiffVolumeNodeID=\""
-// 			<< (this->SquaredDiffVolumeNodeID ? this->SquaredDiffVolumeNodeID : "NULL") << "\"";
-// 	of << indent << " SquaredDiffMean=\"" << this->SquaredDiffMean << "\"";
-// 	of << indent << " SquaredDiffSTD=\"" << this->SquaredDiffSTD << "\"";
+// 	of << indent << " AbsoluteDiffVolumeNodeID=\""
+// 			<< (this->AbsoluteDiffVolumeNodeID ? this->AbsoluteDiffVolumeNodeID : "NULL") << "\"";
+// 	of << indent << " AbsoluteDiffMean=\"" << this->AbsoluteDiffMean << "\"";
+// 	of << indent << " AbsoluteDiffSTD=\"" << this->AbsoluteDiffSTD << "\"";
 //
 // 	of << indent << " JacobianVolumeNodeID=\""
 // 			<< (this->JacobianVolumeNodeID ? this->JacobianVolumeNodeID : "NULL") << "\"";
@@ -177,7 +177,7 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 //
 //
 // 	this->FlickerOpacity = node->FlickerOpacity;
-// 	this->SetSquaredDiffVolumeNodeID(node->GetSquaredDiffVolumeNodeID());
+// 	this->SetAbsoluteDiffVolumeNodeID(node->GetAbsoluteDiffVolumeNodeID());
 //
 // 	this->SetJacobianVolumeNodeID(node->GetJacobianVolumeNodeID());
 // // 	this->JacobianStatistics = node->JacobianStatistics;
@@ -272,14 +272,14 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveCheckerboardVolumeNodeID(const
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveSquaredDiffVolumeNodeID(const char* id) {
-	if (this->SquaredDiffVolumeNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->SquaredDiffVolumeNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveAbsoluteDiffVolumeNodeID(const char* id) {
+	if (this->AbsoluteDiffVolumeNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->AbsoluteDiffVolumeNodeID, this);
 	}
-	this->SetSquaredDiffVolumeNodeID(id);
+	this->SetAbsoluteDiffVolumeNodeID(id);
 
 	if (id) {
-		this->Scene->AddReferencedNodeID(this->SquaredDiffVolumeNodeID, this);
+		this->Scene->AddReferencedNodeID(this->AbsoluteDiffVolumeNodeID, this);
 	}
 }
 //----------------------------------------------------------------------------
@@ -328,10 +328,10 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 //
 // 	os << indent << " FlickerOpacity = " << this->FlickerOpacity << "\n";
 //
-// 	os << indent << " SquaredDiffVolumeNodeID = "
-// 			<< (this->SquaredDiffVolumeNodeID ? this->SquaredDiffVolumeNodeID : "NULL") << "\n";
-// 	os << indent << " SquaredDiffMean = " << this->SquaredDiffMean << "\n";
-// 	os << indent << " SquaredDiffSTD = " << this->SquaredDiffMean << "\n";
+// 	os << indent << " AbsoluteDiffVolumeNodeID = "
+// 			<< (this->AbsoluteDiffVolumeNodeID ? this->AbsoluteDiffVolumeNodeID : "NULL") << "\n";
+// 	os << indent << " AbsoluteDiffMean = " << this->AbsoluteDiffMean << "\n";
+// 	os << indent << " AbsoluteDiffSTD = " << this->AbsoluteDiffMean << "\n";
 //
 // 	os << indent << " JacobianVolumeNodeID = "
 // 			<< (this->JacobianVolumeNodeID ? this->JacobianVolumeNodeID : "NULL") << "\n";

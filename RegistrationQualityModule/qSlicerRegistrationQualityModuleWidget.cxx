@@ -190,15 +190,15 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 // 			this->checkerboardVolumeChanged(d->OutputCheckerboardComboBox->currentNode());
 // 		}
 //
-// 		if (pNode->GetSquaredDiffNodeID()) {
-// 			d->SquaredDiffComboBox->setCurrentNode(pNode->GetSquaredDiffNodeID());
+// 		if (pNode->GetAbsoluteDiffNodeID()) {
+// 			d->AbsoluteDiffComboBox->setCurrentNode(pNode->GetAbsoluteDiffNodeID());
 // 		} else {
-// 			this->squaredDiffVolumeChanged(d->SquaredDiffComboBox->currentNode());
+// 			this->absoluteDiffVolumeChanged(d->AbsoluteDiffComboBox->currentNode());
 // 		}
 
 // 		pNode->SetFlickerOpacity(0);
-		d->squaredDiffMeanSpinBox->setValue(pNode->GetSquaredDiffStatistics()[0]);
-		d->squaredDiffSTDSpinBox->setValue(pNode->GetSquaredDiffStatistics()[1]);
+		d->absoluteDiffMeanSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[0]);
+		d->absoluteDiffSTDSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[1]);
 
 		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
 		d->jacobianMeanSpinBox->setValue(pNode->GetJacobianStatistics()[0]);
@@ -328,7 +328,7 @@ void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode*
 	  currentState=true;
 	}
 
-	d->SquaredDiffCheckBox->setEnabled(currentState);
+	d->AbsoluteDiffCheckBox->setEnabled(currentState);
 	d->FalseColorCheckBox->setEnabled(currentState);
 	d->CheckerboardCheckBox->setEnabled(currentState);
 	d->MovieToggle->setEnabled(currentState);
@@ -397,7 +397,7 @@ void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* no
 	  currentState=true;
 	}
 
-	d->SquaredDiffCheckBox->setEnabled(currentState);
+	d->AbsoluteDiffCheckBox->setEnabled(currentState);
 	d->FalseColorCheckBox->setEnabled(currentState);
 	d->CheckerboardCheckBox->setEnabled(currentState);
 	d->MovieToggle->setEnabled(currentState);
@@ -434,7 +434,7 @@ void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* nod
 // 	pNode->DisableModifiedEventOff();
 // }
 // //-----------------------------------------------------------------------------
-// void qSlicerRegistrationQualityModuleWidget::squaredDiffVolumeChanged(vtkMRMLNode* node)
+// void qSlicerRegistrationQualityModuleWidget::absoluteDiffVolumeChanged(vtkMRMLNode* node)
 // {
 // 	Q_D(qSlicerRegistrationQualityModuleWidget);
 //
@@ -445,7 +445,7 @@ void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* nod
 // 	}
 //
 // 	pNode->DisableModifiedEventOn();
-// 	pNode->SetAndObserveSquaredDiffNodeID(node->GetID());
+// 	pNode->SetAndObserveAbsoluteDiffNodeID(node->GetID());
 // 	pNode->DisableModifiedEventOff();
 // }
 
@@ -464,11 +464,11 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
 	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
 //	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
-//	connect(d->SquaredDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(squaredDiffVolumeChanged(vtkMRMLNode*)));
+//	connect(d->AbsoluteDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(absoluteDiffVolumeChanged(vtkMRMLNode*)));
 
 	connect(d->FalseColorCheckBox, SIGNAL(clicked(bool)), this, SLOT (falseColorClicked(bool)));
 	connect(d->CheckerboardCheckBox, SIGNAL(clicked(bool)), this, SLOT (checkerboardClicked(bool)));
-	connect(d->SquaredDiffCheckBox, SIGNAL(clicked(bool)), this, SLOT (squaredDiffClicked(bool)));
+	connect(d->AbsoluteDiffCheckBox, SIGNAL(clicked(bool)), this, SLOT (absoluteDiffClicked(bool)));
 	connect(d->JacobianCheckBox, SIGNAL(clicked(bool)), this, SLOT (jacobianClicked(bool)));
 	connect(d->InverseConsistCheckBox, SIGNAL(clicked(bool)), this, SLOT (inverseConsistClicked(bool)));
 
@@ -486,16 +486,16 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 //-----------------------------------------------------------------------------
 // Squared Difference
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::squaredDiffClicked(bool state) {
+void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
 	try {
-		d->logic()->SquaredDifference(state);
+		d->logic()->AbsoluteDifference(state);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
-		d->SquaredDiffCheckBox->toggle();
+		d->AbsoluteDiffCheckBox->toggle();
 		cerr << e.what() << endl;
 		return;
 	}
@@ -506,12 +506,12 @@ void qSlicerRegistrationQualityModuleWidget::squaredDiffClicked(bool state) {
 	d->InverseConsistCheckBox->setChecked(false);
 
 	if (state){
-	  d->squaredDiffMeanSpinBox->setValue(pNode->GetSquaredDiffStatistics()[0]);
-	  d->squaredDiffSTDSpinBox->setValue(pNode->GetSquaredDiffStatistics()[1]);
+	  d->absoluteDiffMeanSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[0]);
+	  d->absoluteDiffSTDSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[1]);
 	  }
 	else{
-	  d->squaredDiffMeanSpinBox->setValue(0);
-	  d->squaredDiffSTDSpinBox->setValue(0);
+	  d->absoluteDiffMeanSpinBox->setValue(0);
+	  d->absoluteDiffSTDSpinBox->setValue(0);
 	  }
 
 }
@@ -534,7 +534,7 @@ void qSlicerRegistrationQualityModuleWidget::falseColorClicked(bool state) {
 	d->StillErrorLabel->setText("");
 	d->InverseConsistCheckBox->setChecked(false);
 	d->CheckerboardCheckBox->setChecked(false);
-	d->SquaredDiffCheckBox->setChecked(false);
+	d->AbsoluteDiffCheckBox->setChecked(false);
 	d->JacobianCheckBox->setChecked(false);
 }
 
@@ -552,7 +552,7 @@ void qSlicerRegistrationQualityModuleWidget::checkerboardClicked(bool state){
 	}
 	d->StillErrorLabel->setText("");
 	d->FalseColorCheckBox->setChecked(false);
-	d->SquaredDiffCheckBox->setChecked(false);
+	d->AbsoluteDiffCheckBox->setChecked(false);
 	d->JacobianCheckBox->setChecked(false);
 	d->InverseConsistCheckBox->setChecked(false);
 }
@@ -665,7 +665,7 @@ void qSlicerRegistrationQualityModuleWidget::jacobianClicked(bool state){
 	d->StillErrorLabel->setText("");
 	d->FalseColorCheckBox->setChecked(false);
 	d->CheckerboardCheckBox->setChecked(false);
-	d->SquaredDiffCheckBox->setChecked(false);
+	d->AbsoluteDiffCheckBox->setChecked(false);
 	d->InverseConsistCheckBox->setChecked(false);
 
 	if (state){
@@ -694,7 +694,7 @@ void qSlicerRegistrationQualityModuleWidget::inverseConsistClicked(bool state){
 	d->StillErrorLabel->setText("");
 	d->FalseColorCheckBox->setChecked(false);
 	d->CheckerboardCheckBox->setChecked(false);
-	d->SquaredDiffCheckBox->setChecked(false);
+	d->AbsoluteDiffCheckBox->setChecked(false);
 	d->JacobianCheckBox->setChecked(false);
 
 	if (state){

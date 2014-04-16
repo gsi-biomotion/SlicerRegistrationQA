@@ -1,13 +1,16 @@
 #include "itkImageFileWriter.h"
 
+// Absolute Difference Include:
+#include "ConvertSlicerROIToRegion.h"
 
 #include <itkSquaredDifferenceImageFilter.h>
 #include <itkSqrtImageFilter.h>
 #include "itkBSplineInterpolateImageFunction.h"
 #include "itkResampleImageFilter.h"
+#include "itkRegionOfInterestImageFilter.h"
 #include "itkPluginUtilities.h"
 
-#include "SquaredDifferenceCLP.h"
+#include "AbsoluteDifferenceCLP.h"
 
 // Use an anonymous namespace to keep class types and function names
 // from colliding when module is used as shared object module.  Every
@@ -27,11 +30,14 @@ int DoIt( int argc, char * argv[], T )
 
   typedef itk::Image<InputPixelType,  3> InputImageType;
   typedef itk::Image<OutputPixelType, 3> OutputImageType;
+//   typedef itk::ImageRegion<3> region;
 //   typedef itk::Image<double, 3> OutputImageTypeTmp;
 
   typedef itk::ImageFileReader<InputImageType>  ReaderType;
   typedef itk::ImageFileWriter<OutputImageType> WriterType;
 
+  
+  typedef itk::RegionOfInterestImageFilter< InputImageType, InputImageType > RegionFilterType;
   typedef itk::BSplineInterpolateImageFunction<InputImageType> Interpolator;
   typedef itk::ResampleImageFilter<InputImageType, OutputImageType> ResampleType;
   typedef itk::SquaredDifferenceImageFilter<InputImageType, InputImageType, OutputImageType> FilterType;
@@ -51,26 +57,98 @@ int DoIt( int argc, char * argv[], T )
 
   reader1->Update();
   reader2->Update();
+  
+  itk::ImageRegion<3> region1 = reader1->GetOutput()->GetLargestPossibleRegion();
+  itk::ImageRegion<3> region2 = reader2->GetOutput()->GetLargestPossibleRegion();
  
-  //Copied from AddScalarVolumes module - resamples 2nd image to paramaters from 1st
-  typename Interpolator::Pointer interp = Interpolator::New();
-  interp->SetInputImage(reader2->GetOutput() );
-  interp->SetSplineOrder(order);
+  // If we have a bounding box mask (copied from MultiResolutonAffineRegistration)
+  if( fixedImageROI.size() == 6 )
+    {
+    std::vector<double> c(3, 0.0);
+    std::vector<double> r(3, 0.0);
 
-  typename ResampleType::Pointer resample = ResampleType::New();
-  resample->SetInput(reader2->GetOutput() );
-  resample->SetOutputParametersFromImage(reader1->GetOutput() );
-  resample->SetInterpolator( interp );
-  resample->SetDefaultPixelValue( 0 );
-  resample->ReleaseDataFlagOn();
+    // the input is a 6 element vector containing the center in RAS space
+    // followed by the radius in real world coordinates
+
+    // copy out center values
+    std::copy(fixedImageROI.begin(), fixedImageROI.begin() + 3,
+              c.begin() );
+    // copy out radius values
+    std::copy(fixedImageROI.begin() + 3, fixedImageROI.end(),
+              r.begin() );
+
+    // create lower point
+    itk::Point<double, 3> p1;
+    p1[0] = -c[0] + r[0];
+    p1[1] = -c[1] + r[1];
+    p1[2] = c[2] + r[2];
+
+    // create upper point
+    itk::Point<double, 3> p2;
+    p2[0] = -c[0] - r[0];
+    p2[1] = -c[1] - r[1];
+    p2[2] = c[2] - r[2];
+
+//     if( DEBUG )
+//       {
+//       std::cout << "p1: " << p1 << std::endl;
+//       std::cout << "p2: " << p2 << std::endl;
+//       }
+
+    itk::ImageRegion<3> roiRegion1 =
+      convertPointsToRegion(p1, p2, reader1->GetOutput());
+      
+    itk::ImageRegion<3> roiRegion2 =
+      convertPointsToRegion(p1, p2, reader2->GetOutput());
+
+    region1 = roiRegion1;
+    region2 = roiRegion2;
+
+    }
+    
+  else if( fixedImageROI.size() > 1 &&
+           fixedImageROI.size() < 6 )
+    {
+    std::cerr << "Number of parameters for ROI not as expected" << std::endl;
+    return EXIT_FAILURE;
+    }
+  else if( fixedImageROI.size() > 6 )
+    {
+    std::cerr << "Multiple ROIs not supported" << std::endl;
+    return EXIT_FAILURE;
+    }
   
-  typename FilterType::Pointer filter = FilterType::New();
-  filter->SetInput1( reader1->GetOutput() );
-  filter->SetInput2( resample->GetOutput() );
-  filter->Update();
-  itk::PluginFilterWatcher watchFilter(filter, "Calculating Squared Difference",
-                                       CLPProcessInformation);
+    typename RegionFilterType::Pointer regionFilter1 = RegionFilterType::New();
+    regionFilter1->SetInput(reader1->GetOutput() );
+    regionFilter1->SetRegionOfInterest(region1);
+    regionFilter1->Update();
   
+    typename RegionFilterType::Pointer regionFilter2 = RegionFilterType::New();
+    regionFilter2->SetInput(reader2->GetOutput() );
+    regionFilter2->SetRegionOfInterest(region2);
+    regionFilter2->Update();
+    
+    //Copied from AddScalarVolumes module - resamples 2nd image to paramaters from 1st
+    typename Interpolator::Pointer interp = Interpolator::New();
+    interp->SetInputImage(regionFilter2->GetOutput() );
+    interp->SetSplineOrder(order);
+
+    typename ResampleType::Pointer resample = ResampleType::New();
+    resample->SetInput(regionFilter2->GetOutput() );
+    resample->SetOutputParametersFromImage(regionFilter1->GetOutput() );
+    resample->SetInterpolator( interp );
+    resample->SetDefaultPixelValue( 0 );
+    resample->ReleaseDataFlagOn();
+      
+    itk::PluginFilterWatcher watchResample(resample, "Resampling",
+					    CLPProcessInformation);
+    
+    typename FilterType::Pointer filter = FilterType::New();
+    filter->SetInput1( regionFilter1->GetOutput() );
+    filter->SetInput2( resample->GetOutput() );
+    filter->Update();
+    itk::PluginFilterWatcher watchFilter(filter, "Calculating Squared Difference",
+					CLPProcessInformation);
   typename SqrtFilterType::Pointer sqrtfilter = SqrtFilterType::New();
   sqrtfilter->SetInput( filter->GetOutput() );
   sqrtfilter->Update();

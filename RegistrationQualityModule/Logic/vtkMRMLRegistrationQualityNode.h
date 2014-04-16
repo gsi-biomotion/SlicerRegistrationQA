@@ -94,12 +94,12 @@ public:
 	vtkGetMacro(FlickerOpacity, int);
 
 	// Squared Difference parameters:
-	vtkSetStringMacro(SquaredDiffVolumeNodeID);
-	vtkGetStringMacro(SquaredDiffVolumeNodeID);
-	void SetAndObserveSquaredDiffVolumeNodeID(const char* id);
+	vtkSetStringMacro(AbsoluteDiffVolumeNodeID);
+	vtkGetStringMacro(AbsoluteDiffVolumeNodeID);
+	void SetAndObserveAbsoluteDiffVolumeNodeID(const char* id);
 
-	vtkSetVector4Macro(SquaredDiffStatistics, double);
-	vtkGetVector4Macro(SquaredDiffStatistics, double);
+	vtkSetVector4Macro(AbsoluteDiffStatistics, double);
+	vtkGetVector4Macro(AbsoluteDiffStatistics, double);
 
 
 	// Jacobian parameters:
@@ -143,8 +143,8 @@ protected:
 	int FlickerOpacity;
 	int FlickerDelay;
 
-	char* SquaredDiffVolumeNodeID;
-	double SquaredDiffStatistics[4];
+	char* AbsoluteDiffVolumeNodeID;
+	double AbsoluteDiffStatistics[4];
 
 
 	char* JacobianVolumeNodeID;

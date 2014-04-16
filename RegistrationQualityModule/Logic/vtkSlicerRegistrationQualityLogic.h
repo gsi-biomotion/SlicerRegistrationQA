@@ -37,7 +37,7 @@ public:
 	 * Will either remake or account for scenario some other way
 	 */
 
-	void SquaredDifference(int state);
+	void AbsoluteDifference(int state);
 	void FalseColor(int state);
 	void Flicker(int opacity);
 	void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
