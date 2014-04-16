@@ -37,6 +37,7 @@ protected slots:
 	void referenceVolumeChanged(vtkMRMLNode*);
 	void warpedVolumeChanged(vtkMRMLNode*);
 	void outputModelChanged(vtkMRMLNode*);
+	void ROIChanged(vtkMRMLNode*);
 
 	void movieBoxRedStateChanged(int state);
 	void movieBoxYellowStateChanged(int state);

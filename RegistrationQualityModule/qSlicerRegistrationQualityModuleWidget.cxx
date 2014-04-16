@@ -183,6 +183,12 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 		} else {
 			this->outputModelChanged(d->OutputModelComboBox->currentNode());
 		}
+		
+		if (pNode->GetROINodeID()) {
+			d->ROIInputComboBox->setCurrentNode(pNode->GetROINodeID());
+		} else {
+			this->outputModelChanged(d->ROIInputComboBox->currentNode());
+		}
 
 // 		if (pNode->GetCheckerboardNodeID()) {
 // 			d->OutputCheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
@@ -420,36 +426,20 @@ void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* nod
 	pNode->DisableModifiedEventOff();
 }
 //-----------------------------------------------------------------------------
-// void qSlicerRegistrationQualityModuleWidget::checkerboardVolumeChanged(vtkMRMLNode* node)
-// {
-// 	Q_D(qSlicerRegistrationQualityModuleWidget);
-//
-// 	//TODO: Move into updatefrommrml?
-// 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-// 	if (!pNode || !this->mrmlScene() || !node) {
-// 		return;
-// 	}
-// 	pNode->DisableModifiedEventOn();
-// 	pNode->SetAndObserveCheckerboardNodeID(node->GetID());
-// 	pNode->DisableModifiedEventOff();
-// }
-// //-----------------------------------------------------------------------------
-// void qSlicerRegistrationQualityModuleWidget::absoluteDiffVolumeChanged(vtkMRMLNode* node)
-// {
-// 	Q_D(qSlicerRegistrationQualityModuleWidget);
-//
-// 	//TODO: Move into updatefrommrml?
-// 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-// 	if (!pNode || !this->mrmlScene() || !node) {
-// 		return;
-// 	}
-//
-// 	pNode->DisableModifiedEventOn();
-// 	pNode->SetAndObserveAbsoluteDiffNodeID(node->GetID());
-// 	pNode->DisableModifiedEventOff();
-// }
+void qSlicerRegistrationQualityModuleWidget::ROIChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-//-----------------------------------------------------------------------------
+	//TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		return;
+	}
+
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveROINodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
+}
+
 void qSlicerRegistrationQualityModuleWidget::setup() {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 	d->setupUi(this);
@@ -463,6 +453,7 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
 	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
+	connect(d->ROIInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(ROIChanged(vtkMRMLNode*)));
 //	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
 //	connect(d->AbsoluteDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(absoluteDiffVolumeChanged(vtkMRMLNode*)));
 

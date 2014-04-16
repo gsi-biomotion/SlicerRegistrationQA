@@ -1,7 +1,12 @@
+
+//Inverse Consistency Include:
+#include "ConvertSlicerROIToRegion.h"
+
 #include "itkImageFileWriter.h"
 #include <itkImageRegionIterator.h>
 #include <itkVectorLinearInterpolateImageFunction.h>
 #include <itkContinuousIndex.h>
+#include "itkRegionOfInterestImageFilter.h"
 #include "itkPoint.h"
 #include "itkIndex.h"
 
@@ -33,7 +38,7 @@ namespace
 		typedef itk::ImageFileWriter<OutputImageType> WriterType;
 		typedef itk::VectorLinearInterpolateImageFunction<InputImageType, double> InterpolateType;
 		typedef itk::ImageRegionIterator<OutputImageType> IteratorType;
-
+		typedef itk::RegionOfInterestImageFilter< InputImageType, InputImageType > RegionFilterType;
 
 		typename ReaderType::Pointer reader1 = ReaderType::New();
 		itk::PluginFilterWatcher watchReader1(reader1, "Read Volume 1",
@@ -54,12 +59,64 @@ namespace
 
 		// TODO: Check if you have everything: movingImage, fixedImage...
 		// Add Comments
+		
+		itk::ImageRegion<3> region = fixedImage->GetLargestPossibleRegion();
+		// If we have a bounding box mask (copied from MultiResolutonAffineRegistration)
+		if( fixedImageROI.size() == 6 )
+		  {
+		  std::vector<double> c(3, 0.0);
+		  std::vector<double> r(3, 0.0);
+
+		  // the input is a 6 element vector containing the center in RAS space
+		  // followed by the radius in real world coordinates
+
+		  // copy out center values
+		  std::copy(fixedImageROI.begin(), fixedImageROI.begin() + 3,
+			    c.begin() );
+		  // copy out radius values
+		  std::copy(fixedImageROI.begin() + 3, fixedImageROI.end(),
+			    r.begin() );
+
+		  // create lower point
+		  itk::Point<double, 3> p1;
+		  p1[0] = -c[0] + r[0];
+		  p1[1] = -c[1] + r[1];
+		  p1[2] = c[2] + r[2];
+
+		  // create upper point
+		  itk::Point<double, 3> p2;
+		  p2[0] = -c[0] - r[0];
+		  p2[1] = -c[1] - r[1];
+		  p2[2] = c[2] - r[2];
+
+	      //     if( DEBUG )
+	      //       {
+	      //       std::cout << "p1: " << p1 << std::endl;
+	      //       std::cout << "p2: " << p2 << std::endl;
+	      //       }
+
+		  itk::ImageRegion<3> roiRegion =
+		    convertPointsToRegion(p1, p2, reader1->GetOutput());
+		  region = roiRegion;
+		  }
+		  
+		else if( fixedImageROI.size() > 1 &&
+			fixedImageROI.size() < 6 )
+		  {
+		  std::cerr << "Number of parameters for ROI not as expected" << std::endl;
+		  return EXIT_FAILURE;
+		  }
+		else if( fixedImageROI.size() > 6 )
+		  {
+		  std::cerr << "Multiple ROIs not supported" << std::endl;
+		  return EXIT_FAILURE;
+		  }
 
 		typename InterpolateType::Pointer interpolator = InterpolateType::New();
 		interpolator->SetInputImage(movingImage);
 
 		typename OutputImageType::Pointer outputImage = OutputImageType::New();
-		outputImage->SetRegions(fixedImage->GetLargestPossibleRegion());
+		outputImage->SetRegions(region);
 		outputImage->Allocate();
 
 		const InputImageType::SpacingType& sp = fixedImage->GetSpacing();

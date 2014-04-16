@@ -42,6 +42,10 @@ public:
 	vtkSetStringMacro(OutputModelNodeID);
 	vtkGetStringMacro(OutputModelNodeID);
 	void SetAndObserveOutputModelNodeID(const char* id);
+	
+	vtkSetStringMacro(ROINodeID);
+	vtkGetStringMacro (ROINodeID);
+	void SetAndObserveROINodeID(const char* id);
 
 	// Movie parameters
 	vtkGetMacro(MovieBoxRedState, int);
@@ -131,6 +135,7 @@ protected:
 	char* ReferenceVolumeNodeID;
 	char* WarpedVolumeNodeID;
 	char* OutputModelNodeID;
+	char *ROINodeID;
 
 	int MovieBoxRedState;
 	int MovieBoxYellowState;

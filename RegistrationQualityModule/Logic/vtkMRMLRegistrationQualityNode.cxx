@@ -20,6 +20,7 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->ReferenceVolumeNodeID = NULL;
 	this->WarpedVolumeNodeID = NULL;
 	this->OutputModelNodeID = NULL;
+	this->ROINodeID = NULL;
 
 	//Checkerboard Parameters
 	this->CheckerboardPattern = 20;
@@ -50,6 +51,7 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetReferenceVolumeNodeID(NULL);
 	this->SetWarpedVolumeNodeID(NULL);
 	this->SetOutputModelNodeID(NULL);
+	this->SetROINodeID(NULL);
 	this->SetCheckerboardVolumeNodeID(NULL);
 	this->SetAbsoluteDiffVolumeNodeID(NULL);
 	this->SetJacobianVolumeNodeID(NULL);
@@ -84,6 +86,10 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 		}
 		if (!strcmp(attName, "OutputModelNodeID")) {
 			this->SetOutputModelNodeID(attValue);
+			continue;
+		}
+		if (!strcmp(attName, "ROINodeID")) {
+			this->SetROINodeID(attValue);
 			continue;
 		}
 		if (!strcmp(attName, "CheckerboardPattern")) {
@@ -142,6 +148,8 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 			<< (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\"";
 	of << indent << " OutputModelNodeID=\""
 			<< (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\"";
+	of << indent << " ROINodeID=\""
+			<< (this->ROINodeID ? this->ROINodeID : "NULL") << "\"";
 
 	of << indent << " CheckerboardPattern=\"" << this->CheckerboardPattern << "\"";
 // 	of << indent << " CheckerboardVolumeNodeID=\""
@@ -171,6 +179,7 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 	this->SetReferenceVolumeNodeID(node->GetReferenceVolumeNodeID());
 	this->SetWarpedVolumeNodeID(node->GetWarpedVolumeNodeID());
 	this->SetOutputModelNodeID(node->GetOutputModelNodeID());
+	this->SetROINodeID(node->GetROINodeID());
 
 // 	this->SetCheckerboardVolumeNodeID(node->GetCheckerboardVolumeNodeID());
 	this->CheckerboardPattern=node->CheckerboardPattern;
@@ -258,7 +267,17 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveOutputModelNodeID(const char* 
 		this->Scene->AddReferencedNodeID(this->OutputModelNodeID, this);
 	}
 }
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveROINodeID(const char* id) {
+	if (this->ROINodeID) {
+		this->Scene->RemoveReferencedNodeID(this->ROINodeID, this);
+	}
+	this->SetROINodeID(id);
 
+	if (id) {
+		this->Scene->AddReferencedNodeID(this->ROINodeID, this);
+	}
+}
 //----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::SetAndObserveCheckerboardVolumeNodeID(const char* id) {
 	if (this->CheckerboardVolumeNodeID) {
@@ -322,6 +341,8 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 
 	os << indent << " OutputModelNodeID = "
 			<< (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\n";
+	os << indent << " ROINodeID = "
+			<< (this->ROINodeID ? this->ROINodeID : "NULL") << "\n";
 // 	os << indent << " CheckerboardVolumeNodeID = "
 // 			<< (this->CheckerboardVolumeNodeID ? this->CheckerboardVolumeNodeID : "NULL") << "\n";
 	os << indent << " CheckerboardPattern = " << this->CheckerboardPattern << "\n";
