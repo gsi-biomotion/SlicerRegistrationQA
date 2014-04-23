@@ -257,6 +257,12 @@ void vtkSlicerRegistrationQualityLogic::AbsoluteDifference(int state) {
 	  // Execute synchronously so that we can check the content of the file after the module execution
 	  checkerboardfilterCLI->cliModuleLogic()->ApplyAndWait(cmdNode);
 
+	cout << "cmdNodeStatus: " << cmdNode->GetStatus() << endl;
+	if(cmdNode->GetStatus() == vtkMRMLCommandLineModuleNode::CompletedWithErrors) {
+		cout << "  Error!" << endl;
+		throw std::runtime_error("Error in CLI module, see command line!");
+	}
+
 	  this->GetMRMLScene()->RemoveNode(cmdNode);
 
 	  outputVolume->SetAndObserveTransformNodeID(NULL);
