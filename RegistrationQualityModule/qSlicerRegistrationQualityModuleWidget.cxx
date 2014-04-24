@@ -489,6 +489,7 @@ void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 		d->StillErrorLabel->setVisible(true);
 		d->AbsoluteDiffCheckBox->toggle();
 		cerr << e.what() << endl;
+		QApplication::restoreOverrideCursor();
 		return;
 	}
 	d->StillErrorLabel->setText("");
@@ -542,6 +543,7 @@ void qSlicerRegistrationQualityModuleWidget::checkerboardClicked(bool state){
 		d->StillErrorLabel->setVisible(true);
 		d->CheckerboardCheckBox->toggle();
 		cerr << e.what() << endl;
+		QApplication::restoreOverrideCursor();
 		return;
 	}
 	d->StillErrorLabel->setText("");
@@ -656,6 +658,7 @@ void qSlicerRegistrationQualityModuleWidget::jacobianClicked(bool state){
 		d->StillErrorLabel->setVisible(true);
 		d->JacobianCheckBox->toggle();
 		cerr << e.what() << endl;
+		QApplication::restoreOverrideCursor();
 		return;
 	}
 	d->StillErrorLabel->setText("");
@@ -687,6 +690,7 @@ void qSlicerRegistrationQualityModuleWidget::inverseConsistClicked(bool state){
 		d->StillErrorLabel->setVisible(true);
 		d->InverseConsistCheckBox->toggle();
 		cerr << e.what() << endl;
+		QApplication::restoreOverrideCursor();
 		return;
 	}
 	d->StillErrorLabel->setText("");
