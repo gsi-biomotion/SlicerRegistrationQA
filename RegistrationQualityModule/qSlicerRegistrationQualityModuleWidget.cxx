@@ -481,6 +481,7 @@ void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
+	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
 		d->logic()->AbsoluteDifference(state);
 	} catch (std::runtime_error e) {
@@ -504,6 +505,7 @@ void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 	  d->absoluteDiffMeanSpinBox->setValue(0);
 	  d->absoluteDiffSTDSpinBox->setValue(0);
 	  }
+	QApplication::restoreOverrideCursor();
 
 }
 //-----------------------------------------------------------------------------
@@ -532,6 +534,7 @@ void qSlicerRegistrationQualityModuleWidget::falseColorClicked(bool state) {
 void qSlicerRegistrationQualityModuleWidget::checkerboardClicked(bool state){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 // 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
 		d->logic()->Checkerboard(state);
 	} catch (std::runtime_error e) {
@@ -546,6 +549,7 @@ void qSlicerRegistrationQualityModuleWidget::checkerboardClicked(bool state){
 	d->AbsoluteDiffCheckBox->setChecked(false);
 	d->JacobianCheckBox->setChecked(false);
 	d->InverseConsistCheckBox->setChecked(false);
+	QApplication::restoreOverrideCursor();
 }
 
 void qSlicerRegistrationQualityModuleWidget::flickerToggle(){
@@ -644,6 +648,7 @@ void qSlicerRegistrationQualityModuleWidget::jacobianClicked(bool state){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
+	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
 		d->logic()->Jacobian(state);
 	} catch (std::runtime_error e) {
@@ -667,12 +672,14 @@ void qSlicerRegistrationQualityModuleWidget::jacobianClicked(bool state){
 	  d->jacobianMeanSpinBox->setValue(0);
 	  d->jacobianSTDSpinBox->setValue(0);
 	}
+	QApplication::restoreOverrideCursor();
 }
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::inverseConsistClicked(bool state){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
+	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
 		d->logic()->InverseConsist(state);
 	} catch (std::runtime_error e) {
@@ -696,6 +703,7 @@ void qSlicerRegistrationQualityModuleWidget::inverseConsistClicked(bool state){
 	  d->inverseConsistMeanSpinBox->setValue(0);
 	  d->inverseConsistSTDSpinBox->setValue(0);
 	}
+	QApplication::restoreOverrideCursor();
 }
 
 
