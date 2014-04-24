@@ -328,6 +328,9 @@
 													<string>vtkMRMLAnnotationROINode</string>
 												</stringlist>
 											</property>
+											<property name="noneEnabled">
+												<bool>true</bool>
+											</property>
 											<property name="editEnabled" stdset="0">
 												<bool>true</bool>
 											</property>
