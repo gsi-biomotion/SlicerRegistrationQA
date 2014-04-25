@@ -206,12 +206,15 @@ void vtkSlicerRegistrationQualityLogic::AbsoluteDifference(int state) {
 
 	  vtkMRMLScalarVolumeNode *outputVolume = NULL;
 	    vtkMRMLScalarVolumeNode *svnode = vtkMRMLScalarVolumeNode::SafeDownCast(referenceVolume);
-	    std::ostringstream outSS;
+	    std::string outSS;
+	    std::string Name("-absoluteDifference");
 
-	    outSS << referenceVolume->GetName() << "-squaredDifference";
+	    outSS = (referenceVolume->GetName() + Name);
+	    outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
+	    
 	    if(svnode)
 	    {
-	      outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
+	      outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.c_str());
 	    }
 	    else
 	    {
@@ -505,10 +508,15 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 		}
 
 		int PatternValue = this->RegistrationQualityNode->GetCheckerboardPattern();
-		std::ostringstream outSS;
-		outSS << referenceVolume->GetName() << "_CheckerboardPattern_"<< PatternValue;
+		std::string outSS;
+		std::string Name("-CheckerboardPattern_");
+		std::ostringstream strPattern;
+		strPattern << PatternValue;
+		outSS = referenceVolume->GetName() + Name + strPattern.str();
+		outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
+		
 		vtkMRMLScalarVolumeNode *outputVolume = this->Internal->VolumesLogic->CloneVolume(
-			this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
+			this->GetMRMLScene(), referenceVolume, outSS.c_str());
 		if (!outputVolume) {
 			vtkErrorMacro("Could not create Checkerboard volume!");
 			throw std::runtime_error("Internal Error, see command line!");
@@ -585,11 +593,13 @@ void vtkSlicerRegistrationQualityLogic::Jacobian(int state) {
 			throw std::runtime_error("Internal Error, see command line!");
 		}
 
-		std::ostringstream outSS;
-		outSS << referenceVolume->GetName() << "_Jacobian";
+		std::string outSS;
+		std::string Name("-jacobian");
+		outSS = referenceVolume->GetName() + Name;
+		outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
 
 		vtkMRMLScalarVolumeNode *outputVolume = this->Internal->VolumesLogic->CloneVolume(
-			this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
+			this->GetMRMLScene(), referenceVolume, outSS.c_str());
 
 		qSlicerCLIModule* jacobianfilterCLI = dynamic_cast<qSlicerCLIModule*>(
 			qSlicerCoreApplication::application()->moduleManager()->module("JacobianFilter"));
@@ -698,12 +708,14 @@ void vtkSlicerRegistrationQualityLogic::InverseConsist(int state) {
 
 	  vtkMRMLScalarVolumeNode *outputVolume = NULL;
 	  vtkMRMLScalarVolumeNode *svnode = vtkMRMLScalarVolumeNode::SafeDownCast(referenceVolume);
-	  std::ostringstream outSS;
+	  std::string outSS;
+	  std::string Name("-invConsist");
 
-	  outSS << referenceVolume->GetName() << "-inverseConsist";
+	  outSS = referenceVolume->GetName() + Name;
+	  outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
 	  if(svnode)
 	  {
-	    outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.str().c_str());
+	    outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.c_str());
 	  }
 	  else
 	  {
