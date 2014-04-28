@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Examples</category>
+  <category>RegistrationQuality</category>
   <title>Absolute Difference</title>
   <description><![CDATA[This is a CLI module (based on GaussianBlurImageFilter) bundled in an extension]]></description>
   <version>0.0.1</version>

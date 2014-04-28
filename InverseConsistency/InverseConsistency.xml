@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Examples</category>
+  <category>RegistrationQuality</category>
   <title>InverseConsistency</title>
   <description><![CDATA[This is a CLI module calculating Inverse Consistency for two vector fields]]></description>
   <version>0.0.1</version>

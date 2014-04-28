@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Filter</category>
+  <category>RegistrationQuality</category>
   <title>JacobianFilter</title>
   <description><![CDATA[This is a CLI module that takes Input Vector field and Outputs Jacobian of that vector field.]]></description>
   <version>0.0.1</version>
