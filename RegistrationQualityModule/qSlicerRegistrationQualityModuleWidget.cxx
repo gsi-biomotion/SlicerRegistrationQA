@@ -187,7 +187,7 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 		if (pNode->GetROINodeID()) {
 			d->ROIInputComboBox->setCurrentNode(pNode->GetROINodeID());
 		} else {
-			this->outputModelChanged(d->ROIInputComboBox->currentNode());
+			this->ROIChanged(d->ROIInputComboBox->currentNode());
 		}
 
 // 		if (pNode->GetCheckerboardNodeID()) {
