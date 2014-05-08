@@ -285,17 +285,19 @@ void vtkSlicerRegistrationQualityLogic::SquaredDifference(int state) {
 	return;
 }
 
-void dump(TiXmlNode* n) {
+void dump(TiXmlNode* n, int indent=0) {
 	if(!n) return;
 	int type = n->Type();
+	for(int i=0; i<indent; i++) cout << " ";
 	cout << "Type=" << type << endl;
-	cout << n->Value() << endl;
+	for(int i=0; i<indent; i++) cout << " ";
+	cout << "Val=|" << n->Value() << "|" << endl;
 // 	if(type==4) {
 // 		cout << n->ToText()->Value() << endl;
 // 	}
-// 	for(TiXmlNode *child=n->FirstChild(); child!=0;child=child->NextSibling()) {
-// 		dump(child);
-// 	}
+	for(TiXmlNode *child=n->FirstChild(); child!=0;child=child->NextSibling()) {
+		dump(child, indent+1);
+	}
 }
 
 
@@ -326,16 +328,17 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 	while(child!=0 && child->Type()!=TiXmlNode::TINYXML_ELEMENT) child=child->NextSibling();
 
 	child=child->FirstChild(/*"image"*/);
-	while(child!=0) {
+// 	while(child!=0) {
 		cout << "--dump---------" << endl;
 		dump(child);
 		cout << "--constructor--" << endl;
 		DIRQAImage di(*child);
 		cout << "--di-----------" << endl;
 		cout << "|" << di << "|" << endl;
+		di.load(Internal->VolumesLogic);
 
-		child=child->NextSibling();
-	}
+// 		child=child->NextSibling();
+// 	}
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(

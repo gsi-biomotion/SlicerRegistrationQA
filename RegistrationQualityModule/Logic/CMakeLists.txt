@@ -25,6 +25,11 @@ set(${KIT}_TARGET_LIBRARIES
   tinyXML
   )
 
+# SET_SOURCE_FILES_PROPERTIES(
+# 	DIRQAImage.cxx
+# 	WRAP_EXCLUDE
+# )
+
 #-----------------------------------------------------------------------------
 SlicerMacroBuildModuleLogic(
   NAME ${KIT}
