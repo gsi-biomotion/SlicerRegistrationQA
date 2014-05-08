@@ -49,6 +49,7 @@
 #include <math.h>
 
 #include <tinyxml.h>
+#include <DIRQAImage.h>
 
 class vtkSlicerRegistrationQualityLogic::vtkInternal {
 public:
@@ -289,12 +290,12 @@ void dump(TiXmlNode* n) {
 	int type = n->Type();
 	cout << "Type=" << type << endl;
 	cout << n->Value() << endl;
-	if(type==4) {
-		cout << n->ToText()->Value() << endl;
-	}
-	for(TiXmlNode *child=n->FirstChild(); child!=0;child=child->NextSibling()) {
-		dump(child);
-	}
+// 	if(type==4) {
+// 		cout << n->ToText()->Value() << endl;
+// 	}
+// 	for(TiXmlNode *child=n->FirstChild(); child!=0;child=child->NextSibling()) {
+// 		dump(child);
+// 	}
 }
 
 
@@ -305,11 +306,35 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 		throw std::runtime_error("Internal Error, see command line!");
 	}
 
-	TiXmlDocument doc("/home/brandtts/test.xml");
+// 	DIRQAImage di(IMAGE, "/home/brandtts/DIRQAtest.nrrd",
+// 				  "0In", "no comment",0,-1);
+// 	cout << "di=" << di << "|" << endl;
+
+	TiXmlDocument doc("/home/brandtts/steeringfile.xml");
 	if(doc.LoadFile()) {
 		dump(&doc);
 	} else {
 		cout << "Fehler beim laden" << endl;
+	}
+
+// 	const TiXmlNode* IterateChildren( const char * value, const TiXmlNode* previous ) const;
+// 	TiXmlNode* IterateChildren( const char * _value, const TiXmlNode* previous ) {
+// 		return const_cast< TiXmlNode* >( (const_cast< const TiXmlNode* >(this))->IterateChildren( _value, previous ) );
+// 	}
+
+	TiXmlNode *child=doc.FirstChild();
+	while(child!=0 && child->Type()!=TiXmlNode::TINYXML_ELEMENT) child=child->NextSibling();
+
+	child=child->FirstChild(/*"image"*/);
+	while(child!=0) {
+		cout << "--dump---------" << endl;
+		dump(child);
+		cout << "--constructor--" << endl;
+		DIRQAImage di(*child);
+		cout << "--di-----------" << endl;
+		cout << "|" << di << "|" << endl;
+
+		child=child->NextSibling();
 	}
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(

@@ -13,6 +13,10 @@ set(${KIT}_SRCS
   vtkSlicer${MODULE_NAME}Logic.h
   vtkMRMLRegistrationQualityNode.cxx
   vtkMRMLRegistrationQualityNode.h
+  vtkMRMLRegistrationQualityInputNode.cxx
+  vtkMRMLRegistrationQualityInputNode.h
+  DIRQAImage.cxx
+  DIRQAImage.h
   )
 
 set(${KIT}_TARGET_LIBRARIES
