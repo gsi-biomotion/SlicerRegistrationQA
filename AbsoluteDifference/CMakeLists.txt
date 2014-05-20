@@ -21,6 +21,5 @@ SEMMacroBuildCLI(
   ADDITIONAL_SRCS
     ConvertSlicerROIToRegion.cxx
   )
-
 #-----------------------------------------------------------------------------
 
