@@ -77,11 +77,9 @@ namespace {
 			// followed by the radius in real world coordinates
 
 			// copy out center values
-			std::copy(fixedImageROI.begin(), fixedImageROI.begin() + 3,
-					  c.begin() );
+			std::copy( fixedImageROI.begin(), fixedImageROI.begin() + 3, c.begin() );
 			// copy out radius values
-			std::copy(fixedImageROI.begin() + 3, fixedImageROI.end(),
-					  r.begin() );
+			std::copy( fixedImageROI.begin() + 3, fixedImageROI.end(), r.begin() );
 
 			// create lower point
 			itk::Point<double, 3> p1;
@@ -106,11 +104,11 @@ namespace {
 
 		}
 		else if( fixedImageROI.size() > 1 && fixedImageROI.size() < 6 ) {
-			std::cerr << "Number of parameters for ROI not as expected" << std::endl;
+			cerr << "<E> Number of parameters for ROI not as expected" << endl;
 			return EXIT_FAILURE;
 		}
 		else if( fixedImageROI.size() > 6 ) {
-			std::cerr << "Multiple ROIs not supported" << std::endl;
+			cerr << "<E> Multiple ROIs not supported" << endl;
 			return EXIT_FAILURE;
 		}
 
@@ -134,18 +132,9 @@ namespace {
 		InputImageType* diffInput1 = regionFilter1->GetOutput();
 		InputImageType* diffInput2 = regionFilter2->GetOutput();
 
-// 		itk::PluginFilterWatcher watchResample;
-
+		// Resampling if images have not the same spacing or origin
 		if(( regionFilter1->GetOutput()->GetSpacing() != regionFilter2->GetOutput()->GetSpacing() ) ||
 			( regionFilter1->GetOutput()->GetOrigin() != regionFilter2->GetOutput()->GetOrigin() )) {
-			//
-			// 	  if(nix) {
-			// 		maxregion
-			// 	  } if (region) {
-			// 		region
-			// 	  } if (resample) {
-			// 		resample
-			// 	  }
 
 			// Copied from AddScalarVolumes module - resamples 2nd image to paramaters from 1st
 			interp = Interpolator::New();
@@ -153,13 +142,14 @@ namespace {
 			interp->SetSplineOrder( order );
 
 			resample = ResampleType::New();
-// 			watchResample = itk::PluginFilterWatcher(resample, "Resampling", CLPProcessInformation);
+			itk::PluginFilterWatcher watchResample( resample, "Resampling", CLPProcessInformation );
 
 			resample->SetInput(regionFilter2->GetOutput() );
 			resample->SetOutputParametersFromImage(regionFilter1->GetOutput() );
 			resample->SetInterpolator( interp );
 			resample->SetDefaultPixelValue( 0 );
 			resample->ReleaseDataFlagOn();
+			resample->Update();
 
 			diffInput2 = resample->GetOutput();
 
@@ -229,14 +219,14 @@ int main( int argc, char * argv[] ){
 				break;
 			case itk::ImageIOBase::UNKNOWNCOMPONENTTYPE:
 			default:
-				std::cout << "unknown component type" << std::endl;
+				cout << "<E> unknown component type" << endl;
 				break;
 		}
 	}
 
 	catch( itk::ExceptionObject & excep ) {
-		std::cerr << argv[0] << ": exception caught !" << std::endl;
-		std::cerr << excep << std::endl;
+		cerr << "<E>" << argv[0] << ": exception caught !" << endl;
+		cerr << excep << endl;
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
