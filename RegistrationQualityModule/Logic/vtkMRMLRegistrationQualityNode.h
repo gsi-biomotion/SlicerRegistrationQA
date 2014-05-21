@@ -30,6 +30,14 @@ public:
 	vtkSetStringMacro(InvVectorVolumeNodeID);
 	vtkGetStringMacro(InvVectorVolumeNodeID);
 	void SetAndObserveInvVectorVolumeNodeID(const char* id);
+	
+	vtkSetStringMacro(TransformNodeID);
+	vtkGetStringMacro(TransformNodeID);
+	void SetAndObserveTransformNodeID(const char* id);
+
+	vtkSetStringMacro(InvTransformNodeID);
+	vtkGetStringMacro(InvTransformNodeID);
+	void SetAndObserveInvTransformNodeID(const char* id);
 
 	vtkSetStringMacro(ReferenceVolumeNodeID);
 	vtkGetStringMacro(ReferenceVolumeNodeID);
@@ -132,6 +140,8 @@ protected:
 
 	char* VectorVolumeNodeID;
 	char* InvVectorVolumeNodeID;
+	char* TransformNodeID;
+	char* InvTransformNodeID;
 	char* ReferenceVolumeNodeID;
 	char* WarpedVolumeNodeID;
 	char* OutputModelNodeID;

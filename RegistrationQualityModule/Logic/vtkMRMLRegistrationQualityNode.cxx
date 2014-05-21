@@ -17,6 +17,8 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 
 	this->VectorVolumeNodeID = NULL;
 	this->InvVectorVolumeNodeID = NULL;
+	this->TransformNodeID = NULL;
+	this->InvTransformNodeID = NULL;
 	this->ReferenceVolumeNodeID = NULL;
 	this->WarpedVolumeNodeID = NULL;
 	this->OutputModelNodeID = NULL;
@@ -48,6 +50,8 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetVectorVolumeNodeID(NULL);
 	this->SetInvVectorVolumeNodeID(NULL);
+	this->SetTransformNodeID(NULL);
+	this->SetInvTransformNodeID(NULL);
 	this->SetReferenceVolumeNodeID(NULL);
 	this->SetWarpedVolumeNodeID(NULL);
 	this->SetOutputModelNodeID(NULL);
@@ -74,6 +78,14 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 		}
 		if (!strcmp(attName, "InvVectorVolumeNodeID")) {
 			this->SetInvVectorVolumeNodeID(attValue);
+			continue;
+		}
+		if (!strcmp(attName, "TransformNodeID")) {
+			this->SetTransformNodeID(attValue);
+			continue;
+		}
+		if (!strcmp(attName, "InvTransformNodeID")) {
+			this->SetInvTransformNodeID(attValue);
 			continue;
 		}
 		if (!strcmp(attName, "ReferenceVolumeNodeID")) {
@@ -142,6 +154,10 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 			<< (this->VectorVolumeNodeID ? this->VectorVolumeNodeID : "NULL") << "\"";
 	of << indent << " InvVectorVolumeNodeID=\""
 			<< (this->InvVectorVolumeNodeID ? this->InvVectorVolumeNodeID : "NULL") << "\"";
+	of << indent << " TransformNodeID=\""
+			<< (this->TransformNodeID ? this->TransformNodeID : "NULL") << "\"";
+	of << indent << " InvTransformNodeID=\""
+			<< (this->InvTransformNodeID ? this->InvTransformNodeID : "NULL") << "\"";
 	of << indent << " ReferenceVolumeNodeID=\""
 			<< (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\"";
 	of << indent << " WarpedVolumeNodeID=\""
@@ -176,6 +192,8 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 
 	this->SetVectorVolumeNodeID(node->GetVectorVolumeNodeID());
 	this->SetInvVectorVolumeNodeID(node->GetInvVectorVolumeNodeID());
+	this->SetTransformNodeID(node->GetTransformNodeID());
+	this->SetInvTransformNodeID(node->GetInvTransformNodeID());
 	this->SetReferenceVolumeNodeID(node->GetReferenceVolumeNodeID());
 	this->SetWarpedVolumeNodeID(node->GetWarpedVolumeNodeID());
 	this->SetOutputModelNodeID(node->GetOutputModelNodeID());
@@ -202,6 +220,12 @@ void vtkMRMLRegistrationQualityNode::UpdateReferenceID(const char *oldID, const 
 	}
 	if (this->InvVectorVolumeNodeID && !strcmp(oldID, this->InvVectorVolumeNodeID)) {
 		this->SetAndObserveInvVectorVolumeNodeID(newID);
+	}
+	if (this->TransformNodeID && !strcmp(oldID, this->TransformNodeID)) {
+		this->SetAndObserveTransformNodeID(newID);
+	}
+	if (this->InvTransformNodeID && !strcmp(oldID, this->InvTransformNodeID)) {
+		this->SetAndObserveInvTransformNodeID(newID);
 	}
 
 	if (this->OutputModelNodeID && !strcmp(oldID, this->OutputModelNodeID)) {
@@ -231,7 +255,28 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveInvVectorVolumeNodeID(const ch
 		this->Scene->AddReferencedNodeID(this->InvVectorVolumeNodeID, this);
 	}
 }
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveTransformNodeID(const char* id) {
+	if (this->TransformNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->TransformNodeID, this);
+	}
+	this->SetTransformNodeID(id);
 
+	if (id) {
+		this->Scene->AddReferencedNodeID(this->TransformNodeID, this);
+	}
+}
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveInvTransformNodeID(const char* id) {
+	if (this->InvTransformNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->InvTransformNodeID, this);
+	}
+	this->SetInvTransformNodeID(id);
+
+	if (id) {
+		this->Scene->AddReferencedNodeID(this->InvTransformNodeID, this);
+	}
+}
 //----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::SetAndObserveReferenceVolumeNodeID(const char* id) {
 	if (this->ReferenceVolumeNodeID) {
@@ -334,6 +379,10 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 			<< (this->VectorVolumeNodeID ? this->VectorVolumeNodeID : "NULL") << "\n";
 	os << indent << " InvVectorVolumeNodeID = "
 			<< (this->InvVectorVolumeNodeID ? this->InvVectorVolumeNodeID : "NULL") << "\n";
+	os << indent << " TransformNodeID = "
+			<< (this->TransformNodeID ? this->TransformNodeID : "NULL") << "\n";
+	os << indent << " InvTransformNodeID = "
+			<< (this->InvTransformNodeID ? this->InvTransformNodeID : "NULL") << "\n";
 	os << indent << " ReferenceNodeID = "
 			<< (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\n";
 	os << indent << " WarpedNodeID = "
