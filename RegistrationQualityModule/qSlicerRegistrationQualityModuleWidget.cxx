@@ -165,6 +165,11 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 		} else {
 			this->vectorVolumeChanged(d->InputFieldComboBox->currentNode());
 		}
+		if (pNode->GetInvVectorVolumeNodeID()) {
+			d->InvInputFieldComboBox->setCurrentNode(pNode->GetInvVectorVolumeNodeID());
+		} else {
+			this->invVectorVolumeChanged(d->InvInputFieldComboBox->currentNode());
+		}
 
 		if (pNode->GetReferenceVolumeNodeID()) {
 			d->InputReferenceComboBox->setCurrentNode(pNode->GetReferenceVolumeNodeID());
