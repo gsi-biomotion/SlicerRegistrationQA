@@ -37,6 +37,7 @@
 #include <vtkPolyData.h>
 #include <vtkVectorNorm.h>
 #include <vtkTransform.h>
+#include <vtkGridTransform.h>
 #include <vtkMatrix4x4.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkGeneralTransform.h>
@@ -777,6 +778,42 @@ void vtkSlicerRegistrationQualityLogic::InverseConsist(int state) {
 	this->RegistrationQualityNode->DisableModifiedEventOff();
 
 	return;
+}
+//---Change Vector node to transform node-------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::ConvertVectorToTransform(vtkMRMLVectorVolumeNode* vectorVolume, vtkMRMLTransformNode* transform)
+{
+	if (!vectorVolume || !transform) {
+	  std::cerr << "ConvertVectorToTransform: Volumes not set!" << std::endl;
+	  return;
+	}
+	  
+}
+//---Change Vector node to transform node-------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::ConvertTransformToVector(vtkMRMLTransformNode* transform,vtkMRMLVectorVolumeNode* vectorVolume)
+{
+	if (!vectorVolume || !transform) {
+	  std::cerr << "ConvertTransformToVector: Volumes not set!" << std::endl;
+	  return;
+	}
+	  
+	vtkGridTransform* transformFromParent = vtkGridTransform::SafeDownCast(transform->GetTransformFromParentAs("vtkGirdTransform")); 
+// 	vtkSmartPointer<vtkGridTransform> transformFromParent = transform->GetTransformFromParent();;
+	transformFromParent->Inverse();
+	transformFromParent->Update();
+	if (!transformFromParent) {
+	  std::cerr << "ConvertTransformToVector: No transform from parent!" << std::endl;
+	  return;
+	}
+	vtkSmartPointer<vtkImageData> imageData = transformFromParent->GetDisplacementGrid();
+	if (!imageData) {
+	  std::cerr << "ConvertTransformToVector: No image data!" << std::endl;
+	  return;
+	}
+	  
+	vectorVolume->SetAndObserveImageData( imageData );
+	vectorVolume->SetName( transform->GetName() );
+
+
 }
 //--- Default mode when checkbox is unchecked -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::SetDefaultDisplay(vtkMRMLScalarVolumeNode *backgroundVolume, vtkMRMLScalarVolumeNode *foregroundVolume) {

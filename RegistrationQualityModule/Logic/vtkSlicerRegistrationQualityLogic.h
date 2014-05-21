@@ -8,6 +8,7 @@
 #include <vtkMRMLSliceCompositeNode.h>
 #include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLVectorVolumeNode.h>
+#include <vtkMRMLTransformNode.h>
 // STD includes
 #include <cstdlib>
 
@@ -48,6 +49,8 @@ public:
 	void InverseConsist(int state);
 	void SetDefaultDisplay(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*);
 	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double statisticValues[4]);
+	void ConvertVectorToTransform(vtkMRMLVectorVolumeNode*, vtkMRMLTransformNode*);
+	void ConvertTransformToVector(vtkMRMLTransformNode*,vtkMRMLVectorVolumeNode*);
 
 public:
 	void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);
