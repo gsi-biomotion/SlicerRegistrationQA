@@ -786,6 +786,28 @@ void vtkSlicerRegistrationQualityLogic::ConvertVectorToTransform(vtkMRMLVectorVo
 	  std::cerr << "ConvertVectorToTransform: Volumes not set!" << std::endl;
 	  return;
 	}
+	
+	// Logic partialy copied from: https://github.com/Slicer/Slicer/blob/master/Libs/MRML/Core/vtkMRMLTransformStorageNode.cxx#L639-L836
+	vtkSmartPointer<vtkImageData> gridImage_Ras = vectorVolume->GetImageData();
+	// Origin
+	gridImage_Ras->SetOrigin( vectorVolume->GetOrigin()[0], vectorVolume->GetOrigin()[1], vectorVolume->GetOrigin()[2] );
+
+	// Spacing
+	gridImage_Ras->SetSpacing( vectorVolume->GetSpacing()[0], vectorVolume->GetSpacing()[1], vectorVolume->GetSpacing()[2] );
+	
+	// Grid transform
+	vtkSmartPointer<vtkGridTransform> transformFromParent = vtkSmartPointer<vtkGridTransform>::New();
+	#if (VTK_MAJOR_VERSION <= 5)
+	transformFromParent->SetDisplacementGrid( gridImage_Ras.GetPointer() );
+	#else
+	transformFromParent->SetDisplacementGridData( gridImage_Ras.GetPointer() );
+	#endif
+	// Set the interpolation to cubic to have smooth derivatives
+	transformFromParent->SetInterpolationModeToCubic();
+	transformFromParent->Update();
+	
+	// Setting transform
+	transform->SetAndObserveTransformFromParent( transformFromParent );
 	  
 }
 //---Change Vector node to transform node-------------------------------------------------------------------------
