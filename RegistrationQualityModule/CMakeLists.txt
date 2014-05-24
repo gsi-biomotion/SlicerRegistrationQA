@@ -42,7 +42,9 @@ set(MODULE_TARGET_LIBRARIES
 set(MODULE_RESOURCES
   Resources/qSlicer${MODULE_NAME}Module.qrc
   )
-
+set(${KIT}_TARGET_LIBRARIES
+  ${ITK_LIBRARIES}
+  )
 #-----------------------------------------------------------------------------
 slicerMacroBuildQtModule(
   NAME ${MODULE_NAME}

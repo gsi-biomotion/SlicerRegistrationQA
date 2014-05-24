@@ -6,6 +6,9 @@
 
 #include "qSlicerRegistrationQualityModuleExport.h"
 
+#include <vtkMRMLVectorVolumeNode.h>
+#include <vtkMRMLGridTransformNode.h>
+
 class qSlicerRegistrationQualityModuleWidgetPrivate;
 class vtkMRMLNode;
 
@@ -59,6 +62,7 @@ protected slots:
 	void inverseConsistClicked(bool state);
 	// Parameters
 	void setCheckerboardPattern(double);
+
 
 protected:
 	QScopedPointer<qSlicerRegistrationQualityModuleWidgetPrivate> d_ptr;

@@ -14,12 +14,15 @@
 
 // MRML includes
 #include <vtkMRMLVectorVolumeNode.h>
+#include <vtkMRMLVectorVolumeDisplayNode.h>
 #include <vtkMRMLModelDisplayNode.h>
 #include <vtkMRMLScalarVolumeDisplayNode.h>
 #include <vtkMRMLAnnotationROINode.h>
 #include <vtkMRMLModelNode.h>
 #include <vtkMRMLColorTableNode.h>
 #include <vtkMRMLTransformNode.h>
+#include <vtkMRMLGridTransformNode.h>
+#include <vtkMRMLTransformDisplayNode.h>
 #include <vtkMRMLSliceNode.h>
 #include <vtkMRMLSliceCompositeNode.h>
 #include "vtkSlicerVolumesLogic.h"
@@ -27,6 +30,7 @@
 #include "vtkSlicerCLIModuleLogic.h"
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLSliceLogic.h>
+#include <vtkMRMLTransformDisplayNode.h>
 
 // VTK includes
 #include <vtkNew.h>
@@ -44,6 +48,7 @@
 #include <vtkLookupTable.h>
 #include <vtkMath.h>
 #include <vtkImageAccumulate.h>
+#include <vtkOrientedGridTransform.h>
 
 // STD includes
 #include <iostream>
@@ -780,60 +785,110 @@ void vtkSlicerRegistrationQualityLogic::InverseConsist(int state) {
 	return;
 }
 //---Change Vector node to transform node-------------------------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::ConvertVectorToTransform(vtkMRMLVectorVolumeNode* vectorVolume, vtkMRMLTransformNode* transform)
+vtkMRMLGridTransformNode* vtkSlicerRegistrationQualityLogic::CreateTransformFromVector(vtkMRMLVectorVolumeNode* vectorVolume)
 {
-	if (!vectorVolume || !transform) {
-	  std::cerr << "ConvertVectorToTransform: Volumes not set!" << std::endl;
-	  return;
+	if (!vectorVolume) {
+	  std::cerr << "CreateTransormFromVector: Volumes not set!" << std::endl;
+	  return NULL;
 	}
 	
+	
+	vtkNew<vtkMRMLGridTransformNode> transform;	
+	vtkMRMLScene *scene = this->GetMRMLScene();	  
+	vtkNew<vtkMRMLTransformDisplayNode> gtDisplayNode;
+	scene->AddNode(gtDisplayNode.GetPointer());
+	transform->SetAndObserveDisplayNodeID(gtDisplayNode->GetID());
+	transform->SetAndObserveStorageNodeID(NULL);
+	scene->AddNode(transform.GetPointer());
+	
+	std::cerr << "CreateTransormFromVector: Created Transform!" << std::endl;
+	
+	//TODO: Problems with vectors not oriented in RAS coordinate system.
 	// Logic partialy copied from: https://github.com/Slicer/Slicer/blob/master/Libs/MRML/Core/vtkMRMLTransformStorageNode.cxx#L639-L836
 	vtkSmartPointer<vtkImageData> gridImage_Ras = vectorVolume->GetImageData();
+	if (!gridImage_Ras) {
+	  std::cerr << "CreateTransormFromVector: No image data!" << std::endl;
+	  return NULL;
+	}
 	// Origin
 	gridImage_Ras->SetOrigin( vectorVolume->GetOrigin()[0], vectorVolume->GetOrigin()[1], vectorVolume->GetOrigin()[2] );
 
 	// Spacing
 	gridImage_Ras->SetSpacing( vectorVolume->GetSpacing()[0], vectorVolume->GetSpacing()[1], vectorVolume->GetSpacing()[2] );
 	
+	
 	// Grid transform
-	vtkSmartPointer<vtkGridTransform> transformFromParent = vtkSmartPointer<vtkGridTransform>::New();
+	vtkSmartPointer<vtkOrientedGridTransform> transformFromParent = vtkSmartPointer<vtkOrientedGridTransform>::New();
+	
+	//Direction
+	vtkNew<vtkMatrix4x4> gridDirectionMatrix_RAS;
+	vectorVolume->GetIJKToRASDirectionMatrix(gridDirectionMatrix_RAS.GetPointer());
+        transformFromParent->SetGridDirectionMatrix(gridDirectionMatrix_RAS.GetPointer());
+	
+	
 	#if (VTK_MAJOR_VERSION <= 5)
-	transformFromParent->SetDisplacementGrid( gridImage_Ras.GetPointer() );
+	  transformFromParent->SetDisplacementGrid( gridImage_Ras.GetPointer() );
 	#else
-	transformFromParent->SetDisplacementGridData( gridImage_Ras.GetPointer() );
+	  transformFromParent->SetDisplacementGridData( gridImage_Ras.GetPointer() );
 	#endif
 	// Set the interpolation to cubic to have smooth derivatives
+	  std::cerr << "CreateTransormFromVector: Almost end!" << std::endl;
 	transformFromParent->SetInterpolationModeToCubic();
 	transformFromParent->Update();
-	
+	if (!transformFromParent) {
+	  std::cerr << "CreateTransormFromVector: No transform from parent!" << std::endl;
+	  return NULL;
+	}
 	// Setting transform
 	transform->SetAndObserveTransformFromParent( transformFromParent );
+	
+	std::cerr << "CreateTransormFromVector: End!" << std::endl;
+	return transform.GetPointer();
 	  
 }
 //---Change Vector node to transform node-------------------------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::ConvertTransformToVector(vtkMRMLTransformNode* transform,vtkMRMLVectorVolumeNode* vectorVolume)
+vtkMRMLVectorVolumeNode* vtkSlicerRegistrationQualityLogic::CreateVectorFromTransform(vtkMRMLTransformNode* transform)
 {
-	if (!vectorVolume || !transform) {
-	  std::cerr << "ConvertTransformToVector: Volumes not set!" << std::endl;
-	  return;
+	if (!transform) {
+	  std::cerr << "CreateVectorFromTransform: No transform set!" << std::endl;
+	  return NULL;
 	}
-	  
-	vtkGridTransform* transformFromParent = vtkGridTransform::SafeDownCast(transform->GetTransformFromParentAs("vtkGirdTransform")); 
+	//Create new Vector Volume from transform. Copied from Crop Volume Logic.
+	
+	if (!this->GetMRMLScene()) {
+		vtkErrorMacro("CreateVectorFromTransform: Invalid scene!");
+		return NULL;
+	}
+			
+	vtkMRMLScene *scene = this->GetMRMLScene();	  
+	vtkNew<vtkMRMLVectorVolumeNode> vectorVolume;
+	vtkNew<vtkMRMLVectorVolumeDisplayNode> vvDisplayNode;
+	scene->AddNode(vvDisplayNode.GetPointer());
+	vectorVolume->SetAndObserveDisplayNodeID(vvDisplayNode->GetID());
+	vectorVolume->SetAndObserveStorageNodeID(NULL);
+	scene->AddNode(vectorVolume.GetPointer());
+	
+	//Create Grid transform	
+	vtkGridTransform* transformFromParent = vtkGridTransform::SafeDownCast(transform->GetTransformFromParentAs("vtkGirdTransform"));
+	
+	if (!transformFromParent) {
+	  std::cerr << "CreateVectorFromTransform: No transform from parent!" << std::endl;
+	  return NULL;
+	}
 // 	vtkSmartPointer<vtkGridTransform> transformFromParent = transform->GetTransformFromParent();;
 	transformFromParent->Inverse();
 	transformFromParent->Update();
-	if (!transformFromParent) {
-	  std::cerr << "ConvertTransformToVector: No transform from parent!" << std::endl;
-	  return;
-	}
+	
 	vtkSmartPointer<vtkImageData> imageData = transformFromParent->GetDisplacementGrid();
 	if (!imageData) {
-	  std::cerr << "ConvertTransformToVector: No image data!" << std::endl;
-	  return;
+	  std::cerr << "CreateVectorFromTransform: No image data!" << std::endl;
+	  return NULL;
 	}
 	  
 	vectorVolume->SetAndObserveImageData( imageData );
 	vectorVolume->SetName( transform->GetName() );
+	
+	return vectorVolume.GetPointer();
 
 
 }

@@ -22,9 +22,12 @@
 #include <vtkMRMLScene.h>
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLVectorVolumeNode.h>
+#include <vtkMRMLVectorVolumeDisplayNode.h>
 #include <vtkMRMLLinearTransformNode.h>
 #include <vtkMRMLBSplineTransformNode.h>
 #include <vtkMRMLGridTransformNode.h>
+#include <vtkMRMLTransformDisplayNode.h>
+#include <vtkMRMLTransformNode.h>
 #include <vtkMRMLSliceNode.h>
 #include <vtkMRMLSelectionNode.h>
 
@@ -166,9 +169,9 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 			this->vectorVolumeChanged(d->InputFieldComboBox->currentNode());
 		}
 		if (pNode->GetInvVectorVolumeNodeID()) {
-			d->InvInputFieldComboBox->setCurrentNode(pNode->GetInvVectorVolumeNodeID());
+			d->InputInvFieldComboBox->setCurrentNode(pNode->GetInvVectorVolumeNodeID());
 		} else {
-			this->invVectorVolumeChanged(d->InvInputFieldComboBox->currentNode());
+			this->invVectorVolumeChanged(d->InputInvFieldComboBox->currentNode());
 		}
 
 		if (pNode->GetReferenceVolumeNodeID()) {
@@ -244,7 +247,40 @@ void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* no
 	d->InverseConsistCheckBox->setEnabled(true);
 
 	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
+	if (node->IsA("vtkMRMLTransformNode")){
+	  pNode->SetAndObserveTransformNodeID(node->GetID());
+	  
+	  //Convert transform to vector
+	  vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
+				    this->mrmlScene()->GetNodeByID(
+					  node->GetID()));
+	  if (transform) {
+	    vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
+	    if (vectorVolume){
+	      pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
+	    }
+	  }
+	  else{
+	    std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
+	  }  
+	}
+	else if (node->IsA("vtkMRMLVectorVolumeNode")){
+	  pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
+
+	  //Convert transform to vector
+	  vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
+					  this->mrmlScene()->GetNodeByID(
+						node->GetID()));
+	  if (vectorVolume) {
+	    vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
+	    if( transform ){
+	      pNode->SetAndObserveTransformNodeID(transform->GetID());
+	    }
+	  }
+	  else{
+	    std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
+	  }
+	}
 	pNode->DisableModifiedEventOff();
 
 // 	double maxNorm = 0;
@@ -306,7 +342,40 @@ void qSlicerRegistrationQualityModuleWidget::invVectorVolumeChanged(vtkMRMLNode*
 
 
 	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveInvVectorVolumeNodeID(node->GetID());
+	if (node->IsA("vtkMRMLTransformNode")){
+	  pNode->SetAndObserveInvTransformNodeID(node->GetID());
+	  	  
+	  //Convert transform to vector
+	  vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
+				    this->mrmlScene()->GetNodeByID(
+					  node->GetID()));
+	  if (transform) {
+	    vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
+	    if (vectorVolume){
+	      pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
+	    }
+	  }
+	  else{
+	    std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
+	  }	  
+	}
+	else if (node->IsA("vtkMRMLVectorVolumeNode")){
+	  pNode->SetAndObserveInvVectorVolumeNodeID(node->GetID());
+	  
+	  //Convert transform to vector
+	  vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
+					  this->mrmlScene()->GetNodeByID(
+						node->GetID()));
+	  if (vectorVolume) {
+	    vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
+	    if( transform ){
+	      pNode->SetAndObserveInvTransformNodeID(transform->GetID());
+	    }
+	  }
+	  else{
+	    std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
+	  }
+	}
 	pNode->DisableModifiedEventOff();
 
 }
