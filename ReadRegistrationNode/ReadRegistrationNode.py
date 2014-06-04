@@ -236,6 +236,8 @@ class ReadRegistrationNodeLogic:
     
     for fileName in os.listdir(ctDirectory):
       
+      
+      #Looking for file names that end with 0.0% or 0%
       if not fileName.find('%') > -1:
         print "Cannot find % in file name"
         continue
@@ -301,6 +303,7 @@ class ReadRegistrationNodeLogic:
       
 	
     #for fileName in os.listdir(fileNameGD):
+    print "Subject Hierarchy Created"
     return
 
 
