@@ -23,4 +23,4 @@ add_subdirectory(InverseConsistency)
 add_subdirectory(RegistrationHierarchy)
 
 #-----------------------------------------------------------------------------
-include(${Slicer_EXTENSION_
+include(${Slicer_EXTENSION_CPACK})
