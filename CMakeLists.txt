@@ -20,6 +20,7 @@ add_subdirectory(RegistrationQualityModule)
 add_subdirectory(AbsoluteDifference)
 add_subdirectory(JacobianFilter)
 add_subdirectory(InverseConsistency)
+add_subdirectory(RegistrationHierarchy)
 
 #-----------------------------------------------------------------------------
-include(${Slicer_EXTENSION_CPACK})
+include(${Slicer_EXTENSION_
