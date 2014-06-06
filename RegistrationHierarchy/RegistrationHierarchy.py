@@ -4,7 +4,17 @@ from __main__ import vtk, qt, ctk, slicer
 
 #
 # RegistrationHierarchy
-#
+
+
+#Constants that have to be the same in creating Registration Hierarchy
+NAME_CT = 'CT'
+NAME_WARP = 'WarpedImage'
+NAME_VECTOR = 'Vector' #Vector Field from phase to reference phase
+NAME_INVVECTOR = 'InvVector' #Vector from reference phase to phase
+NAME_ABSDIFF = 'AbsoluteDifference'
+NAME_JACOBIAN = 'Jacobian'
+NAME_INVERSECONS = 'InverseConsistency'
+NAME_REFPHASE = 'ReferenceHierarchyNode'
 
 class RegistrationHierarchy:
   def __init__(self, parent):
@@ -113,7 +123,12 @@ class RegistrationHierarchyWidget:
 
     self.columnView = qt.QColumnView()
     self.columnView.setColumnWidths((150,150))
+    self.columnView.setContextMenuPolicy(qt.Qt.CustomContextMenu)
     self.parametersFormLayout.addRow(self.columnView)
+    
+    #Model that stores all items
+    self.model = qt.QStandardItemModel()
+    self.columnView.setModel(self.model)
     
     #self.model = qt.QStandardItemModel()
     #self.columnView.setModel(self.model)
@@ -124,24 +139,69 @@ class RegistrationHierarchyWidget:
     self.loadButton.connect('clicked(bool)', self.onLoadButton)
     self.regHierarchyComboBox.connect("currentNodeChanged(vtkMRMLNode*)", self.setStandardModel)
     
+    #self.columnView.clicked.connect(self.itemSelection)
+    self.columnView.customContextMenuRequested.connect(self.showMenu)
+             
+    self.contextMenu = qt.QMenu()
+    self.showAction = qt.QAction("Show", self.contextMenu)
+    self.contextMenu.addAction(self.showAction)
+    self.showAction.enabled = True
+    self.showAction.visible = False
+    self.computeAction = qt.QAction("Compute DIRQA", self.contextMenu)
+    self.contextMenu.addAction(self.computeAction)
+    
+    self.computeAction.enabled = True
+    self.contextMenu.connect('triggered(QAction*)', self.onContextMenuClicked)
+    
     # Add vertical spacer
     self.layout.addStretch(1)
     
     
-    #for i in range(0,3):
   def onLoadButton(self):
-    model = qt.QStandardItemModel()
-    self.columnView.setModel(model)
-    t = qt.QStandardItem("Test")
-    model.appendRow(t)
+    print "Wait!"
+
     
+  def showMenu(self, pos):
+    index = self.columnView.selectionModel().currentIndex()
+    print index
+    #For phase enable option to compute everything
+    if index.column() == 0:
+      self.computeAction.visible = True
+      self.showAction.visible = False
+    if index.column() == 1:
+      self.computeAction.visible = False
+      self.showAction.visible = True
+      
+    self.contextMenu.popup(self.columnView.mapToGlobal(pos))
+
+  def onContextMenuClicked(self,action):
+    logic = RegistrationHierarchyLogic()
+    index = self.columnView.selectionModel().currentIndex()
+    node = self.model.itemFromIndex(index).data()
+    if action == self.showAction:
+      if not node:
+	print "Can't get node"
+	return
+      node.showVolumeFromHierarchyNode(node)
+	
+      logic.showVolumeFromHierarchyNode(node)
+    if action == self.computeAction:
+      print "We'll do it"
+      if not node:
+	return
+      logic.computeDIRQAfromHierarchyNode(node)
+      
+    
+	
+      
+  
+  #def itemSelection(self,item):
+    #print "Wooh"
+  
   def setStandardModel(self,regHierarchy):
-    
+
     if not regHierarchy:
       return
-    
-    #Model that stores all items
-    self.model = qt.QStandardItemModel()
     if regHierarchy.GetNumberOfChildrenNodes() < 1:
       print "Error, Selected Subject Hiearchy doesn't have any child contour nodes."
     
@@ -153,14 +213,18 @@ class RegistrationHierarchyWidget:
     for i in range(0,regHierarchy.GetNumberOfChildrenNodes()):
       phaseNode = regHierarchy.GetNthChildNode(i)
       #Create Item for each phase
-      phaseItem = qt.QStandardItem(phaseNode.GetNameWithoutPostfix())
+      phaseItem = qt.QStandardItem()
+      phaseItem.setData(phaseNode)
+      phaseItem.setText(phaseNode.GetNameWithoutPostfix())
       #Loop through dirqa nodes
-      if phaseNode.GetNumberOfChildrenNodes() > 1:
+      if phaseNode.GetNumberOfChildrenNodes() > 0:
 	dirqaList = []
 	for j in range(0,phaseNode.GetNumberOfChildrenNodes()):
 	  dirqaNode = phaseNode.GetNthChildNode(j)
 	  #Create item for each dirqa node
-	  dirqaItem = qt.QStandardItem(dirqaNode.GetNameWithoutPostfix())
+	  dirqaItem = qt.QStandardItem()
+	  dirqaItem.setData(dirqaNode)
+	  dirqaItem.setText(dirqaNode.GetNameWithoutPostfix())
 	  phaseItem.appendRow(dirqaItem)
 	  dirqaList.append(dirqaItem)
 	self.dirqaItems.append(dirqaList)
@@ -169,10 +233,6 @@ class RegistrationHierarchyWidget:
 	  
       self.model.appendRow(phaseItem)
       self.phaseItems.append(phaseItem)
-      
-    self.columnView.setModel(self.model)
-
-    #self.model.appendRow(self.qStringList)
 
 
   def cleanup(self):
@@ -221,84 +281,117 @@ class RegistrationHierarchyLogic:
   def __init__(self):
     pass
 
-  def hasImageData(self,volumeNode):
-    """This is a dummy logic method that
-    returns true if the passed in volume
-    node has valid image data
-    """
-    if not volumeNode:
-      print('no volume node')
-      return False
-    if volumeNode.GetImageData() == None:
-      print('no image data')
-      return False
-    return True
-
-  def delayDisplay(self,message,msec=1000):
-    #
-    # logic version of delay display
-    #
-    print(message)
-    self.info = qt.QDialog()
-    self.infoLayout = qt.QVBoxLayout()
-    self.info.setLayout(self.infoLayout)
-    self.label = qt.QLabel(message,self.info)
-    self.infoLayout.addWidget(self.label)
-    qt.QTimer.singleShot(msec, self.info.close)
-    self.info.exec_()
-
-  def takeScreenshot(self,name,description,type=-1):
-    # show the message even if not taking a screen shot
-    self.delayDisplay(description)
-
-    if self.enableScreenshots == 0:
+  def computeDIRQAfromHierarchyNode(self,hierarchyNode):
+    print "Let's do it"
+    """ Names have to be same throughout Registration Hierarchy phases:
+     1. CT is for CT
+     2. AbsoluteDifference
+     3. Jacobian
+     4. InverseConsistency
+     """
+    #Look for DIRQA module
+    DIRQALogic = slicer.modules.RegistrationQuality.Logic()
+    if not DIRQALogic:
+      print "Can't find RegistrationQuality module"
       return
+    
+    #Find out reference phase
+    referenceID = hierarchyNode.GetAttribute(NAME_REFPHASE)
+    if not referenceID:
+      print "Can't find reference node from: " + hierarchyNode.GetNameWithoutPostfix()
+      return
+      
+    referenceHierarchyNode = slicer.util.getNode(referenceID)
+    if not referenceHierarchyNode:
+      print "Can't get reference Hierarchy node"
+      return
+      
+    referenceNode = None
+    if not self.getVolumeFromChild(referenceHierarchyNode,referenceNode,NAME_CT):
+      print "Can't load reference volume from: " + referenceHierarchyNode.GetNameWithoutPostfix()
+      return
+      
+    for i in range(0,hierarchyNode.GetNumberOfChildrenNodes()):
+      phaseHierarchyNode = regHierarchy.GetNthChildNode(i)
 
-    lm = slicer.app.layoutManager()
-    # switch on the type to get the requested window
-    widget = 0
-    if type == -1:
-      # full window
-      widget = slicer.util.mainWindow()
-    elif type == slicer.qMRMLScreenShotDialog().FullLayout:
-      # full layout
-      widget = lm.viewport()
-    elif type == slicer.qMRMLScreenShotDialog().ThreeD:
-      # just the 3D window
-      widget = lm.threeDWidget(0).threeDView()
-    elif type == slicer.qMRMLScreenShotDialog().Red:
-      # red slice window
-      widget = lm.sliceWidget("Red")
-    elif type == slicer.qMRMLScreenShotDialog().Yellow:
-      # yellow slice window
-      widget = lm.sliceWidget("Yellow")
-    elif type == slicer.qMRMLScreenShotDialog().Green:
-      # green slice window
-      widget = lm.sliceWidget("Green")
+      #Do checks if nodes already exist, so you can skip everything
+      phaseNode = None
+      if not self.getVolumeFromChild(phaseHierarchyNode,phaseNode,NAME_CT):
+	print "Can't load phase " + str(i) + " from hierarchy node: " + phaseHierarchyNode.GetNameWithoutPostfix()
+	continue
+      
+      
+      absDiffNode = None
+      if not self.getVolumeFromChild(phaseHierarchyNode,absDiffNode,NAME_ABSDIFF):
+        absDiffNode = DIRQALogic.AbsoluteDifference(referenceNode,phaseNode)
+        if absDiffNode:
+	  self.createChild(phaseHierarchyNode,NAME_ABSDIFF)
+	  
+    
+  
+ 
+  def createChild(hierarchyNode,string):
+    newHierarchy = vtkMRMLSubjectHierarchyNode()
+    newHierarchy.SetParentNodeID(hierarchyNode.GetID())
+    newHierarchy.SetName(string)
+    newHierarchy.SetLevel('Subseries')
+    newHierarchy.SetAttribute('DICOMHierarchy.SeriesModality','CT')
+    #TODO: Addd directories
+    #newHierarchy.SetAttribute('FilePath',ctDirectory+fileName)
+    #newHierarchy.SetOwnerPluginName('Volumes')
+    slicer.mrmlScene.AddNode(newHierarchy)
+  
+  def showVolumeFromHierarchyNode(self,hierarchyNode,volume):
+    
+    volume = None
+    if not self.loadVolumeFromHierarchyNode(hierarchyNode,volume):
+        print "Can't get volume"
+        return
 
-    # grab and convert to vtk image data
-    qpixMap = qt.QPixmap().grabWidget(widget)
-    qimage = qpixMap.toImage()
-    imageData = vtk.vtkImageData()
-    slicer.qMRMLUtils().qImageToVtkImageData(qimage,imageData)
-
-    annotationLogic = slicer.modules.annotations.logic()
-    annotationLogic.CreateSnapShot(name, description, type, self.screenshotScaleFactor, imageData)
-
-  def run(self,inputVolume,outputVolume,enableScreenshots=0,screenshotScaleFactor=1):
-    """
-    Run the actual algorithm
-    """
-
-    self.delayDisplay('Running the aglorithm')
-
-    self.enableScreenshots = enableScreenshots
-    self.screenshotScaleFactor = screenshotScaleFactor
-
-    self.takeScreenshot('RegistrationHierarchy-Start','Start',-1)
-
+    if not volume:
+      print "No volume"
+      return
+      
+    if volume.isA('vtkMRMLVolumeNode'):
+      selectionNode = slicer.app.applicationLogic().GetSelectionNode()
+      selectionNode.SetReferenceActiveVolumeID(volume.GetID())
+      slicer.app.applicationLogic().PropagateVolumeSelection(0)
+  
+  def getVolumeFromChild(self,hierarchyNode,volume,string):
+    childNode = hierarchyNode.GetChildWithName(hierarchyNode,string)
+    if not childNode:
+      print "Can't get childNode: " + string + "from " + hierarchyNode.GetNameWithoutPostfix()
+      return False
+    if not self.loadVolumeFromHierarchyNode(childNode,volume):
+       print "Can't load  " + string + " from hierarchy childNode: " + childNode.GetNameWithoutPostfix()
+       return False
     return True
+  
+  #Loads volume from hierarchyNode. Can find it there or tries to load it from disk.
+  def loadVolumeFromHierarchyNode(self,hierarchyNode,volume):
+     #Look for existing associated nodes:
+    if hierarchyNode.GetAssociatedNodeID():
+      volume = slicer.util.getNode(hierarchyNode.GetAssociatedNodeID())
+      if volume:
+	return True
 
+    filePath = hierarchyNode.GetAttribute('FilePath')
+    if filePath:
+      if slicer.util.loadVolume(filePath):
+	#TODO: Not good solution, perhaps look at last vtkMRMLnode?"
+	volume = slicer.util.getNode(os.path.basename(filePath))
+	if not volume:
+	  print "Can't find volume " + os.path.basename(filePath)
+	  return False
+	#Write it in hierarchy node for later use
+	hierarchyNode.SetAssociatedNodeID(volume.GetID())
+      else:
+	print "Can't load volume from: " + filePath
+	return False
+    else:
+      print "Can't get file Path from: " + hierarchyNode.GetNameWithoutPostfix()
+      return False
+    return True
 
 class RegistrationHierarchyTest(unittest.TestCase):
   """
