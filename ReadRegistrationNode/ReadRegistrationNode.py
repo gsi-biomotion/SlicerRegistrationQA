@@ -5,6 +5,15 @@ from __main__ import vtk, qt, ctk, slicer
 #
 # ReadRegistrationNode
 #
+#Constants that have to be the same in creating Registration Hierarchy
+NAME_CT = 'CT'
+NAME_WARP = 'WarpedImage'
+NAME_VECTOR = 'Vector' #Vector Field from phase to reference phase
+NAME_INVVECTOR = 'InvVector' #Vector from reference phase to phase
+NAME_ABSDIFF = 'AbsoluteDifference'
+NAME_JACOBIAN = 'Jacobian'
+NAME_INVERSECONS = 'InverseConsistency'
+NAME_REFPHASE = 'ReferenceHierarchyNode'
 
 class ReadRegistrationNode:
   def __init__(self, parent):
@@ -230,9 +239,10 @@ class ReadRegistrationNodeLogic:
     #Create Registration node
     registrationNode = vtkMRMLSubjectHierarchyNode()
     registrationNode.SetName('Registration Node')
-    registrationNode.SetLevel('Series')
+    registrationNode.SetLevel('Study')
     registrationNode.SetParentNodeID(subjectNode.GetID())
-    registrationNode.SetAttribute('Directory',ctDirectory)
+    #Paths to directories
+    registrationNode.SetAttribute(NAME_CT+'Directory',ctDirectory)
     registrationNode.SetAttribute('ReferencePhase',str(referencePhase))
     slicer.mrmlScene.AddNode(registrationNode)
     
@@ -278,8 +288,8 @@ class ReadRegistrationNodeLogic:
       #Create New volume in subject hierarchy
       ctNode = vtkMRMLSubjectHierarchyNode()
       ctNode.SetParentNodeID(phaseNode.GetID())
-      ctNode.SetName('CT')
-      ctNode.SetLevel('Series')
+      ctNode.SetName(NAME_CT)
+      ctNode.SetLevel('Subseries')
       ctNode.SetAttribute('DICOMHierarchy.SeriesModality','CT')
       ctNode.SetAttribute('FilePath',ctDirectory+fileName)
       #ctNode.SetOwnerPluginName('Volumes')
@@ -290,8 +300,8 @@ class ReadRegistrationNodeLogic:
           if file.find(str(phase)+numberEnding) > -1:
 	    warpNode = vtkMRMLSubjectHierarchyNode()
 	    warpNode.SetParentNodeID(phaseNode.GetID())
-	    warpNode.SetName('WarpedImage')
-	    warpNode.SetLevel('Series')
+	    warpNode.SetName(NAME_WARP)
+	    warpNode.SetLevel('Subseries')
 	    warpNode.SetAttribute('DICOMHierarchy.SeriesModality','CT')
 	    warpNode.SetAttribute('FilePath',warpDirectory+file)
 	   #warpNode.SetOwnerPluginName('Volumes')
@@ -302,9 +312,8 @@ class ReadRegistrationNodeLogic:
           if file.find(str(phase)+numberEnding) > -1:
 	    vectorNode = vtkMRMLSubjectHierarchyNode()
 	    vectorNode.SetParentNodeID(phaseNode.GetID())
-	    vectorNode.SetName('VectorVolume')
-	    vectorNode.SetLevel('Series')
-	    vectorNode.SetAttribute('DICOMHierarchy.SeriesModality','CT')
+	    vectorNode.SetName(NAME_VECTOR)
+	    vectorNode.SetLevel('Subseries')
 	    vectorNode.SetAttribute('FilePath',vectorDirectory+file)
 	   #vectorNode.SetOwnerPluginName('Volumes')
 	    slicer.mrmlScene.AddNode(vectorNode)
