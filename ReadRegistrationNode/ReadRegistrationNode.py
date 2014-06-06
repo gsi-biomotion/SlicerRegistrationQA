@@ -9,7 +9,7 @@ from __main__ import vtk, qt, ctk, slicer
 class ReadRegistrationNode:
   def __init__(self, parent):
     parent.title = "Read Registration Node" # TODO make this more human readable by adding spaces
-    parent.categories = ["Examples"]
+    parent.categories = ["RegistrationQuality"]
     parent.dependencies = []
     parent.contributors = ["Kristjan Anderle (GSI)"] # replace with "Firstname Lastname (Org)"
     parent.helpText = """
@@ -219,6 +219,8 @@ class ReadRegistrationNodeLogic:
       print ctDirectory + "Doesn't exist"
       return
       
+    referencePhase = 0
+    
     #Create Patient Node
     subjectNode = vtkMRMLSubjectHierarchyNode()
     subjectNode.SetName(patientName)
@@ -231,6 +233,7 @@ class ReadRegistrationNodeLogic:
     registrationNode.SetLevel('Series')
     registrationNode.SetParentNodeID(subjectNode.GetID())
     registrationNode.SetAttribute('Directory',ctDirectory)
+    registrationNode.SetAttribute('ReferencePhase',str(referencePhase))
     slicer.mrmlScene.AddNode(registrationNode)
     
     
@@ -266,6 +269,11 @@ class ReadRegistrationNodeLogic:
       phaseNode.SetAttribute('Directory',ctDirectory)
       #phaseNode.SetOwnerPluginName('Volumes')
       slicer.mrmlScene.AddNode(phaseNode)
+      
+      #Check if reference phase and link it
+      if phase == referencePhase:
+        registrationNode.SetAttribute('ReferenceHierarchyNode',phaseNode.GetID())
+      
       
       #Create New volume in subject hierarchy
       ctNode = vtkMRMLSubjectHierarchyNode()
