@@ -8,6 +8,7 @@
 #include <vtkMRMLSliceCompositeNode.h>
 #include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLVectorVolumeNode.h>
+#include <vtkMRMLAnnotationROINode.h>
 // STD includes
 #include <cstdlib>
 
@@ -37,7 +38,7 @@ public:
 	 * Will either remake or account for scenario some other way
 	 */
 
-	void AbsoluteDifference(int state);
+	vtkMRMLScalarVolumeNode* AbsoluteDifference(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*, vtkMRMLAnnotationROINode *);
 	void FalseColor(int state);
 	void Flicker(int opacity);
 	void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
@@ -46,8 +47,9 @@ public:
 	void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
 	void Jacobian(int state);
 	void InverseConsist(int state);
-	void SetDefaultDisplay(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*);
+	void SetDefaultDisplay();
 	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double statisticValues[4]);
+	void CalculateDIRQAFrom(int number, int state);
 
 public:
 	void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);
@@ -61,6 +63,7 @@ protected:
 	~vtkSlicerRegistrationQualityLogic();
 
 	virtual void RegisterNodes();
+	
 
 	virtual void SetMRMLSceneInternal(vtkMRMLScene* newScene);
 
@@ -74,6 +77,7 @@ protected:
 	vtkSmartPointer<vtkImageData> TransformField;
 	/// Parameter set MRML node
 	vtkMRMLRegistrationQualityNode* RegistrationQualityNode;
+	
 
 private:
 	vtkSlicerRegistrationQualityLogic(const vtkSlicerRegistrationQualityLogic&);// Not implemented

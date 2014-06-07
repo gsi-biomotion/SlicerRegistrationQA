@@ -483,7 +483,7 @@ void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->AbsoluteDifference(state);
+		d->logic()->CalculateDIRQAFrom(1,state);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
@@ -517,6 +517,7 @@ void qSlicerRegistrationQualityModuleWidget::falseColorClicked(bool state) {
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 
 	try {
+	  std::cerr << "Trying like crazy!" << std::endl;
 		d->logic()->FalseColor(state);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
