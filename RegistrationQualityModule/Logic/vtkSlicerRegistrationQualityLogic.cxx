@@ -226,9 +226,9 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
   } 
 }
 //---------------------------------------------------------------------------
-vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::AbsoluteDifference(vtkMRMLScalarVolumeNode* referenceVolume, vtkMRMLScalarVolumeNode* warpedVolume,vtkMRMLAnnotationROINode *inputROI = NULL ) {
+vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::AbsoluteDifference(vtkMRMLScalarVolumeNode* referenceVolume, vtkMRMLScalarVolumeNode* warpedVolume,vtkMRMLAnnotationROINode *inputROI  ) {
 
-	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
+	if (!this->GetMRMLScene() ) {
 	    vtkErrorMacro("AbsoluteDifference: Invalid scene or parameter set node!");
 	    return NULL;
 	}
