@@ -181,9 +181,13 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
     return;
   }
   
+  // All logic need reference Volume and ROI (if exists)
   vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
+  vtkMRMLAnnotationROINode *inputROI = vtkMRMLAnnotationROINode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetROINodeID()));
   
   
   if (number == 1){
@@ -198,19 +202,16 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
       vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
-      vtkMRMLAnnotationROINode *inputROI = vtkMRMLAnnotationROINode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetROINodeID()));
       absoluteDiffVolume = this->AbsoluteDifference(referenceVolume,warpedVolume,inputROI);
-      this->RegistrationQualityNode->SetAbsoluteDiffVolumeNodeID(absoluteDiffVolume->GetID());
       if ( !absoluteDiffVolume ) {
 		vtkErrorMacro("CalculateDIRQAFrom: No absoluteDiffVolume set!");
 		return;
       }
+      this->RegistrationQualityNode->DisableModifiedEventOn();
+      this->RegistrationQualityNode->SetAbsoluteDiffVolumeNodeID(absoluteDiffVolume->GetID());
       // Get mean and std from squared difference volume
       double statisticValues[4];
-      this->CalculateStatistics(absoluteDiffVolume,statisticValues);
-      this->RegistrationQualityNode->DisableModifiedEventOn();
+      this->CalculateStatistics(absoluteDiffVolume,statisticValues);     
       this->RegistrationQualityNode->SetAbsoluteDiffStatistics( statisticValues );
       this->RegistrationQualityNode->DisableModifiedEventOff();     
     }
@@ -222,6 +223,79 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
     absoluteDiffVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
     absoluteDiffVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
     this->SetForegroundImage(referenceVolume,absoluteDiffVolume,0.5);
+    return;
+  }
+  else if(number == 2){
+    vtkMRMLScalarVolumeNode *jacobianVolume = NULL;
+    if (this->RegistrationQualityNode->GetJacobianVolumeNodeID()){
+      jacobianVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
+		this->GetMRMLScene()->GetNodeByID(
+			this->RegistrationQualityNode->GetJacobianVolumeNodeID()));
+    }
+    else{
+      vtkMRMLVectorVolumeNode *vectorVolume = vtkMRMLVectorVolumeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetVectorVolumeNodeID()));
+      jacobianVolume = this->Jacobian(vectorVolume,inputROI);
+      if ( !jacobianVolume ) {
+		vtkErrorMacro("CalculateDIRQAFrom: No jacobianVolume set!");
+		return;
+      }
+      this->RegistrationQualityNode->DisableModifiedEventOn();
+      this->RegistrationQualityNode->SetJacobianVolumeNodeID(jacobianVolume->GetID());      
+      double statisticValues[4]; // 1. Mean 2. STD 3. Max 4. Min
+      this->CalculateStatistics(jacobianVolume,statisticValues);
+      this->RegistrationQualityNode->SetJacobianStatistics( statisticValues );
+      this->RegistrationQualityNode->DisableModifiedEventOff();
+      
+    }
+    double window=0.8;
+    int level=1;
+    
+    jacobianVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();   
+    jacobianVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,3);
+    jacobianVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
+    jacobianVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
+    jacobianVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
+    
+    this->SetForegroundImage(referenceVolume,jacobianVolume,0.5);
+    return;    
+  }
+  else if(number == 3){
+    vtkMRMLScalarVolumeNode *inverseConsistVolume = NULL; 
+    if (this->RegistrationQualityNode->GetInverseConsistVolumeNodeID()){
+      inverseConsistVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
+		this->GetMRMLScene()->GetNodeByID(
+			this->RegistrationQualityNode->GetInverseConsistVolumeNodeID()));
+    }
+    else{
+      vtkMRMLVectorVolumeNode *vectorVolume1 = vtkMRMLVectorVolumeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetVectorVolumeNodeID()));
+      vtkMRMLVectorVolumeNode *vectorVolume2 = vtkMRMLVectorVolumeNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetInvVectorVolumeNodeID()));
+      inverseConsistVolume = this->InverseConsist(vectorVolume1,vectorVolume2,inputROI);
+      if(!inverseConsistVolume){
+	  vtkErrorMacro("CalculateDIRQAFrom: No inverseConsistVolume set!");
+	  return;
+      }
+      this->RegistrationQualityNode->DisableModifiedEventOn();
+      this->RegistrationQualityNode->SetInverseConsistVolumeNodeID(inverseConsistVolume->GetID());
+      double statisticValues[4]; // 1. Mean 2. STD 3. Max 4. Min
+      this->CalculateStatistics(inverseConsistVolume,statisticValues);
+      this->RegistrationQualityNode->SetInverseConsistStatistics( statisticValues );
+      this->RegistrationQualityNode->DisableModifiedEventOff();     
+    }
+    double window=10;
+    int level=5;
+    inverseConsistVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen");
+    inverseConsistVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
+      
+    inverseConsistVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,10);
+    inverseConsistVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
+    inverseConsistVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
+    this->SetForegroundImage(referenceVolume,inverseConsistVolume,0.5);
     return;
   } 
 }
@@ -319,9 +393,7 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 	}
 	
 	//TODO: Volumes go back to gray value - perhaps we should rembemer previous color settings?
-	std::cerr << "In false color!" << std::endl;
 	if (!state) {
-	  std::cerr << "Set display!" << std::endl;
 		this->SetDefaultDisplay();
 		return;
 	}
@@ -571,171 +643,102 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 }
 
 //----------------------------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::Jacobian(int state) {
+vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::Jacobian(vtkMRMLVectorVolumeNode *vectorVolume,vtkMRMLAnnotationROINode *inputROI ) {
 
-	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
-		vtkErrorMacro("Invalid scene or parameter set node!");
+	if (!this->GetMRMLScene()) {
 		throw std::runtime_error("Internal Error, see command line!");
 	}
 
-	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
-	vtkMRMLVectorVolumeNode *vectorVolume = vtkMRMLVectorVolumeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetVectorVolumeNodeID()));
-	vtkMRMLAnnotationROINode *inputROI = vtkMRMLAnnotationROINode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetROINodeID()));
 
-	if (!vectorVolume || !referenceVolume ) {
-		throw std::runtime_error("Reference volume or vector field not set!");
+	if (!vectorVolume ) {
+		throw std::runtime_error("Vector field not set!");
 	}
-
-	if (!state) {
-		vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
-		this->SetDefaultDisplay();
-		return;
+	vtkMRMLScalarVolumeNode* outputVolume = NULL;
+	// Create new scalar volume
+	vtkNew<vtkMRMLScalarVolumeNode> outputVolumeNew;
+	vtkNew<vtkMRMLScalarVolumeDisplayNode> sDisplayNode;
+	this->GetMRMLScene()->AddNode(sDisplayNode.GetPointer());
+	outputVolumeNew->SetAndObserveDisplayNodeID(sDisplayNode->GetID());
+	outputVolumeNew->SetAndObserveStorageNodeID(NULL);
+	this->GetMRMLScene()->AddNode(outputVolumeNew.GetPointer());
+	outputVolume = outputVolumeNew.GetPointer();
+	
+	if(!outputVolume){
+	  throw std::runtime_error("Can't create output volume!");
 	}
-	if (!this->RegistrationQualityNode->GetJacobianVolumeNodeID()){
+		
+	std::string outSS;
+	std::string Name("-jacobian");
+	outSS = vectorVolume->GetName() + Name;
+	outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
+	outputVolume->SetName(outSS.c_str());
 
-		if(!this->Internal->VolumesLogic) {
-			vtkErrorMacro("Failed to get hold of Volumes logic!");
-			throw std::runtime_error("Internal Error, see command line!");
-		}
-
-		std::string outSS;
-		std::string Name("-jacobian");
-		outSS = referenceVolume->GetName() + Name;
-		outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
-
-		vtkMRMLScalarVolumeNode *outputVolume = this->Internal->VolumesLogic->CloneVolume(
-			this->GetMRMLScene(), referenceVolume, outSS.c_str());
-
-		qSlicerCLIModule* jacobianfilterCLI = dynamic_cast<qSlicerCLIModule*>(
+	qSlicerCLIModule* jacobianfilterCLI = dynamic_cast<qSlicerCLIModule*>(
 			qSlicerCoreApplication::application()->moduleManager()->module("JacobianFilter"));
-		if (!jacobianfilterCLI) {
-			vtkErrorMacro("No Jacobian Filter module!");
-			throw std::runtime_error("Internal Error, see command line!");
-		}
+	if (!jacobianfilterCLI) {
+		vtkErrorMacro("No Jacobian Filter module!");
+		throw std::runtime_error("Internal Error, see command line!");
+	}
 
-		vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
+	vtkSmartPointer<vtkMRMLCommandLineModuleNode> cmdNode =
 			jacobianfilterCLI->cliModuleLogic()->CreateNodeInScene();
 
-		// Set node parameters
-		cmdNode->SetParameterAsString("inputVolume", vectorVolume->GetID());
-		cmdNode->SetParameterAsString("outputVolume", outputVolume->GetID());
-		if (inputROI)
-		{
-		    cmdNode->SetParameterAsString("fixedImageROI", inputROI->GetID());
-		}
-		else
-		{
-		  cmdNode->SetParameterAsString("fixedImageROI", "");
-		}
-		// Execute synchronously so that we can check the content of the file after the module execution
-		jacobianfilterCLI->cliModuleLogic()->ApplyAndWait(cmdNode);
-
-		this->GetMRMLScene()->RemoveNode(cmdNode);
-
-		outputVolume->SetAndObserveTransformNodeID(NULL);
-		this->RegistrationQualityNode->SetJacobianVolumeNodeID(outputVolume->GetID());
-
+	// Set node parameters
+	cmdNode->SetParameterAsString("inputVolume", vectorVolume->GetID());
+	cmdNode->SetParameterAsString("outputVolume", outputVolume->GetID());
+	if (inputROI){
+	  cmdNode->SetParameterAsString("fixedImageROI", inputROI->GetID());
 	}
+	else{
+	  cmdNode->SetParameterAsString("fixedImageROI", "");
+	  
+	}
+	// Execute synchronously so that we can check the content of the file after the module execution
+	jacobianfilterCLI->cliModuleLogic()->ApplyAndWait(cmdNode);
 
-	vtkMRMLScalarVolumeNode *jacobianVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
-		this->GetMRMLScene()->GetNodeByID(
-			this->RegistrationQualityNode->GetJacobianVolumeNodeID()));
+	this->GetMRMLScene()->RemoveNode(cmdNode);
 
-	jacobianVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
-	jacobianVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
-	double window=0.8;
-	int level=1;
-
-	jacobianVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,3);
-	jacobianVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
-	jacobianVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
-
-	this->SetForegroundImage(referenceVolume,jacobianVolume,0.5);
-
-	double statisticValues[4]; // 1. Mean 2. STD 3. Max 4. Min
-	this->CalculateStatistics(jacobianVolume,statisticValues);
-
-	this->RegistrationQualityNode->DisableModifiedEventOn();
-	this->RegistrationQualityNode->SetJacobianStatistics( statisticValues );
-	// 	this->RegistrationQualityNode->SetJacobianSTD( statisticValues[1] );
-	this->RegistrationQualityNode->DisableModifiedEventOff();
-
-	return;
+	if(outputVolume){
+	  outputVolume->SetAndObserveTransformNodeID(NULL);
+	  return outputVolume;
+	}
+	else{
+	  return NULL;
+	}
+	
+	
 }
 //----------------------------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::InverseConsist(int state) {
+vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::InverseConsist(vtkMRMLVectorVolumeNode *vectorVolume1,vtkMRMLVectorVolumeNode *vectorVolume2,vtkMRMLAnnotationROINode *inputROI) {
 
-	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
-		vtkErrorMacro("Inverse Consistency: Invalid scene or parameter set node!");
-		return;
+	if (!this->GetMRMLScene() ) {
+		throw std::runtime_error("Inverse Consistency: Invalid scene!");
 	}
 
-	vtkMRMLVectorVolumeNode *vectorVolume1 = vtkMRMLVectorVolumeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetVectorVolumeNodeID()));
-	vtkMRMLVectorVolumeNode *vectorVolume2 = vtkMRMLVectorVolumeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetInvVectorVolumeNodeID()));
-	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
-	vtkMRMLAnnotationROINode *inputROI = vtkMRMLAnnotationROINode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetROINodeID()));
-
-// 	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID(
-// 				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
-// 	vtkMRMLVolumeNode *outputVolume = vtkMRMLVolumeNode::SafeDownCast(
-// 			this->GetMRMLScene()->GetNodeByID(
-// 				this->RegistrationQualityNode->GetCheckerboardVolumeNodeID()));
 //
-	if (!vectorVolume1 || !vectorVolume2 || !referenceVolume ) {
-	    std::cerr << "Volumes not set!" << std::endl;
-	    return;
+	if (!vectorVolume1 || !vectorVolume2 ) {
+	    throw std::runtime_error("Volumes not set!");
 	}
-	if (!state) {
-
-	  vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
-	      	this->SetDefaultDisplay();
-		return;
+	
+	vtkMRMLScalarVolumeNode* outputVolume = NULL;
+	// Create new scalar volume
+	vtkNew<vtkMRMLScalarVolumeNode> outputVolumeNew;
+	vtkNew<vtkMRMLScalarVolumeDisplayNode> sDisplayNode;
+	this->GetMRMLScene()->AddNode(sDisplayNode.GetPointer());
+	outputVolumeNew->SetAndObserveDisplayNodeID(sDisplayNode->GetID());
+	outputVolumeNew->SetAndObserveStorageNodeID(NULL);
+	this->GetMRMLScene()->AddNode(outputVolumeNew.GetPointer());
+	outputVolume = outputVolumeNew.GetPointer();
+	
+	if(!outputVolume){
+	  throw std::runtime_error("Can't create output volume!");
 	}
-
-	if (!this->RegistrationQualityNode->GetInverseConsistVolumeNodeID()){
-	  if(!this->Internal->VolumesLogic)
-	    {
-	      std::cerr << "Inverse Consistency: ERROR: failed to get hold of Volumes logic" << std::endl;
-	      return;
-	    }
-
-
-	  vtkMRMLScalarVolumeNode *outputVolume = NULL;
-	  vtkMRMLScalarVolumeNode *svnode = vtkMRMLScalarVolumeNode::SafeDownCast(referenceVolume);
-	  std::string outSS;
-	  std::string Name("-invConsist");
-
-	  outSS = referenceVolume->GetName() + Name;
-	  outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
-	  if(svnode)
-	  {
-	    outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.c_str());
-	  }
-	  else
-	  {
-	    std::cerr << "Reference volume not scalar volume!" << std::endl;
-	    return;
-	  }
-
+	  		
+	std::string outSS;
+	std::string Name("-invConsist");
+	outSS = vectorVolume1->GetName() + Name;
+	outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
+	outputVolume->SetName(outSS.c_str());
 
 	qSlicerCLIModule* checkerboardfilterCLI = dynamic_cast<qSlicerCLIModule*>(
 			qSlicerCoreApplication::application()->moduleManager()->module("InverseConsistency"));
@@ -762,34 +765,14 @@ void vtkSlicerRegistrationQualityLogic::InverseConsist(int state) {
 
 	this->GetMRMLScene()->RemoveNode(cmdNode);
 
-	outputVolume->SetAndObserveTransformNodeID(NULL);
-	this->RegistrationQualityNode->SetInverseConsistVolumeNodeID(outputVolume->GetID());
+	if (outputVolume){
+	  outputVolume->SetAndObserveTransformNodeID(NULL);
+	  return outputVolume;
 	}
-
-	vtkMRMLScalarVolumeNode *inverseConsistVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
-			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetInverseConsistVolumeNodeID()));
-
-
-	inverseConsistVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen");
-	inverseConsistVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
-	double window=10;
-	int level=5;
-
-	inverseConsistVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,10);
-	inverseConsistVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
-	inverseConsistVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
-
-	this->SetForegroundImage(referenceVolume,inverseConsistVolume,0.5);
-
-	double statisticValues[4]; // 1. Mean 2. STD 3. Max 4. Min
-	this->CalculateStatistics(inverseConsistVolume,statisticValues);
-
-	this->RegistrationQualityNode->DisableModifiedEventOn();
-	this->RegistrationQualityNode->SetInverseConsistStatistics( statisticValues );
-	this->RegistrationQualityNode->DisableModifiedEventOff();
-
-	return;
+	else{
+	  return NULL;
+	}
+	
 }
 //--- Default mode when checkbox is unchecked -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::SetDefaultDisplay() {
@@ -797,7 +780,6 @@ void vtkSlicerRegistrationQualityLogic::SetDefaultDisplay() {
 		throw std::runtime_error("SetDefaultDisplay: Invalid scene or parameter set node!");
 		return;
 	}
-	std::cerr << "Running!" << std::endl;
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
@@ -828,8 +810,7 @@ void vtkSlicerRegistrationQualityLogic::SetDefaultDisplay() {
 }
 
 //---Calculate Statistic of image-----------------------------------
-void vtkSlicerRegistrationQualityLogic
-::CalculateStatistics(vtkMRMLScalarVolumeNode *inputVolume, double statisticValues[4] ) {
+void vtkSlicerRegistrationQualityLogic::CalculateStatistics(vtkMRMLScalarVolumeNode *inputVolume, double statisticValues[4] ) {
 	vtkNew<vtkImageAccumulate> StatImage;
 	StatImage->SetInput(inputVolume->GetImageData());
 	StatImage->Update();

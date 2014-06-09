@@ -653,7 +653,7 @@ void qSlicerRegistrationQualityModuleWidget::jacobianClicked(bool state){
 
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->Jacobian(state);
+		d->logic()->CalculateDIRQAFrom(2,state);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
@@ -685,7 +685,7 @@ void qSlicerRegistrationQualityModuleWidget::inverseConsistClicked(bool state){
 
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->InverseConsist(state);
+		d->logic()->CalculateDIRQAFrom(3,state);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
