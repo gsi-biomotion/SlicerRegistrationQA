@@ -311,6 +311,57 @@
 											</property>
 										</widget>
 									</item>
+
+									<item row="4" column="0">
+										<widget class="QLabel" name="Input_SubjectLabel_3">
+											<property name="toolTip">
+												<string>Input Subject Hierarchy</string>
+											</property>
+											<property name="text">
+												<string>Subject Hierarchy</string>
+											</property>
+										</widget>
+									</item>
+									<item row="4" column="1">
+										<widget class="qMRMLNodeComboBox" name="InputSubjectComboBox">
+											<property name="enabled">
+												<bool>true</bool>
+											</property>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="toolTip">
+												<string>Input Subject Hierarchy</string>
+											</property>
+											<property name="nodeTypes">
+												<stringlist>
+													<string>vtkMRMLSubjectHierarchyNode</string>
+												</stringlist>
+											</property>
+											<property name="baseName">
+												<string></string>
+											</property>
+											<property name="noneEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="addEnabled">
+												<bool>false</bool>
+											</property>
+											<property name="removeEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="editEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="renameEnabled">
+												<bool>true</bool>
+											</property>
+										</widget>
+									</item>
+
 								</layout>
 							</widget>
 						</item>
@@ -1150,6 +1201,22 @@
 			<sender>qSlicerRegistrationQualityModule</sender>
 			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
 			<receiver>InputWarpedComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>130</x>
+					<y>6</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>152</x>
+					<y>172</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>InputSubjectComboBox</receiver>
 			<slot>setMRMLScene(vtkMRMLScene*)</slot>
 			<hints>
 				<hint type="sourcelabel">

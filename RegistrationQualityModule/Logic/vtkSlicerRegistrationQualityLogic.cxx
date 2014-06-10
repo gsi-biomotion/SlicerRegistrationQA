@@ -314,7 +314,7 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 
 	TiXmlDocument doc("/home/brandtts/steeringfile.xml");
 	if(doc.LoadFile()) {
-		dump(&doc);
+// 		dump(&doc);
 	} else {
 		cout << "Fehler beim laden" << endl;
 	}
@@ -327,18 +327,21 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 	TiXmlNode *child=doc.FirstChild();
 	while(child!=0 && child->Type()!=TiXmlNode::TINYXML_ELEMENT) child=child->NextSibling();
 
-	child=child->FirstChild(/*"image"*/);
-// 	while(child!=0) {
-		cout << "--dump---------" << endl;
-		dump(child);
-		cout << "--constructor--" << endl;
-		DIRQAImage di(*child);
-		cout << "--di-----------" << endl;
-		cout << "|" << di << "|" << endl;
-		di.load(Internal->VolumesLogic);
+	DIRQAImage::initHashMap();
+	vtkSmartPointer<DIRQAImage> di = DIRQAImage::New();
 
-// 		child=child->NextSibling();
-// 	}
+	child=child->FirstChild(/*"image"*/);
+	while(child!=0) {
+// 		cout << "--dump---------" << endl;
+// 		dump(child);
+		cout << "--constructor--" << endl;
+		di->readFromXML(*child);
+		cout << "--di-----------" << endl;
+		cout << "|" << *(di.GetPointer()) << "|" << endl;
+// 		di->load(Internal->VolumesLogic);
+
+		child=child->NextSibling();
+	}
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
