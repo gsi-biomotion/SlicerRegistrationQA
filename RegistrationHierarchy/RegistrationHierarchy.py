@@ -106,7 +106,7 @@ class RegistrationHierarchyWidget:
     self.regHierarchyComboBox = slicer.qMRMLNodeComboBox()
     self.regHierarchyComboBox.nodeTypes = ( ("vtkMRMLSubjectHierarchyNode"),"" )
     self.regHierarchyComboBox.addAttribute( "vtkMRMLScalarVolumeNode", "Name", "Registration Node" )
-    self.regHierarchyComboBox.selectNodeUponCreation = True
+    #self.regHierarchyComboBox.selectNodeUponCreation = True
     self.regHierarchyComboBox.addEnabled = False
     self.regHierarchyComboBox.removeEnabled = False
     self.regHierarchyComboBox.noneEnabled = False
@@ -125,7 +125,6 @@ class RegistrationHierarchyWidget:
     
     #Model that stores all items
     self.model = qt.QStandardItemModel()
-    self.model.setHorizontalHeaderLabels(['Registration Node: '])
     self.columnView.setModel(self.model)
     
     #
@@ -185,6 +184,7 @@ class RegistrationHierarchyWidget:
       logic.computeDIRQAfromHierarchyNode(phaseHierarchyNode,refPhaseNode)
       n += 1
     pbar.close()
+    self.setStandardModel(self.regHierarchy)
     qt.QApplication.restoreOverrideCursor()
       
     
@@ -235,10 +235,14 @@ class RegistrationHierarchyWidget:
     if not regHierarchy:
       return
 
+    if not regHierarchy.GetNameWithoutPostfix().find('Registration') > -1:
+      return
+    
     if regHierarchy.GetNumberOfChildrenNodes() < 1:
       print "Error, Selected Subject Hiearchy doesn't have any child contour nodes."
     
     self.model.clear()
+    self.model.setHorizontalHeaderLabels(['Registration Node: '])
     #List that holds all data
     self.phaseItems = []
     self.dirqaItems = []
