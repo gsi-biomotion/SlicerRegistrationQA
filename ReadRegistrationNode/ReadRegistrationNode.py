@@ -6,14 +6,21 @@ from __main__ import vtk, qt, ctk, slicer
 # ReadRegistrationNode
 #
 #Constants that have to be the same in creating Registration Hierarchy
+#
+
+#Node names:
 NAME_CT = 'CT'
-NAME_WARP = 'WarpedImage'
+NAME_WARP = 'WarpedImage' #Warped image from phase ( phase + vector field = warpedimage)
+NAME_INVWARP = 'InvWarpedImage' #Warped image from reference phase (reference + invVector = invWarpedImage)
 NAME_VECTOR = 'Vector' #Vector Field from phase to reference phase
 NAME_INVVECTOR = 'InvVector' #Vector from reference phase to phase
 NAME_ABSDIFF = 'AbsoluteDifference'
 NAME_JACOBIAN = 'Jacobian'
-NAME_INVERSECONS = 'InverseConsistency'
+NAME_INVCONSIST = 'InverseConsistency'
 NAME_REFPHASE = 'ReferenceHierarchyNode'
+NAME_DIRQA = 'DIRQA'
+
+#Names for directories are just DIR + NAME_X. I.e. directory for CTs is stored under 'DIRCT' attribute
 
 class ReadRegistrationNode:
   def __init__(self, parent):
@@ -229,6 +236,8 @@ class ReadRegistrationNodeLogic:
       return
       
     referencePhase = 0
+    #Manual created for now:
+    dirqaDirectory = vectorDirectory
     
     #Create Patient Node
     subjectNode = vtkMRMLSubjectHierarchyNode()
@@ -242,33 +251,40 @@ class ReadRegistrationNodeLogic:
     registrationNode.SetLevel('Study')
     registrationNode.SetParentNodeID(subjectNode.GetID())
     #Paths to directories
-    registrationNode.SetAttribute(NAME_CT+'Directory',ctDirectory)
+    registrationNode.SetAttribute('DIR' + NAME_CT,ctDirectory)
+    registrationNode.SetAttribute('DIR' + NAME_WARP,warpDirectory)
+    registrationNode.SetAttribute('DIR' + NAME_VECTOR,vectorDirectory)
+    registrationNode.SetAttribute('DIR' + NAME_DIRQA,dirqaDirectory)
+    
     registrationNode.SetAttribute('ReferencePhase',str(referencePhase))
     slicer.mrmlScene.AddNode(registrationNode)
     
+    n = 1
     
     for fileName in os.listdir(ctDirectory):
       
       
       #Looking for file names that end with 0.0% or 0%
-      if not fileName.find('%') > -1:
-        print "Cannot find % in file name"
-        continue
-      numberEnding = '0.0'
-      if not fileName.find(numberEnding+'%') > -1:
-        numberEnding = '0'
-      index = fileName.find(numberEnding+'%')
-      if not index > -1:
-        print "No ending with 0 in fileName"
-        continue
+      #if not fileName.find('%') > -1:
+        #print "Cannot find % in file name"
+        #continue
+      #numberEnding = '0.0'
+      #if not fileName.find(numberEnding+'%') > -1:
+        #numberEnding = '0'
+      #index = fileName.find(numberEnding+'%')
+      #if not index > -1:
+        #print "No ending with 0 in fileName"
+        #continue
       
-      n = 0
+      index = fileName.find('.ctx')
+      if not index > -1:
+	continue
       #Try to find out, which phase do we have
       try:
 	phase = int(fileName[index-1])
       except:
 	print fileName[index-1]
-	phase = 0
+	#phase = 0
 
       #Create New phase in subject hierarchy
       phaseNode = vtkMRMLSubjectHierarchyNode()
@@ -281,8 +297,7 @@ class ReadRegistrationNodeLogic:
       slicer.mrmlScene.AddNode(phaseNode)
       
       #Check if reference phase and link it
-      if phase == referencePhase:
-        registrationNode.SetAttribute('ReferenceHierarchyNode',phaseNode.GetID())
+      
       
       
       #Create New volume in subject hierarchy
@@ -294,31 +309,54 @@ class ReadRegistrationNodeLogic:
       ctNode.SetAttribute('FilePath',ctDirectory+fileName)
       #ctNode.SetOwnerPluginName('Volumes')
       slicer.mrmlScene.AddNode(ctNode)
+      
+      #Skip for reference phase
+      if phase == referencePhase:
+        registrationNode.SetAttribute('ReferenceHierarchyNode',phaseNode.GetID())
+        continue
+      
       numberEnding = '0'
       if os.path.exists(warpDirectory):
 	for file in os.listdir(warpDirectory):
-          if file.find(str(phase)+numberEnding) > -1:
+	  if file.find('nrrd') > -1:
 	    warpNode = vtkMRMLSubjectHierarchyNode()
 	    warpNode.SetParentNodeID(phaseNode.GetID())
-	    warpNode.SetName(NAME_WARP)
 	    warpNode.SetLevel('Subseries')
 	    warpNode.SetAttribute('DICOMHierarchy.SeriesModality','CT')
 	    warpNode.SetAttribute('FilePath',warpDirectory+file)
+	    #Find out warpedimage or invWarpedImage
+	    if file.find('mov0'+str(phase)) > -1:
+	      warpNode.SetName(NAME_WARP)
+	    elif file.find('fix0'+str(phase)) > -1:
+	      warpNode.SetName(NAME_INVWARP)
+	    else:
+	      print "Wrong image name."
+	      continue
 	   #warpNode.SetOwnerPluginName('Volumes')
 	    slicer.mrmlScene.AddNode(warpNode)
       
       if os.path.exists(vectorDirectory):
 	for file in os.listdir(vectorDirectory):
-          if file.find(str(phase)+numberEnding) > -1:
+	  index = file.find('_x.cbt')
+          if index > -1:
 	    vectorNode = vtkMRMLSubjectHierarchyNode()
 	    vectorNode.SetParentNodeID(phaseNode.GetID())
-	    vectorNode.SetName(NAME_VECTOR)
 	    vectorNode.SetLevel('Subseries')
 	    vectorNode.SetAttribute('FilePath',vectorDirectory+file)
+	    if int(file[index-4]) == phase:
+	      vectorNode.SetName(NAME_VECTOR)
+	    elif int(file[index-1]) == phase:
+	      vectorNode.SetName(NAME_INVVECTOR)
+	    else:
+	      print file[index-1] + " can't associate with phase"
+	      continue
+	    
 	   #vectorNode.SetOwnerPluginName('Volumes')
 	    slicer.mrmlScene.AddNode(vectorNode)
       
-	
+      n += 1
+      if n > 3:
+	break
     #for fileName in os.listdir(fileNameGD):
     print "Subject Hierarchy Created"
     return
