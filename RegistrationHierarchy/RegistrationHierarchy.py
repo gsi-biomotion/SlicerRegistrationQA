@@ -128,7 +128,16 @@ class RegistrationHierarchyWidget:
     self.columnView.setModel(self.model)
     
     #
-    # Load CTX File Button
+    # Automatic registration
+    #
+    self.automaticRegistrationButton = qt.QPushButton("Automatic registration all phases.")
+    self.automaticRegistrationButton.toolTip = "Will load and register all phases."
+    self.automaticRegistrationButton.enabled = True
+    self.parametersFormLayout.addRow(self.automaticRegistrationButton)
+    
+    
+    #
+    # Make DIRQA on all phases
     #
     self.dirqaAllPhaseButton = qt.QPushButton("Make DIRQA on all phases.")
     self.dirqaAllPhaseButton.toolTip = "Will make dirqa on all phases in registration hierarchy node."
@@ -147,6 +156,7 @@ class RegistrationHierarchyWidget:
     self.computeAction.enabled = True
     self.computeAction.visible = True
     
+    self.automaticRegistrationButton.connect('clicked(bool)', self.onAutomaticRegistrationButton)
     self.dirqaAllPhaseButton.connect('clicked(bool)', self.onDirqaAllPhaseButton)
     self.regHierarchyComboBox.connect("currentNodeChanged(vtkMRMLNode*)", self.setStandardModel)
     self.contextMenu.connect('triggered(QAction*)', self.onContextMenuClicked)
@@ -161,11 +171,17 @@ class RegistrationHierarchyWidget:
     self.layout.addStretch(1)
     
     
+  def onAutomaticRegistrationButton(self):
+    logic = RegistrationHierarchyLogic()
+    logic.automaticRegistration(self.regHierarchy)
+    self.setStandardModel(self.regHierarchy)
+    
+  
   def onDirqaAllPhaseButton(self):
     logic = RegistrationHierarchyLogic()
     
     qt.QApplication.setOverrideCursor(qt.QCursor(3))
-    pbar = self.progressBar(("DIRQA on all phases"))
+    pbar = progressBar(("DIRQA on all phases"))
     pbar.setValue(0)
     pbar.show()
     
@@ -175,6 +191,7 @@ class RegistrationHierarchyWidget:
     #Load reference phaseHierarchyNode
     refPhaseNode = logic.getReferencePhaseFromHierarchy(self.regHierarchy)
     #Loop through all phases:
+    
     for phaseItem in self.phaseItems:     
       pbar.setValue(n/nPhases)
       phaseHierarchyNode = phaseItem.data()
@@ -290,13 +307,7 @@ class RegistrationHierarchyWidget:
     pass
 
 
-  def progressBar(self,message):
-    progressBar = qt.QProgressDialog(slicer.util.mainWindow())
-    progressBar.setModal(True)
-    progressBar.setMinimumDuration(150)
-    progressBar.setLabelText(message)
-    qt.QApplication.processEvents()
-    return progressBar
+  
   
   def onReload(self,moduleName="RegistrationHierarchy"):
     """Generic reload method for any scripted module.
@@ -331,6 +342,181 @@ class RegistrationHierarchyLogic:
   def __init__(self):
     pass
   
+  def setParameters(self):
+    parameters = {}
+    parameters["plmslc_fixed_fiducials"] = ''
+    parameters["plmslc_moving_fiducials"] = ''
+    
+    
+    parameters["plmslc_output_vf"] = ''
+    parameters["plmslc_output_warped"] = ''
+    parameters["plmslc_output_vf_f"] = ''
+    
+    parameters["enable_stage_0"] = False
+    
+    parameters["stage_1_resolution"] = '2,2,2'
+    parameters["stage_1_grid_size"] = '100'
+    parameters["stage_1_regularization"] = '0.005'
+    parameters["stage_1_its"] = '20'
+    parameters["plmslc_output_warped_1"] = ''
+    
+    parameters["enable_stage_2"] = False
+    parameters["stage_2_resolution"] = '1,1,1'
+    parameters["stage_2_grid_size"] = '15'
+    parameters["stage_1_regularization"] = '0.005'
+    parameters["stage_2_its"] = '100'
+    parameters["plmslc_output_warped_2"] = ''
+      
+    parameters["enable_stage_3"] = False
+    parameters["stage_3_resolution"] = '1,1,1'
+    parameters["stage_3_grid_size"] = '15'
+    parameters["stage_1_regularization"] = '0.005'
+    parameters["stage_3_its"] = '100'
+    parameters["plmslc_output_warped_3"] = ''
+    return parameters
+  
+  def automaticRegistration(self,regHierarchy):
+    if not regHierarchy:
+      print "No registration Hierarchy"
+      return
+
+    patientName = regHierarchy.GetAttribute("PatientName")
+    
+    refPhaseNode = self.getReferencePhaseFromHierarchy(regHierarchy)
+    referenceNumber = regHierarchy.GetAttribute("ReferenceNumber")
+    if not refPhaseNode:
+      print "Can't get reference node."
+      return
+      
+    nPhases = regHierarchy.GetNumberOfChildrenNodes()
+    if nPhases < 1:
+      print "No children nodes."
+      return
+     
+    pbar = progressBar(("Registering all phases"))
+    pbar.setValue(0)
+    pbar.show()
+    #Loop through all phases:
+    n = 1
+    for i in range(0,nPhases):
+      phaseHierarchyNode = regHierarchy.GetNthChildNode(i)   
+      pbar.setValue(n/(nPhases+1))
+      
+      if phaseHierarchyNode.GetID() == regHierarchy.GetAttribute(NAME_REFPHASE):
+	print "Skiping reference phase"
+	continue
+  
+      
+      phaseNumber = phaseHierarchyNode.GetAttribute('PhaseNumber')
+      if phaseNumber == '10':
+	continue
+      
+      phaseNode = self.getVolumeFromChild(phaseHierarchyNode,NAME_CT)
+      if not phaseNode:
+	print "Can't load phase from: " + phaseHierarchyNode.GetNameWithoutPostfix()
+	continue
+      
+      warpedOn = True
+      cbtOn = True
+      mhaOn = False
+      
+      exportList = [warpedOn,cbtOn,mhaOn]
+      
+      parameters = self.setParameters()
+      parameters["plmslc_fixed_volume"] = refPhaseNode.GetID()
+      parameters["plmslc_moving_volume"] = phaseNode.GetID()
+      registrationName = patientName + "_" + phaseNumber + "_" + referenceNumber
+      self.register(parameters,registrationName,regHierarchy,phaseHierarchyNode,exportList)
+      break
+      #Vice versa
+      parameters = self.setParameters()
+      parameters["plmslc_fixed_volume"] = phaseNode.GetID()
+      parameters["plmslc_moving_volume"] = refPhaseNode.GetID()
+      registrationName = patientName + "_" + referenceNumber + "_" + phaseNumber
+      self.register(parameters,registrationName,regHierarchy,phaseHierarchyNode,exportList)
+
+      n += 1
+      if n > 1:
+	break
+    pbar.close()
+      
+
+  def register(self,parameters,registrationName,regHierarchy,phaseHierarchyNode,exportList):
+      warpedOn = exportList[0]
+      cbtOn = exportList[1]
+      mhaOn = exportList[2]
+      
+      if warpedOn:
+	warpVolume = slicer.vtkMRMLScalarVolumeNode()
+        slicer.mrmlScene.AddNode( warpVolume )
+        storageNode = warpVolume.CreateDefaultStorageNode()
+        slicer.mrmlScene.AddNode ( storageNode )
+        warpVolume.SetAndObserveStorageNodeID( storageNode.GetID() )
+        warpName = registrationName+'_warped'
+        warpName = slicer.mrmlScene.GenerateUniqueName(warpName)
+        warpVolume.SetName(warpName)   
+        parameters["plmslc_output_warped"] = warpVolume.GetID()
+        
+      if cbtOn:
+	vectorVolume = slicer.vtkMRMLGridTransformNode()
+	slicer.mrmlScene.AddNode( vectorVolume )
+	storageNode = vectorVolume.CreateDefaultStorageNode()
+	slicer.mrmlScene.AddNode ( storageNode )
+	vectorVolume.SetAndObserveStorageNodeID( storageNode.GetID() )
+        vectorVolume.SetName( registrationName )
+        parameters["plmslc_output_vf"] = vectorVolume.GetID()
+        
+      if mhaOn:
+	vf_F_name = regHierarchy.GetAttribute("DIR"+NAME_VECTOR)+registrationName+'_vf.mha'
+	parameters["plmslc_output_vf_f"] = vf_F_name
+
+      #run plastimatch registration
+      plmslcRegistration= slicer.modules.plastimatch_slicer_bspline
+      slicer.cli.run(plmslcRegistration, None, parameters,wait_for_completion=True)
+      
+      #save and remove nodes
+      if warpedOn:
+	warpDirectory = regHierarchy.GetAttribute("DIR" + NAME_WARP )
+	if self.saveAndWriteNode(warpVolume,phaseHierarchyNode,NAME_WARP,warpDirectory):
+	  slicer.mrmlScene.RemoveNode(warpVolume)
+	  print "Saved Warped Image."
+      
+      if cbtOn:
+	vectorDirectory = regHierarchy.GetAttribute("DIR" + NAME_VECTOR )
+	if self.saveAndWriteNode(vectorVolume,phaseHierarchyNode,NAME_VECTOR,vectorDirectory,False):
+	  slicer.mrmlScene.RemoveNode(vectorVolume)
+	  print "Saved vector field."
+	
+  
+  def saveAndWriteNode(self,node,hierarchyNode,string,directory,cbtOn = False):
+    if not node or not hierarchyNode or not string:
+      print "Not enough input parameters."
+      return False
+      
+    childNode = self.createChild(hierarchyNode,string)
+    
+    if not os.path.exists(directory):
+      print "No path: " + directory
+      return False
+      
+    print "Saving " + node.GetName()
+    #Special Case
+    if cbtOn:
+      import SaveTRiP
+      saveTripLogic = SaveTRiP.SaveTRiPLogic()
+      saveTripLogic.writeTRiPdata(directory,extension='.cbt',nodeID = node.GetID() , aix = True)
+      return True
+    
+    ending = ''
+    if string == NAME_WARP or string == NAME_INVWARP:
+      ending = '.nrrd'
+      
+    filePath = directory + node.GetName() + ending
+    if slicer.util.saveNode(node,filePath):
+      childNode.SetAttribute("FilePath",filePath)
+      return True
+      
+
   def computeDIRQAfromHierarchyNode(self,hierarchyNode,referenceNode):
     #Look for DIRQA module
     try:
@@ -388,7 +574,6 @@ class RegistrationHierarchyLogic:
     newHierarchy.SetParentNodeID(hierarchyNode.GetID())
     newHierarchy.SetName(string)
     newHierarchy.SetLevel('Subseries')
-    newHierarchy.SetAttribute('DICOMHierarchy.SeriesModality','CT')
     #TODO: Addd directories
     #newHierarchy.SetAttribute('FilePath',ctDirectory+fileName)
     #newHierarchy.SetOwnerPluginName('Volumes')
@@ -454,8 +639,10 @@ class RegistrationHierarchyLogic:
       #Special case for ctx files
       if filePath.find('ctx') > -1:
 	import LoadCTX
+	import time
         loadLogic = LoadCTX.LoadCTXLogic()
         volume = slicer.util.getNode(loadLogic.loadCube(filePath,0))
+        time.sleep(10)
         if volume:
 	   #Write it in hierarchy node for later use
 	  hierarchyNode.SetAssociatedNodeID(volume.GetID())
@@ -545,3 +732,11 @@ class RegistrationHierarchyTest(unittest.TestCase):
     logic = RegistrationHierarchyLogic()
     self.assertTrue( logic.hasImageData(volumeNode) )
     self.delayDisplay('Test passed!')
+    
+def progressBar(message):
+    progressBar = qt.QProgressDialog(slicer.util.mainWindow())
+    progressBar.setModal(True)
+    progressBar.setMinimumDuration(150)
+    progressBar.setLabelText(message)
+    qt.QApplication.processEvents()
+    return progressBar

@@ -143,13 +143,13 @@ class ReadRegistrationNodeWidget:
     self.pathWarpedImages = qt.QLineEdit()     
     self.pathWarpedImages.setToolTip( "Input the path to warp images ctDirectory" )
     self.pathWarpedImages.text = ''
-    parametersFormLayout.addRow("Patient Name:", self.pathWarpedImages)
+    parametersFormLayout.addRow("Warp images directory path:", self.pathWarpedImages)
     
     # Vector fields ctDirectory
     self.pathVectorFields = qt.QLineEdit()     
     self.pathVectorFields.setToolTip( "Input the path to vector fields ctDirectory" )
     self.pathVectorFields.text = ''
-    parametersFormLayout.addRow("Patient Name:", self.pathVectorFields)
+    parametersFormLayout.addRow("Vector field directory path", self.pathVectorFields)
     
     #
     # Create subject hierarchy
@@ -235,7 +235,7 @@ class ReadRegistrationNodeLogic:
       print ctDirectory + "Doesn't exist"
       return
       
-    referencePhase = 0
+    referencePhase = "00"
     #Manual created for now:
     dirqaDirectory = vectorDirectory
     
@@ -256,10 +256,10 @@ class ReadRegistrationNodeLogic:
     registrationNode.SetAttribute('DIR' + NAME_VECTOR,vectorDirectory)
     registrationNode.SetAttribute('DIR' + NAME_DIRQA,dirqaDirectory)
     
-    registrationNode.SetAttribute('ReferencePhase',str(referencePhase))
+    registrationNode.SetAttribute('ReferenceNumber',referencePhase)
+    registrationNode.SetAttribute('PatientName',patientName)
     slicer.mrmlScene.AddNode(registrationNode)
     
-    n = 1
     
     for fileName in os.listdir(ctDirectory):
       
@@ -280,19 +280,17 @@ class ReadRegistrationNodeLogic:
       if not index > -1:
 	continue
       #Try to find out, which phase do we have
-      try:
-	phase = int(fileName[index-1])
-      except:
-	print fileName[index-1]
+      phase = fileName[index-2:index]
 	#phase = 0
 
       #Create New phase in subject hierarchy
       phaseNode = vtkMRMLSubjectHierarchyNode()
       phaseNode.SetParentNodeID(registrationNode.GetID())
-      phaseNode.SetName('Phase_'+str(phase)+'0%')
+      phaseNode.SetName('Phase_'+phase)
       phaseNode.SetLevel('Series')
       #phaseNode.SetAttribute('DICOMHierarchy.SeriesModality','CT')
       phaseNode.SetAttribute('Directory',ctDirectory)
+      phaseNode.SetAttribute('PhaseNumber',phase)
       #phaseNode.SetOwnerPluginName('Volumes')
       slicer.mrmlScene.AddNode(phaseNode)
       
@@ -325,12 +323,11 @@ class ReadRegistrationNodeLogic:
 	    warpNode.SetAttribute('DICOMHierarchy.SeriesModality','CT')
 	    warpNode.SetAttribute('FilePath',warpDirectory+file)
 	    #Find out warpedimage or invWarpedImage
-	    if file.find('mov0'+str(phase)) > -1:
+	    if file.find('mov'+phase) > -1:
 	      warpNode.SetName(NAME_WARP)
-	    elif file.find('fix0'+str(phase)) > -1:
+	    elif file.find('fix'+phase) > -1:
 	      warpNode.SetName(NAME_INVWARP)
 	    else:
-	      print "Wrong image name."
 	      continue
 	   #warpNode.SetOwnerPluginName('Volumes')
 	    slicer.mrmlScene.AddNode(warpNode)
@@ -343,20 +340,16 @@ class ReadRegistrationNodeLogic:
 	    vectorNode.SetParentNodeID(phaseNode.GetID())
 	    vectorNode.SetLevel('Subseries')
 	    vectorNode.SetAttribute('FilePath',vectorDirectory+file)
-	    if int(file[index-4]) == phase:
+	    if file[index-4] == phase:
 	      vectorNode.SetName(NAME_VECTOR)
-	    elif int(file[index-1]) == phase:
+	    elif file[index-1] == phase:
 	      vectorNode.SetName(NAME_INVVECTOR)
 	    else:
-	      print file[index-1] + " can't associate with phase"
 	      continue
 	    
 	   #vectorNode.SetOwnerPluginName('Volumes')
 	    slicer.mrmlScene.AddNode(vectorNode)
       
-      n += 1
-      if n > 3:
-	break
     #for fileName in os.listdir(fileNameGD):
     print "Subject Hierarchy Created"
     return
