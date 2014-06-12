@@ -203,10 +203,7 @@ class RegistrationHierarchyWidget:
     pbar.close()
     self.setStandardModel(self.regHierarchy)
     qt.QApplication.restoreOverrideCursor()
-      
-    
 
-    
   def showMenu(self, pos):
     #index = self.columnView.selectionModel().currentIndex()
     #For phase enable option to compute everything
@@ -307,8 +304,6 @@ class RegistrationHierarchyWidget:
     pass
 
 
-  
-  
   def onReload(self,moduleName="RegistrationHierarchy"):
     """Generic reload method for any scripted module.
     ModuleWizard will subsitute correct default moduleName.
@@ -327,7 +322,6 @@ class RegistrationHierarchyWidget:
       qt.QMessageBox.warning(slicer.util.mainWindow(),
           "Reload and Test", 'Exception!\n\n' + str(e) + "\n\nSee Python Console for Stack Trace")
 
-
 #
 # RegistrationHierarchyLogic
 #
@@ -341,45 +335,15 @@ class RegistrationHierarchyLogic:
   """
   def __init__(self):
     pass
-  
-  def setParameters(self):
-    parameters = {}
-    parameters["plmslc_fixed_fiducials"] = ''
-    parameters["plmslc_moving_fiducials"] = ''
-    
-    
-    parameters["plmslc_output_vf"] = ''
-    parameters["plmslc_output_warped"] = ''
-    parameters["plmslc_output_vf_f"] = ''
-    
-    parameters["enable_stage_0"] = False
-    
-    parameters["stage_1_resolution"] = '2,2,2'
-    parameters["stage_1_grid_size"] = '100'
-    parameters["stage_1_regularization"] = '0.005'
-    parameters["stage_1_its"] = '20'
-    parameters["plmslc_output_warped_1"] = ''
-    
-    parameters["enable_stage_2"] = False
-    parameters["stage_2_resolution"] = '1,1,1'
-    parameters["stage_2_grid_size"] = '15'
-    parameters["stage_1_regularization"] = '0.005'
-    parameters["stage_2_its"] = '100'
-    parameters["plmslc_output_warped_2"] = ''
-      
-    parameters["enable_stage_3"] = False
-    parameters["stage_3_resolution"] = '1,1,1'
-    parameters["stage_3_grid_size"] = '15'
-    parameters["stage_1_regularization"] = '0.005'
-    parameters["stage_3_its"] = '100'
-    parameters["plmslc_output_warped_3"] = ''
-    return parameters
-  
+
   def automaticRegistration(self,regHierarchy):
     if not regHierarchy:
       print "No registration Hierarchy"
       return
 
+    warpedOn = True
+    cbtOn = True
+    mhaOn = False
     patientName = regHierarchy.GetAttribute("PatientName")
     
     refPhaseNode = self.getReferencePhaseFromHierarchy(regHierarchy)
@@ -393,14 +357,26 @@ class RegistrationHierarchyLogic:
       print "No children nodes."
       return
      
+    regParameters = registrationParameters(patientName,refPhaseNode, referenceNumber)
+    
+    regParameters.warpDirectory = regHierarchy.GetAttribute("DIR" + NAME_WARP )
+    regParameters.vectorDirectory = regHierarchy.GetAttribute("DIR" + NAME_VECTOR )
+    
+    if warpedOn:
+      regParameters.setWarpVolume()
+    
+    if cbtOn:
+      regParameters.setVectorVolume()
+      
+    regParameters.mhaOn = mhaOn
+    
     pbar = progressBar(("Registering all phases"))
     pbar.setValue(0)
     pbar.show()
     #Loop through all phases:
-    n = 1
     for i in range(0,nPhases):
       phaseHierarchyNode = regHierarchy.GetNthChildNode(i)   
-      pbar.setValue(n/(nPhases+1))
+      pbar.setValue(i/nPhases)
       
       if phaseHierarchyNode.GetID() == regHierarchy.GetAttribute(NAME_REFPHASE):
 	print "Skiping reference phase"
@@ -408,93 +384,35 @@ class RegistrationHierarchyLogic:
   
       
       phaseNumber = phaseHierarchyNode.GetAttribute('PhaseNumber')
-      if phaseNumber == '10':
-	continue
       
       phaseNode = self.getVolumeFromChild(phaseHierarchyNode,NAME_CT)
       if not phaseNode:
 	print "Can't load phase from: " + phaseHierarchyNode.GetNameWithoutPostfix()
 	continue
       
-      warpedOn = True
-      cbtOn = True
-      mhaOn = False
+      regParameters.movingNode = phaseNode
+      regParameters.movingNumber = phaseNumber
+      regParameters.movingHierarchy = phaseHierarchyNode
       
-      exportList = [warpedOn,cbtOn,mhaOn]
-      
-      parameters = self.setParameters()
-      parameters["plmslc_fixed_volume"] = refPhaseNode.GetID()
-      parameters["plmslc_moving_volume"] = phaseNode.GetID()
-      registrationName = patientName + "_" + phaseNumber + "_" + referenceNumber
-      self.register(parameters,registrationName,regHierarchy,phaseHierarchyNode,exportList)
-      break
-      #Vice versa
-      parameters = self.setParameters()
-      parameters["plmslc_fixed_volume"] = phaseNode.GetID()
-      parameters["plmslc_moving_volume"] = refPhaseNode.GetID()
-      registrationName = patientName + "_" + referenceNumber + "_" + phaseNumber
-      self.register(parameters,registrationName,regHierarchy,phaseHierarchyNode,exportList)
 
-      n += 1
-      if n > 1:
-	break
+      regParameters.register()
+      slicer.mrmlScene.RemoveNode(phaseNode)
+
+    slicer.mrmlScene.RemoveNode(regParameters.warpVolume)
+    slicer.mrmlScene.RemoveNode(regParameters.vectorVolume)
     pbar.close()
-      
 
-  def register(self,parameters,registrationName,regHierarchy,phaseHierarchyNode,exportList):
-      warpedOn = exportList[0]
-      cbtOn = exportList[1]
-      mhaOn = exportList[2]
-      
-      if warpedOn:
-	warpVolume = slicer.vtkMRMLScalarVolumeNode()
-        slicer.mrmlScene.AddNode( warpVolume )
-        storageNode = warpVolume.CreateDefaultStorageNode()
-        slicer.mrmlScene.AddNode ( storageNode )
-        warpVolume.SetAndObserveStorageNodeID( storageNode.GetID() )
-        warpName = registrationName+'_warped'
-        warpName = slicer.mrmlScene.GenerateUniqueName(warpName)
-        warpVolume.SetName(warpName)   
-        parameters["plmslc_output_warped"] = warpVolume.GetID()
-        
-      if cbtOn:
-	vectorVolume = slicer.vtkMRMLGridTransformNode()
-	slicer.mrmlScene.AddNode( vectorVolume )
-	storageNode = vectorVolume.CreateDefaultStorageNode()
-	slicer.mrmlScene.AddNode ( storageNode )
-	vectorVolume.SetAndObserveStorageNodeID( storageNode.GetID() )
-        vectorVolume.SetName( registrationName )
-        parameters["plmslc_output_vf"] = vectorVolume.GetID()
-        
-      if mhaOn:
-	vf_F_name = regHierarchy.GetAttribute("DIR"+NAME_VECTOR)+registrationName+'_vf.mha'
-	parameters["plmslc_output_vf_f"] = vf_F_name
-
-      #run plastimatch registration
-      plmslcRegistration= slicer.modules.plastimatch_slicer_bspline
-      slicer.cli.run(plmslcRegistration, None, parameters,wait_for_completion=True)
-      
-      #save and remove nodes
-      if warpedOn:
-	warpDirectory = regHierarchy.GetAttribute("DIR" + NAME_WARP )
-	if self.saveAndWriteNode(warpVolume,phaseHierarchyNode,NAME_WARP,warpDirectory):
-	  slicer.mrmlScene.RemoveNode(warpVolume)
-	  print "Saved Warped Image."
-      
-      if cbtOn:
-	vectorDirectory = regHierarchy.GetAttribute("DIR" + NAME_VECTOR )
-	if self.saveAndWriteNode(vectorVolume,phaseHierarchyNode,NAME_VECTOR,vectorDirectory,False):
-	  slicer.mrmlScene.RemoveNode(vectorVolume)
-	  print "Saved vector field."
 	
   
-  def saveAndWriteNode(self,node,hierarchyNode,string,directory,cbtOn = False):
+  def saveAndWriteNode(self,node,hierarchyNode,string,filePath,cbtOn = False):
     if not node or not hierarchyNode or not string:
       print "Not enough input parameters."
       return False
       
     childNode = self.createChild(hierarchyNode,string)
+    childNode.SetAttribute("FilePath",filePath)
     
+    directory = os.path.dirname(os.path.realpath(filePath))
     if not os.path.exists(directory):
       print "No path: " + directory
       return False
@@ -502,16 +420,12 @@ class RegistrationHierarchyLogic:
     print "Saving " + node.GetName()
     #Special Case
     if cbtOn:
+      
       import SaveTRiP
       saveTripLogic = SaveTRiP.SaveTRiPLogic()
       saveTripLogic.writeTRiPdata(directory,extension='.cbt',nodeID = node.GetID() , aix = True)
       return True
     
-    ending = ''
-    if string == NAME_WARP or string == NAME_INVWARP:
-      ending = '.nrrd'
-      
-    filePath = directory + node.GetName() + ending
     if slicer.util.saveNode(node,filePath):
       childNode.SetAttribute("FilePath",filePath)
       return True
@@ -639,10 +553,8 @@ class RegistrationHierarchyLogic:
       #Special case for ctx files
       if filePath.find('ctx') > -1:
 	import LoadCTX
-	import time
         loadLogic = LoadCTX.LoadCTXLogic()
         volume = slicer.util.getNode(loadLogic.loadCube(filePath,0))
-        time.sleep(10)
         if volume:
 	   #Write it in hierarchy node for later use
 	  hierarchyNode.SetAssociatedNodeID(volume.GetID())
@@ -732,6 +644,147 @@ class RegistrationHierarchyTest(unittest.TestCase):
     logic = RegistrationHierarchyLogic()
     self.assertTrue( logic.hasImageData(volumeNode) )
     self.delayDisplay('Test passed!')
+    
+#Class that holds all info for registration 
+class registrationParameters():
+    def __init__(self,patientName,referenceNode,referenceNumber):
+      self.patientName = patientName
+      self.referenceNode = referenceNode
+      self.referenceNumber = referenceNumber
+      self.movingNode = None
+      self.movingNumber = ''
+      self.movingHierarchy = None
+      self.parameters = {}
+      self.warpVolume = None
+      self.warpDirectory = ''
+      self.vectorVolume = None
+      self.vectorDirectory = ''
+      self.vf_F_name = ''
+      self.mhaOn = False
+
+    def setWarpVolume(self):
+      warpVolume = slicer.vtkMRMLScalarVolumeNode()
+      slicer.mrmlScene.AddNode( warpVolume )
+      storageNode = warpVolume.CreateDefaultStorageNode()
+      slicer.mrmlScene.AddNode ( storageNode )
+      warpVolume.SetAndObserveStorageNodeID( storageNode.GetID() )
+      self.warpVolume = warpVolume
+      
+    def setVectorVolume(self):
+      vectorVolume = slicer.vtkMRMLGridTransformNode()
+      slicer.mrmlScene.AddNode( vectorVolume )
+      storageNode = vectorVolume.CreateDefaultStorageNode()
+      slicer.mrmlScene.AddNode ( storageNode )
+      vectorVolume.SetAndObserveStorageNodeID( storageNode.GetID() )
+      self.vectorVolume = vectorVolume
+      
+    def register(self):
+      if not self.referenceNode or not self.movingNode:
+	print "Not enough parameters"
+	return
+	
+      registrationName = self.patientName + "_" + self.movingNumber + "_" + self.referenceNumber
+      if self.warpVolume:
+	self.warpVolume.SetName(registrationName+"_warped")
+      if self.vectorVolume:
+	self.vectorVolume.SetName(registrationName)
+      if self.mhaOn:
+	self.vf_F_name = self.vectorDirectory + registrationName + "_vf.mha"
+
+      self.setParameters()
+      #run plastimatch registration
+      plmslcRegistration= slicer.modules.plastimatch_slicer_bspline
+      slicer.cli.run(plmslcRegistration, None, self.parameters, wait_for_completion=True)
+      #save nodes
+      self.saveNodes()
+      #Switch
+      self.switchPhase()
+      
+      registrationName = self.patientName + "_" + self.referenceNumber + "_"+ self.movingNumber 
+      if self.warpVolume:
+	self.warpVolume.SetName(registrationName+"_warped")
+      if self.vectorVolume:
+	self.vectorVolume.SetName(registrationName)
+      if self.mhaOn:
+	self.vf_F_name = self.vectorDirectory + registrationName + "_vf.mha"
+
+      slicer.cli.run(plmslcRegistration, None, self.parameters, wait_for_completion=True)
+      #save nodes
+      self.saveNodes()
+      
+	  
+    def saveNodes(self):
+      logic = RegistrationHierarchyLogic()
+      if self.warpVolume:
+	if not self.warpDirectory:
+	  print "No directory"
+	  return	  
+	filePath = self.warpDirectory + self.warpVolume.GetName() + ".nrrd"
+	if logic.saveAndWriteNode(self.warpVolume,self.movingHierarchy,NAME_WARP,filePath):
+	  print "Saved Warped Image " + self.warpVolume.GetName()
+      
+      if self.vectorVolume:
+	if not self.vectorDirectory:
+	  print "No directory"
+	  return	  
+	filePath = self.vectorDirectory + self.vectorVolume.GetName() + "_x.ctx"
+	if logic.saveAndWriteNode(self.vectorVolume,self.movingHierarchy,NAME_VECTOR,filePath,True):
+	  print "Saved vector field."
+      
+    
+    def switchPhase(self):
+      if not self.parameters:
+	print "No parameters"
+	return
+	
+      self.parameters["plmslc_fixed_volume"] = self.movingNode.GetID()
+      self.parameters["plmslc_moving_volume"] = self.referenceNode.GetID()
+
+    def setParameters(self):
+      parameters = {}
+      
+      parameters["plmslc_fixed_volume"] = self.referenceNode.GetID()
+      parameters["plmslc_moving_volume"] = self.movingNode.GetID()
+
+      parameters["plmslc_fixed_fiducials"] = ''
+      parameters["plmslc_moving_fiducials"] = ''
+
+      if self.warpVolume:
+	parameters["plmslc_output_warped"] = self.warpVolume
+      else:
+	parameters["plmslc_output_warped"] = ''
+      if self.vectorVolume:
+        parameters["plmslc_output_vf"] = self.vectorVolume
+      else:
+	parameters["plmslc_output_vf"] = ''
+      
+      if not self.vectorVolume and self.vf_F_name:
+        parameters["plmslc_output_vf_f"] = self.vf_F_name
+      else:
+	parameters["plmslc_output_vf_f"] = self.vf_F_name
+      
+      parameters["enable_stage_0"] = False
+      
+      parameters["stage_1_resolution"] = '4,4,2'
+      parameters["stage_1_grid_size"] = '50'
+      parameters["stage_1_regularization"] = '0.005'
+      parameters["stage_1_its"] = '200'
+      parameters["plmslc_output_warped_1"] = ''
+      
+      parameters["enable_stage_2"] = True
+      parameters["stage_2_resolution"] = '1,1,1'
+      parameters["stage_2_grid_size"] = '15'
+      parameters["stage_1_regularization"] = '0.005'
+      parameters["stage_2_its"] = '100'
+      parameters["plmslc_output_warped_2"] = ''
+	
+      parameters["enable_stage_3"] = False
+      parameters["stage_3_resolution"] = '1,1,1'
+      parameters["stage_3_grid_size"] = '15'
+      parameters["stage_1_regularization"] = '0.005'
+      parameters["stage_3_its"] = '100'
+      parameters["plmslc_output_warped_3"] = ''
+      self.parameters = parameters
     
 def progressBar(message):
     progressBar = qt.QProgressDialog(slicer.util.mainWindow())

@@ -276,7 +276,8 @@ class ReadRegistrationNodeLogic:
         #print "No ending with 0 in fileName"
         #continue
       
-      index = fileName.find('.ctx')
+      #index = fileName.find('.ctx')
+      index = fileName.find('.nrrd')
       if not index > -1:
 	continue
       #Try to find out, which phase do we have
