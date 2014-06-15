@@ -176,8 +176,8 @@ class ReadRegistrationNodeWidget:
     if not filePath == '':
       ctDirectoryName = os.path.dirname(os.path.realpath(filePath))
       self.pathCT.text = ctDirectoryName + '/'
-      self.pathWarpedImages.text = ctDirectoryName + '/WarpedImages/'
-      self.pathVectorFields.text = ctDirectoryName + '/VectorFields/'
+      self.pathWarpedImages.text = ctDirectoryName + '/Registration/4D/'
+      self.pathVectorFields.text = ctDirectoryName + '/Registration/4D/'
       #self.ctDirectoryName = ctDirectoryName
     else:
       print "No input file"
@@ -283,7 +283,7 @@ class ReadRegistrationNodeLogic:
       #Try to find out, which phase do we have
       phase = fileName[index-2:index]
 	#phase = 0
-
+	
       #Create New phase in subject hierarchy
       phaseNode = vtkMRMLSubjectHierarchyNode()
       phaseNode.SetParentNodeID(registrationNode.GetID())
