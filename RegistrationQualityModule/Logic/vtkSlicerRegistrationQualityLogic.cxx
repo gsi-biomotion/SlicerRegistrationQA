@@ -27,6 +27,11 @@
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLSliceLogic.h>
 
+#include <vtkMRMLSubjectHierarchyNode.h>
+#include <vtkSubjectHierarchyConstants.h>
+#include "qSlicerSubjectHierarchyPluginHandler.h"
+#include "qSlicerSubjectHierarchyDefaultPlugin.h"
+
 // VTK includes
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
@@ -47,6 +52,7 @@
 #include <iostream>
 #include <cassert>
 #include <math.h>
+#include <exception>
 
 #include <tinyxml.h>
 #include <DIRQAImage.h>
@@ -300,6 +306,225 @@ void dump(TiXmlNode* n, int indent=0) {
 	}
 }
 
+bool vtkSlicerRegistrationQualityLogic::checkRegistrationIndices(
+	std::vector<vtkSmartPointer<DIRQAImage> >& images,
+	std::vector<vtkSmartPointer<DIRQAImage> >& warped) {
+
+	// Check images for consistent reference-phase-indices
+	std::sort(warped.begin(), warped.end(), DIRQAImage::compareOnFixedIndex);
+	//images have to be and warped-reference-phases are sorted based on the same index
+	// --> easier lookup of corresponding images
+	std::vector<vtkSmartPointer<DIRQAImage> >::iterator correspondingImage = images.begin();
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
+
+		while(correspondingImage!=images.end()) {
+			if((*correspondingImage)->getIndex() != (*it)->getFixedIndex()) {
+				++correspondingImage;
+			} else {
+				break;
+			}
+		}
+
+		if(correspondingImage==images.end()) {
+			cout << "Error: Reference-image for " << **it << " does not exist." << endl;
+			return false;
+		} else {
+			cout << "Info: Reference-image for " << **it << " exists." << endl;
+		}
+	}
+// 	cout << "Info: Reference-images for all warped-images are OK." << endl;
+
+	// Check warped-images for consistent indices (Not two warped versions of the same image/phase)
+	// Corresponding image must exist
+	std::sort(warped.begin(), warped.end(), DIRQAImage::compareOnIndex);
+	int oldIndex=-1;
+	//images and warped are sorted based on the same index --> easier lookup of corresponding images
+	correspondingImage = images.begin();
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
+		int newIndex = (*it)->getIndex();
+		if(newIndex-oldIndex <= 0) {
+			cout << "Error: Warped-image-indices must be unique and >=0." << endl;
+			return false;
+		}
+
+		while(correspondingImage!=images.end()) {
+			if((*correspondingImage)->getIndex() != (*it)->getIndex()) {
+				++correspondingImage;
+			} else {
+				break;
+			}
+		}
+
+		if(correspondingImage==images.end()) {
+			cout << "Error: No corresponding image for " << **it << "." << endl;
+			return false;
+		} else {
+			cout << "Info: Corresponding image for " << **it << " exists." << endl;
+		}
+		oldIndex = newIndex;
+	}
+// 	cout << "Info: Warped-image-indices are OK." << endl;
+	return true;
+}
+
+void vtkSlicerRegistrationQualityLogic::associateImagesToPhase(
+	std::vector<vtkSmartPointer<DIRQAImage> >& images,
+	std::vector<vtkSmartPointer<DIRQAImage> >& warped,
+	std::vector<vtkMRMLSubjectHierarchyNode*>& phaseNodes,
+	std::string shNodeTag) {
+	uint32_t imageIndex = 0;
+
+	// Associate warped images to corresponding phase-SH-nodes
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
+
+		// Find corresponding image-index
+		while(imageIndex < images.size()) {
+			if(images.at(imageIndex)->getIndex() != (*it)->getIndex()) {
+				imageIndex++;
+			} else {
+				break;
+			}
+		}
+		if(imageIndex >= images.size()) {
+			throw std::logic_error("Error: This cannot happen! I just checked it.");
+		}
+
+		// phaseNodes has same order (and size) as images
+		vtkMRMLSubjectHierarchyNode* currentWarpedImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
+			GetMRMLScene(), phaseNodes.at(imageIndex), NULL, shNodeTag.c_str(), NULL);
+		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
+		currentWarpedImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
+	}
+}
+
+void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scene*/) {
+
+	TiXmlDocument doc("/home/brandtts/steeringfile.xml");
+	if(doc.LoadFile()) {
+		// 		dump(&doc);
+	} else {
+		cout << "Fehler beim Laden" << endl;
+		throw std::runtime_error("Unable to read XML-File");
+	}
+
+	vtkMRMLScene* scene = GetMRMLScene();
+
+	// First accumulate all "images" etc. from file
+	std::vector<vtkSmartPointer<DIRQAImage> > images;
+	std::vector<vtkSmartPointer<DIRQAImage> > warped;
+	std::vector<vtkSmartPointer<DIRQAImage> > vector;
+
+	//Create SH-Node
+// 	qSlicerSubjectHierarchyDefaultPlugin* shDefaultPlugin = qSlicerSubjectHierarchyPluginHandler::instance()->defaultPlugin();
+// 	vtkMRMLSubjectHierarchyNode* regSHNode = shDefaultPlugin->createChildNode(NULL,"Registration");
+
+	TiXmlNode *child=doc.FirstChild();
+	while(child!=0 && child->Type()!=TiXmlNode::TINYXML_ELEMENT) child=child->NextSibling();
+
+	// Maps strings ("image", ...) to enum-values (IMAGE, ...)
+	DIRQAImage::initHashMap();
+
+	child=child->FirstChild(/*"image"*/);
+	while(child!=0) {
+		cout << "--constructor--" << endl;
+		vtkSmartPointer<DIRQAImage> di = vtkSmartPointer<DIRQAImage>::New();
+		di->readFromXML(*child);
+		// 		di->load(Internal->VolumesLogic);
+// 		if(di->getImageType()==DIRQAImage::IMAGE) {
+// 			vtkMRMLSubjectHierarchyNode* phaseSHNode = shDefaultPlugin->createChildNode(regSHNode,di->getTag().c_str());
+// 			vtkMRMLSubjectHierarchyNode* imageSHNode = shDefaultPlugin->createChildNode(phaseSHNode,"Image");
+//
+// 		}
+		switch(di->getImageType()) {
+			case DIRQAImage::IMAGE:
+				images.push_back(di);
+				break;
+			case DIRQAImage::WARPED:
+				warped.push_back(di);
+				break;
+			case DIRQAImage::VECTOR:
+				vector.push_back(di);
+				break;
+			default:
+				cout << "Currently not supported!" << endl;
+				di->Delete();
+				break;
+		}
+
+
+		child=child->NextSibling(/*"image"*/);
+	}
+
+	// Report all "images" read from file
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = images.begin(); it!=images.end(); ++it) {
+		cout << "|" << **it << "|" << endl;
+	}
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
+		cout << "|" << **it << "|" << endl;
+	}
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = vector.begin(); it!=vector.end(); ++it) {
+		cout << "|" << **it << "|" << endl;
+	}
+
+	if(images.empty()) {
+		cout << "No images found in xml-file. Nothing to do.";
+		return;
+	}
+
+	{
+		// Check images for consistent indices
+		std::sort(images.begin(), images.end(), DIRQAImage::compareOnIndex);
+		int oldIndex=-1;
+		for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = images.begin(); it!=images.end(); ++it) {
+			int newIndex = (*it)->getIndex();
+			if(newIndex-oldIndex <= 0) {
+				cout << "Error: Image-indices must be unique and >=0." << endl;
+				return;
+			}
+			oldIndex = newIndex;
+		}
+		if( (uint32_t) (images.back()->getIndex() - images.front()->getIndex()) >= images.size()) {
+			cout << "Warning: Image-indices are not contigous." << endl;
+		} else {
+			cout << "Info: Image-indices are OK." << endl;
+		}
+	}
+
+	if(checkRegistrationIndices(images, warped)) {
+		cout << "Info: Warped-image-indices are OK." << endl;
+	} else {
+		return;
+	}
+
+	if(checkRegistrationIndices(images, vector)) {
+		cout << "Info: Vector-image-indices are OK." << endl;
+	} else {
+		return;
+	}
+
+	// Don't need SmartPointers here (Nodes are created within the scene)
+	vtkMRMLSubjectHierarchyNode* registrationSHNode = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
+		scene, NULL, vtkSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_SUBJECT, "Registration", NULL);
+
+	// Each image defines one phase. Phase name like image tag
+	std::vector<vtkMRMLSubjectHierarchyNode*> phaseNodes;
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = images.begin(); it!=images.end(); ++it) {
+		vtkMRMLSubjectHierarchyNode* currentPhase = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
+			scene, registrationSHNode, vtkSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_STUDY,
+			(*it)->getTag().c_str(), NULL
+		);
+		phaseNodes.push_back(currentPhase);
+
+		vtkMRMLSubjectHierarchyNode* currentImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
+			scene, currentPhase, NULL, "Image", NULL);
+		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
+		currentImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
+	}
+
+	associateImagesToPhase(images, warped, phaseNodes, "Warped");
+	associateImagesToPhase(images, vector, phaseNodes, "Vector");
+}
+
 
 //--- Image Checks -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
@@ -308,40 +533,7 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 		throw std::runtime_error("Internal Error, see command line!");
 	}
 
-// 	DIRQAImage di(IMAGE, "/home/brandtts/DIRQAtest.nrrd",
-// 				  "0In", "no comment",0,-1);
-// 	cout << "di=" << di << "|" << endl;
-
-	TiXmlDocument doc("/home/brandtts/steeringfile.xml");
-	if(doc.LoadFile()) {
-// 		dump(&doc);
-	} else {
-		cout << "Fehler beim laden" << endl;
-	}
-
-// 	const TiXmlNode* IterateChildren( const char * value, const TiXmlNode* previous ) const;
-// 	TiXmlNode* IterateChildren( const char * _value, const TiXmlNode* previous ) {
-// 		return const_cast< TiXmlNode* >( (const_cast< const TiXmlNode* >(this))->IterateChildren( _value, previous ) );
-// 	}
-
-	TiXmlNode *child=doc.FirstChild();
-	while(child!=0 && child->Type()!=TiXmlNode::TINYXML_ELEMENT) child=child->NextSibling();
-
-	DIRQAImage::initHashMap();
-	vtkSmartPointer<DIRQAImage> di = DIRQAImage::New();
-
-	child=child->FirstChild(/*"image"*/);
-	while(child!=0) {
-// 		cout << "--dump---------" << endl;
-// 		dump(child);
-		cout << "--constructor--" << endl;
-		di->readFromXML(*child);
-		cout << "--di-----------" << endl;
-		cout << "|" << *(di.GetPointer()) << "|" << endl;
-// 		di->load(Internal->VolumesLogic);
-
-		child=child->NextSibling();
-	}
+	ReadRegistrationXML(/*GetMRMLScene()*/);
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(

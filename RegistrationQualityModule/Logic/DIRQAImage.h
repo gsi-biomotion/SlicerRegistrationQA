@@ -5,6 +5,7 @@
 #include <tinyxml.h>
 
 #include <vtkObject.h>
+#include <vtkSmartPointer.h>
 
 class vtkSlicerVolumesLogic;
 
@@ -18,9 +19,14 @@ public:
 
 	static std::map<std::string,DIRQAImageType> imageTypes;
 
+	vtkTypeMacro(DIRQAImage,vtkObject);
+
 	static DIRQAImage* New();
 
 	static void initHashMap();
+
+	static bool compareOnIndex(vtkSmartPointer<DIRQAImage> lhs, vtkSmartPointer<DIRQAImage> rhs);
+	static bool compareOnFixedIndex(vtkSmartPointer<DIRQAImage> lhs, vtkSmartPointer<DIRQAImage> rhs);
 
 	DIRQAImage();
 	DIRQAImage(TiXmlNode const& n);
@@ -29,6 +35,11 @@ public:
 	~DIRQAImage();
 
 	void readFromXML(TiXmlNode const& n);
+	std::string getNodeID();
+	DIRQAImageType getImageType();
+	std::string getTag();
+	int getIndex();
+	int getFixedIndex();
  	bool isLoaded();
 	void load(vtkSlicerVolumesLogic*);
 

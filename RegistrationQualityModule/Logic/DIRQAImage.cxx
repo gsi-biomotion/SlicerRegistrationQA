@@ -12,7 +12,9 @@ using std::string;
 
 std::map<std::string,DIRQAImage::DIRQAImageType> DIRQAImage::imageTypes;
 
-DIRQAImage::DIRQAImage() {
+DIRQAImage::DIRQAImage()
+: volumeNodeID("")
+, loaded(false){
 
 }
 
@@ -28,7 +30,15 @@ void DIRQAImage::initHashMap() {
 	imageTypes["image"]=IMAGE;
 	imageTypes["warped"]=WARPED;
 	imageTypes["vector"]=VECTOR;
-	imageTypes["jacobian"]=JACOBIAN;/* <<-- WTF!!*/
+	imageTypes["jacobian"]=JACOBIAN;
+}
+
+bool DIRQAImage::compareOnIndex(vtkSmartPointer<DIRQAImage> lhs, vtkSmartPointer<DIRQAImage> rhs) {
+	return lhs->movingIndex < rhs->movingIndex;
+}
+
+bool DIRQAImage::compareOnFixedIndex(vtkSmartPointer<DIRQAImage> lhs, vtkSmartPointer<DIRQAImage> rhs) {
+	return lhs->fixedIndex < rhs->fixedIndex;
 }
 
 void DIRQAImage::readFromXML(TiXmlNode const& n) {
@@ -39,30 +49,33 @@ void DIRQAImage::readFromXML(TiXmlNode const& n) {
 		throw std::runtime_error("Error: Cannot construct DIRQAImage, XMLNode is not of type element");
 	} /*else cout << "DIRQAImage(TiXmlNode): Node is Element" << endl;*/
 
-	switch(imageTypes[nElement->Value()]) {
+	switch(imageTypes.at(nElement->Value())) {
 		case IMAGE:
-			cout << "DIRQAImage(TiXmlNode): Node is \"image\"" << endl;
+// 			cout << "DIRQAImage(TiXmlNode): Node is \"image\"" << endl;
 			imageType = IMAGE;
 			break;
 		case WARPED:
-			cout << "DIRQAImage(TiXmlNode): Node is \"warped\"" << endl;
+// 			cout << "DIRQAImage(TiXmlNode): Node is \"warped\"" << endl;
 			imageType = WARPED;
 			break;
 		case VECTOR:
-			cout << "DIRQAImage(TiXmlNode): Node is \"vector\"" << endl;
+// 			cout << "DIRQAImage(TiXmlNode): Node is \"vector\"" << endl;
 			imageType = VECTOR;
 			break;
 		default:
-			throw std::runtime_error("Error: Cannot construct DIRQAImage, element must be \"image\", \"warped\" or \"vector\"");
+			throw std::runtime_error("Error: Invalid element in xml-File");
 	}
 
 	if(nElement->QueryIntAttribute( "index", &movingIndex ) != TIXML_SUCCESS) {
 		throw std::runtime_error("Error: Integer attribute \"index\" is mandatory in element of type \"image\"");
 	}
 
-	if((imageType == WARPED || imageType == VECTOR)
-		&& nElement->QueryIntAttribute( "reference", &fixedIndex ) != TIXML_SUCCESS) {
-		throw std::runtime_error("Error: Integer attribute \"reference\" is mandatory in element of type \"image\"");
+	//TODO add index sanity check (negative values, ...)
+
+	if(imageType == WARPED || imageType == VECTOR) {
+		if(nElement->QueryIntAttribute( "reference", &fixedIndex ) != TIXML_SUCCESS) {
+			throw std::runtime_error("Error: Integer attribute \"reference\" is mandatory in element of type \"image\"");
+		}
 	} else fixedIndex = 0;
 
 	const TiXmlElement* tmp = nElement->FirstChildElement("file");
@@ -113,13 +126,36 @@ DIRQAImage::~DIRQAImage() {
 
 }
 
+DIRQAImage::DIRQAImageType DIRQAImage::getImageType() {
+	return imageType;
+}
+
+std::string DIRQAImage::getNodeID() {
+	return volumeNodeID;
+}
+
+std::string DIRQAImage::getTag() {
+	return tag;
+}
+
+int DIRQAImage::getIndex() {
+	return movingIndex;
+}
+
+int DIRQAImage::getFixedIndex() {
+	return fixedIndex;
+}
+
 bool DIRQAImage::isLoaded() {
 	return loaded;
 }
 
 void DIRQAImage::load(vtkSlicerVolumesLogic* volumesLogic) {
+	cout << "Loading" << endl;
 	if(!isLoaded()) {
-		volumesLogic->AddArchetypeVolume(fileName.c_str(), tag.c_str(), 0, NULL);
+		cout << "Really Loading" << endl;
+		volumeNodeID = volumesLogic->AddArchetypeVolume(fileName.c_str(), tag.c_str(), 0, NULL)->GetID();
+		cout << "Done Loading" << endl;
 	}
 }
 
@@ -133,7 +169,7 @@ std::ostream& operator<<(std::ostream& os, const DIRQAImage& image) {
 	}
 	os << 	 " " << image.movingIndex << " " <<
 			image.fixedIndex << " " << image.tag << " " <<
-			image.comment << " " << image.fileName;
+			image.comment << " " << image.fileName << " " << image.volumeNodeID;
 
 	return os;
 }

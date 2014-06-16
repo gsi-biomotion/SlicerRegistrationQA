@@ -22,6 +22,8 @@
 class vtkMRMLRegistrationQualityNode;
 // class vtkMRMLVectorVolumeNode;
 class vtkSlicerVolumesLogic;
+class DIRQAImage;
+class vtkMRMLSubjectHierarchyNode;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkSlicerRegistrationQualityLogic :
@@ -37,6 +39,13 @@ public:
 	 * Will either remake or account for scenario some other way
 	 */
 
+	bool checkRegistrationIndices(std::vector<vtkSmartPointer<DIRQAImage> >& images,
+								  std::vector<vtkSmartPointer<DIRQAImage> >& warped);
+	void associateImagesToPhase(std::vector<vtkSmartPointer<DIRQAImage> >& images,
+								std::vector<vtkSmartPointer<DIRQAImage> >& warped,
+								std::vector<vtkMRMLSubjectHierarchyNode*>& phaseNodes,
+								std::string shNodeTag);
+	void ReadRegistrationXML();
 	void SquaredDifference(int state);
 	void FalseColor(int state);
 	void Flicker(int opacity);
