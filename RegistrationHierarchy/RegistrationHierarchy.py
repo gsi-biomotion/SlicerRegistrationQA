@@ -1,6 +1,7 @@
 import os
 import unittest
 from __main__ import vtk, qt, ctk, slicer
+import numpy as np
 
 #
 # RegistrationHierarchy
@@ -16,6 +17,7 @@ NAME_ABSDIFF = 'AbsoluteDifference'
 NAME_JACOBIAN = 'Jacobian'
 NAME_INVCONSIST = 'InverseConsistency'
 NAME_REFPHASE = 'ReferenceHierarchyNode'
+NAME_ROIFILEPATH = 'RoiFilePath'
 NAME_DIRQA = 'DIRQA'
 
 class RegistrationHierarchy:
@@ -179,30 +181,8 @@ class RegistrationHierarchyWidget:
   
   def onDirqaAllPhaseButton(self):
     logic = RegistrationHierarchyLogic()
-    
-    qt.QApplication.setOverrideCursor(qt.QCursor(3))
-    pbar = progressBar(("DIRQA on all phases"))
-    pbar.setValue(0)
-    pbar.show()
-    
-    nPhases = len(self.phaseItems)
-    n = 0
-    
-    #Load reference phaseHierarchyNode
-    refPhaseNode = logic.getReferencePhaseFromHierarchy(self.regHierarchy)
-    #Loop through all phases:
-    
-    for phaseItem in self.phaseItems:     
-      pbar.setValue(n/nPhases)
-      phaseHierarchyNode = phaseItem.data()
-      if phaseHierarchyNode.GetID() == self.regHierarchy.GetAttribute(NAME_REFPHASE):
-	print "Skiping reference phase"
-	continue
-      logic.computeDIRQAfromHierarchyNode(phaseHierarchyNode,refPhaseNode)
-      n += 1
-    pbar.close()
-    self.setStandardModel(self.regHierarchy)
-    qt.QApplication.restoreOverrideCursor()
+    logic.computeDIRQAfromHierarchyNode(self.regHierarchy)
+
 
   def showMenu(self, pos):
     #index = self.columnView.selectionModel().currentIndex()
@@ -401,37 +381,9 @@ class RegistrationHierarchyLogic:
     slicer.mrmlScene.RemoveNode(regParameters.warpVolume)
     slicer.mrmlScene.RemoveNode(regParameters.vectorVolume)
     pbar.close()
-
-	
-  
-  def saveAndWriteNode(self,node,hierarchyNode,string,filePath,cbtOn = False):
-    if not node or not hierarchyNode or not string:
-      print "Not enough input parameters."
-      return False
-      
-    childNode = self.createChild(hierarchyNode,string)
-    childNode.SetAttribute("FilePath",filePath)
-    
-    directory = os.path.dirname(os.path.realpath(filePath))
-    if not os.path.exists(directory):
-      print "No path: " + directory
-      return False
-      
-    print "Saving " + node.GetName()
-    #Special Case
-    if cbtOn:
-      
-      import SaveTRiP
-      saveTripLogic = SaveTRiP.SaveTRiPLogic()
-      saveTripLogic.writeTRiPdata(directory,extension='.cbt',nodeID = node.GetID() , aix = True)
-      return True
-    
-    if slicer.util.saveNode(node,filePath):
-      childNode.SetAttribute("FilePath",filePath)
-      return True
       
 
-  def computeDIRQAfromHierarchyNode(self,hierarchyNode,referenceNode):
+  def computeDIRQAfromHierarchyNode(self,regHierarchy):
     #Look for DIRQA module
     try:
       DIRQALogic = slicer.modules.registrationquality.logic()
@@ -440,42 +392,154 @@ class RegistrationHierarchyLogic:
       sys.stderr.write('Cannot find registrationquality module')
       return
       
-    #for i in range(0,hierarchyNode.GetNumberOfChildrenNodes()):
-      #phaseHierarchyNode = regHierarchy.GetNthChildNode(i)
+    if not regHierarchy:
+      print "No registration Hierarchy"
+      return
 
-    #Do checks if nodes already exist, so you can skip everything
-    warpNode = self.getVolumeFromChild(hierarchyNode,NAME_WARP)
-    if not warpNode:
-      print "Can't load " + NAME_WARP + " from hierarchy node: " + hierarchyNode.GetNameWithoutPostfix()
+    refPhaseNode = self.getReferencePhaseFromHierarchy(regHierarchy)
+    referenceHierarchyNode = slicer.util.getNode(regHierarchy.GetAttribute(NAME_REFPHASE))
+    referenceNumber = regHierarchy.GetAttribute("ReferenceNumber")
+    if not refPhaseNode:
+      print "Can't get reference node."
       return
       
+    #TODO: This needs fix. Now the name of ROI has to be 'R' otherwise it doesn't work.
+    roiNode = slicer.util.getNode('R')
+    if not roiNode:
+      roiFilePath = referenceHierarchyNode.GetAttribute(NAME_ROIFILEPATH)
+      if roiFilePath:
+        slicer.util.loadAnnotationFiducial(roiFilePath)
+        roiNode = slicer.util.getNode('R')
+    
+    nPhases = regHierarchy.GetNumberOfChildrenNodes()
+    if nPhases < 1:
+      print "No children nodes."
+      return
+
+    #Loop through all phases, find biggest changes in vector field:
+    maxVectorNode = None
+    maxPhaseHierarchy = slicer.util.getNode(regHierarchy.GetAttribute('MaxPhaseHierarchy'))
+    
+    maxVectorValue = -1
+    if not maxPhaseHierarchy:
+      #Loading from python module (LoadCTX) takes time. Solution is to load all volumes in advance:
+      self.loadAllChildren(regHierarchy,NAME_VECTOR)
+      print "Starting Loop"
+      for i in range(0,nPhases):
+        phaseHierarchyNode = regHierarchy.GetNthChildNode(i)   
+      
+        if phaseHierarchyNode.GetID() == regHierarchy.GetAttribute(NAME_REFPHASE):
+	  print "Skiping reference phase"
+	  continue
+      
+        vectorNode = self.getVolumeFromChild(phaseHierarchyNode,NAME_VECTOR)
+        if not vectorNode:
+	  print "Can't load phase from: " + phaseHierarchyNode.GetNameWithoutPostfix()
+	  continue
+      
+        #Find out phase with the biggest max value in vector field
+        array = abs(slicer.util.array(vectorNode.GetID()))
+        vectorMax = array.max()
+        if vectorMax > maxVectorValue:
+	  maxVectorNode = vectorNode
+	  print "New value is " + str(maxVectorValue)
+	  maxPhaseHierarchy = phaseHierarchyNode
+	  maxVectorValue = vectorMax
+
+    else:
+      maxVectorNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_VECTOR)
+      print maxVectorNode.GetName()
+      phaseHierarchyNode = maxPhaseHierarchy
+      array = abs(slicer.util.array(maxVectorNode.GetID()))
+      maxVectorValue = array.max()
+	
+    if not maxVectorNode:
+      print "Phase with max vector field could not be found."
+      return
+    else:
+      print "Phase with max vector value: " + phaseHierarchyNode.GetNameWithoutPostfix() + " with: " + str(maxVectorValue) + "mm"
+    
+    
+    regHierarchy.SetAttribute('MaxPhaseHierarchy',maxPhaseHierarchy.GetID())
+    #TODO: Find max value in 3D and compare it with spacing 
+    spacing = maxVectorNode.GetSpacing()
+    if maxVectorValue < spacing[0] and maxVectorValue < spacing[2]:
+      print "All vector field values are smaller than spacing."
+      return
+      
+    
     #AbsoluteDifference
     
     #Check if it's already computed
-    absDiffNode = self.getVolumeFromChild(hierarchyNode,NAME_ABSDIFF)
+    absDiffNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_ABSDIFF)
     if not absDiffNode:
-      absDiffNode = DIRQALogic.AbsoluteDifference(referenceNode,warpNode)
-      if absDiffNode:
-	absDiffHierarchy = self.createChild(hierarchyNode,NAME_ABSDIFF)
-	absDiffHierarchy.SetAssociatedNodeID(absDiffNode.GetID())
+      warpNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_WARP)
+      if warpNode:
+        absDiffNodeWarp = DIRQALogic.AbsoluteDifference(refPhaseNode,warpNode,roiNode)
+      phaseNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_CT)
+      if phaseNode:
+	absDiffNodePhase = DIRQALogic.AbsoluteDifference(refPhaseNode,phaseNode,roiNode)
+      if absDiffNodeWarp and absDiffNodePhase:
+	#TODO: Use ITK filters
+	#arrayWarp = slicer.util.array(absDiffNodeWarp.GetID())
+	#arrayPhase = slicer.util.array(absDiffNodePhase.GetID())
+	
+	##Find relative change of Warped image
+	#arrayWarp[:] = arrayPhase[:] - arrayWarp[:]
+	#maxArray = arrayWarp.max()
+	#minArray = arrayWarp.min()
+	#normFactor = 100 / ( maxArray - minArray)
+	#arrayWarp[:] = (arrayWarp[:] - minArray) * normFactor
+	#absDiffNodeWarp.GetImageData().Modified()
+	
+	#absDiffHierarchy = self.createChild(maxPhaseHierarchy,NAME_ABSDIFF)
+	#absDiffHierarchy.SetAssociatedNodeID(absDiffNodeWarp.GetID())
 	
 	#Statistics
 	statisticsArray = [0,0,0,0]
-	DIRQALogic.CalculateStatistics(absDiffNode,statisticsArray)
+	DIRQALogic.CalculateStatistics(absDiffNodeWarp,statisticsArray)
 	self.writeStatistics(absDiffHierarchy,statisticsArray)
       else:
 	print "Can't compute Absolute Difference."
 
-    ##Jacobian
-    ##Check if it's already computed
-    #jacobianNode = self.getVolumeFromChild(hierarchyNode,NAME_JACOBIAN)
-    #if not absDiffNode:
-      #jacobianNode = DIRQALogic.Jacobian(vectorNode)
-      #if jacobianNode:
-	#jacobianHierarchy = self.createChild(hierarchyNode,NAME_ABSDIFF)
-	#jacobianHierarchy.SetAssociatedNodeID(jacobianNode.GetID())
-      #else:
-	#print "Can't compute Jacobian."
+    return
+    #Jacobian
+    
+    #Check if it's already computed
+    jacobianNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_JACOBIAN)
+    if not jacobianNode:
+      jacobianNode = DIRQALogic.Jacobian(maxVectorNode,roiNode)
+      if jacobianNode:
+	jacobianHierarchy = self.createChild(maxPhaseHierarchy,NAME_JACOBIAN)
+	jacobianHierarchy.SetAssociatedNodeID(jacobianNode.GetID())
+	
+	#Statistics
+	statisticsArray = [0,0,0,0]
+	DIRQALogic.CalculateStatistics(jacobianNode,statisticsArray)
+	self.writeStatistics(jacobianHierarchy,statisticsArray)
+      else:
+	print "Can't compute Jacobian."
+	
+    #Inverse Consistency
+    
+    #Check if it's already computed
+    invConsistNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVCONSIST)
+    if not invConsistNode:
+      invVectorNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVVECTOR)
+      if invVectorNode:
+	invConsistNode = DIRQALogic.InverseConsist(maxVectorNode,invVectorNode,roiNode)
+	if invConsistNode:
+	  invConsistHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVCONSIST)
+	  invConsistHierarchy.SetAssociatedNodeID(invConsistNode.GetID())
+	  
+	  #Statistics
+	  statisticsArray = [0,0,0,0]
+	  DIRQALogic.CalculateStatistics(invConsistNode,statisticsArray)
+	  self.writeStatistics(invConsistHierarchy,statisticsArray)
+	else:
+	  print "Can't compute Inverse Consistency."
+      else:
+	print "Can't load inverse vector field."
 	   
   def writeStatistics(self,hierarchyNode,statisticsArray):
     hierarchyNode.SetAttribute("Mean",str(round(statisticsArray[0],2)))
@@ -527,6 +591,10 @@ class RegistrationHierarchyLogic:
 
     return referenceNode
   
+  def loadAllChildren(self,hierarchyNode,string):
+    for i in range(0,hierarchyNode.GetNumberOfChildrenNodes()):
+       volume = self.getVolumeFromChild(hierarchyNode.GetNthChildNode(i),string)
+  
   def getVolumeFromChild(self,hierarchyNode,string):
     volume = None
     childNode = hierarchyNode.GetChildWithName(hierarchyNode,string)
@@ -559,6 +627,14 @@ class RegistrationHierarchyLogic:
 	   #Write it in hierarchy node for later use
 	  hierarchyNode.SetAssociatedNodeID(volume.GetID())
 	  return volume
+      elif filePath.find('cbt') > -1:
+	import LoadCTX
+        loadLogic = LoadCTX.LoadCTXLogic()
+        volume = slicer.util.getNode(loadLogic.loadCube(filePath,3))
+        if volume:
+	   #Write it in hierarchy node for later use
+	  hierarchyNode.SetAssociatedNodeID(volume.GetID())
+	  return volume
       else:
 	if slicer.util.loadVolume(filePath):
 	  #TODO: Not good solution, needs fix"
@@ -575,6 +651,33 @@ class RegistrationHierarchyLogic:
       print "Can't get file Path from: " + hierarchyNode.GetNameWithoutPostfix()
       return False
     return volume
+    
+  #Save node to disk and write it to subject hierarchy
+  def saveAndWriteNode(self,node,hierarchyNode,string,filePath,cbtOn = False):
+    if not node or not hierarchyNode or not string:
+      print "Not enough input parameters."
+      return False
+      
+    childNode = self.createChild(hierarchyNode,string)
+    childNode.SetAttribute("FilePath",filePath)
+    
+    directory = os.path.dirname(os.path.realpath(filePath))
+    if not os.path.exists(directory):
+      print "No path: " + directory
+      return False
+      
+    print "Saving " + node.GetName()
+    #Special Case
+    if cbtOn:
+      
+      import SaveTRiP
+      saveTripLogic = SaveTRiP.SaveTRiPLogic()
+      saveTripLogic.writeTRiPdata(directory,extension='.cbt',nodeID = node.GetID() , aix = True)
+      return True
+    
+    if slicer.util.saveNode(node,filePath):
+      childNode.SetAttribute("FilePath",filePath)
+      return True
 
 class RegistrationHierarchyTest(unittest.TestCase):
   """
