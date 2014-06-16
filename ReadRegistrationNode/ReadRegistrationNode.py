@@ -18,6 +18,8 @@ NAME_ABSDIFF = 'AbsoluteDifference'
 NAME_JACOBIAN = 'Jacobian'
 NAME_INVCONSIST = 'InverseConsistency'
 NAME_REFPHASE = 'ReferenceHierarchyNode'
+#Roi should be named 'R'
+NAME_ROIFILEPATH = 'RoiFilePath' #If there is region of intrest it should be put under reference phase hierarchy node.
 NAME_DIRQA = 'DIRQA'
 
 #Names for directories are just DIR + NAME_X. I.e. directory for CTs is stored under 'DIRCT' attribute
@@ -312,21 +314,26 @@ class ReadRegistrationNodeLogic:
       #Skip for reference phase
       if phase == referencePhase:
         registrationNode.SetAttribute('ReferenceHierarchyNode',phaseNode.GetID())
+        roiFilePath = ctDirectory + 'R.acsv'
+        if roiFilePath:
+	  phaseNode.SetAttribute('RoiFilePath',roiFilePath)
         continue
       
       numberEnding = '0'
       if os.path.exists(warpDirectory):
+	
 	for file in os.listdir(warpDirectory):
-	  if file.find('nrrd') > -1:
+          index = file.find('_warped.nrrd')
+	  if index > -1:
 	    warpNode = vtkMRMLSubjectHierarchyNode()
 	    warpNode.SetParentNodeID(phaseNode.GetID())
 	    warpNode.SetLevel('Subseries')
 	    warpNode.SetAttribute('DICOMHierarchy.SeriesModality','CT')
 	    warpNode.SetAttribute('FilePath',warpDirectory+file)
 	    #Find out warpedimage or invWarpedImage
-	    if file.find('mov'+phase) > -1:
+	    if file[index-5:index-3] == phase:
 	      warpNode.SetName(NAME_WARP)
-	    elif file.find('fix'+phase) > -1:
+	    elif file[index-2:index] == phase:
 	      warpNode.SetName(NAME_INVWARP)
 	    else:
 	      continue
@@ -341,9 +348,9 @@ class ReadRegistrationNodeLogic:
 	    vectorNode.SetParentNodeID(phaseNode.GetID())
 	    vectorNode.SetLevel('Subseries')
 	    vectorNode.SetAttribute('FilePath',vectorDirectory+file)
-	    if file[index-4] == phase:
+	    if file[index-5:index-3] == phase:
 	      vectorNode.SetName(NAME_VECTOR)
-	    elif file[index-1] == phase:
+	    elif file[index-2:index] == phase:
 	      vectorNode.SetName(NAME_INVVECTOR)
 	    else:
 	      continue
