@@ -23,6 +23,8 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->WarpedVolumeNodeID = NULL;
 	this->OutputModelNodeID = NULL;
 	this->ROINodeID = NULL;
+	this->FiducialNodeID = NULL;
+	this->InvFiducialNodeID = NULL;
 
 	//Checkerboard Parameters
 	this->CheckerboardPattern = 20;
@@ -56,6 +58,8 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetWarpedVolumeNodeID(NULL);
 	this->SetOutputModelNodeID(NULL);
 	this->SetROINodeID(NULL);
+	this->SetFiducialNodeID(NULL);
+	this->SetInvFiducialNodeID(NULL);
 	this->SetCheckerboardVolumeNodeID(NULL);
 	this->SetAbsoluteDiffVolumeNodeID(NULL);
 	this->SetJacobianVolumeNodeID(NULL);
@@ -102,6 +106,14 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 		}
 		if (!strcmp(attName, "ROINodeID")) {
 			this->SetROINodeID(attValue);
+			continue;
+		}
+		if (!strcmp(attName, "FiducialNodeID")) {
+			this->SetFiducialNodeID(attValue);
+			continue;
+		}
+		if (!strcmp(attName, "InvFiducialNodeID")) {
+			this->SetInvFiducialNodeID(attValue);
 			continue;
 		}
 		if (!strcmp(attName, "CheckerboardPattern")) {
@@ -166,6 +178,10 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 			<< (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\"";
 	of << indent << " ROINodeID=\""
 			<< (this->ROINodeID ? this->ROINodeID : "NULL") << "\"";
+	of << indent << " FiducialNodeID=\""
+			<< (this->FiducialNodeID ? this->FiducialNodeID : "NULL") << "\"";
+	of << indent << " InvFiducialNodeID=\""
+			<< (this->InvFiducialNodeID ? this->InvFiducialNodeID : "NULL") << "\"";
 
 	of << indent << " CheckerboardPattern=\"" << this->CheckerboardPattern << "\"";
 // 	of << indent << " CheckerboardVolumeNodeID=\""
@@ -198,6 +214,8 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 	this->SetWarpedVolumeNodeID(node->GetWarpedVolumeNodeID());
 	this->SetOutputModelNodeID(node->GetOutputModelNodeID());
 	this->SetROINodeID(node->GetROINodeID());
+	this->SetFiducialNodeID(node->GetFiducialNodeID());
+	this->SetInvFiducialNodeID(node->GetInvFiducialNodeID());
 
 // 	this->SetCheckerboardVolumeNodeID(node->GetCheckerboardVolumeNodeID());
 	this->CheckerboardPattern=node->CheckerboardPattern;
@@ -324,6 +342,28 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveROINodeID(const char* id) {
 	}
 }
 //----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveFiducialNodeID(const char* id) {
+	if (this->FiducialNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->FiducialNodeID, this);
+	}
+	this->SetFiducialNodeID(id);
+
+	if (id) {
+		this->Scene->AddReferencedNodeID(this->FiducialNodeID, this);
+	}
+}
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveInvFiducialNodeID(const char* id) {
+	if (this->InvFiducialNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->InvFiducialNodeID, this);
+	}
+	this->SetInvFiducialNodeID(id);
+
+	if (id) {
+		this->Scene->AddReferencedNodeID(this->InvFiducialNodeID, this);
+	}
+}
+//----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::SetAndObserveCheckerboardVolumeNodeID(const char* id) {
 	if (this->CheckerboardVolumeNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->CheckerboardVolumeNodeID, this);
@@ -392,6 +432,10 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 			<< (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\n";
 	os << indent << " ROINodeID = "
 			<< (this->ROINodeID ? this->ROINodeID : "NULL") << "\n";
+	os << indent << " FiducialNodeID = "
+			<< (this->FiducialNodeID ? this->FiducialNodeID : "NULL") << "\n";
+	os << indent << " InvFiducialNodeID = "
+			<< (this->InvFiducialNodeID ? this->InvFiducialNodeID : "NULL") << "\n";
 // 	os << indent << " CheckerboardVolumeNodeID = "
 // 			<< (this->CheckerboardVolumeNodeID ? this->CheckerboardVolumeNodeID : "NULL") << "\n";
 	os << indent << " CheckerboardPattern = " << this->CheckerboardPattern << "\n";
