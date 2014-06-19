@@ -197,6 +197,18 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 		} else {
 			this->ROIChanged(d->ROIInputComboBox->currentNode());
 		}
+		
+		if (pNode->GetFiducialNodeID()) {
+			d->FiducialInputComboBox->setCurrentNode(pNode->GetFiducialNodeID());
+		} else {
+			this->fiducialChanged(d->FiducialInputComboBox->currentNode());
+		}
+		
+		if (pNode->GetInvFiducialNodeID()) {
+			d->InvFiducialInputComboBox->setCurrentNode(pNode->GetInvFiducialNodeID());
+		} else {
+			this->invFiducialChanged(d->InvFiducialInputComboBox->currentNode());
+		}
 
 // 		if (pNode->GetCheckerboardNodeID()) {
 // 			d->OutputCheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
@@ -514,6 +526,35 @@ void qSlicerRegistrationQualityModuleWidget::ROIChanged(vtkMRMLNode* node) {
 	pNode->DisableModifiedEventOff();
 }
 
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::fiducialChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	//TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		return;
+	}
+
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveFiducialNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
+}
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::invFiducialChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	//TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		return;
+	}
+
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveInvFiducialNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
+}
+
 void qSlicerRegistrationQualityModuleWidget::setup() {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 	d->setupUi(this);
@@ -528,6 +569,8 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
 	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
 	connect(d->ROIInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(ROIChanged(vtkMRMLNode*)));
+	connect(d->FiducialInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(FiducialChanged(vtkMRMLNode*)));
+	connect(d->InvFiducialInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(InvFiducialChanged(vtkMRMLNode*)));
 //	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
 //	connect(d->AbsoluteDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(absoluteDiffVolumeChanged(vtkMRMLNode*)));
 

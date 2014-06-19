@@ -339,6 +339,62 @@
 											</property>
 										</widget>
 									</item>
+									<item row="5" column="0">
+										<widget class="QLabel" name="FiducialLabel">
+											<property name="toolTip">
+												<string>Input Fiducial of reference phase.</string>
+											</property>
+											<property name="text">
+												<string>Ref. phase fiducial:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="5" column="1">
+										<widget class="qMRMLNodeComboBox" name="FiducialInputComboBox" native="true">
+											<property name="nodeTypes" stdset="0">
+												<stringlist>
+													<string>vtkMRMLMarkupsFiducialNode</string>
+												</stringlist>
+											</property>
+											<property name="noneEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="editEnabled" stdset="0">
+												<bool>true</bool>
+											</property>
+											<property name="renameEnabled" stdset="0">
+												<bool>true</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="6" column="0">
+										<widget class="QLabel" name="InvFiducialLabel">
+											<property name="toolTip">
+												<string>Input Fiducial of moving phase.</string>
+											</property>
+											<property name="text">
+												<string>Mov. phase fiducial:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="6" column="1">
+										<widget class="qMRMLNodeComboBox" name="InvFiducialInputComboBox" native="true">
+											<property name="nodeTypes" stdset="0">
+												<stringlist>
+													<string>vtkMRMLMarkupsFiducialNode</string>
+												</stringlist>
+											</property>
+											<property name="noneEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="editEnabled" stdset="0">
+												<bool>true</bool>
+											</property>
+											<property name="renameEnabled" stdset="0">
+												<bool>true</bool>
+											</property>
+										</widget>
+									</item>
 								</layout>
 							</widget>
 						</item>
@@ -1194,6 +1250,38 @@
 			<sender>qSlicerRegistrationQualityModule</sender>
 			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
 			<receiver>ROIInputComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>130</x>
+					<y>6</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>152</x>
+					<y>172</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>FiducialInputComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>130</x>
+					<y>6</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>152</x>
+					<y>172</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>InvFiducialInputComboBox</receiver>
 			<slot>setMRMLScene(vtkMRMLScene*)</slot>
 			<hints>
 				<hint type="sourcelabel">
