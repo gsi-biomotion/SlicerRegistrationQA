@@ -841,6 +841,7 @@ vtkMRMLGridTransformNode* vtkSlicerRegistrationQualityLogic::CreateTransformFrom
 	}
 	// Setting transform
 	transform->SetAndObserveTransformFromParent( transformFromParent );
+	transform->SetName( vectorVolume->GetName() );
 	
 	std::cerr << "CreateTransormFromVector: End!" << std::endl;
 	return transform.GetPointer();
@@ -869,7 +870,7 @@ vtkMRMLVectorVolumeNode* vtkSlicerRegistrationQualityLogic::CreateVectorFromTran
 	scene->AddNode(vectorVolume.GetPointer());
 	
 	//Create Grid transform	
-	vtkGridTransform* transformFromParent = vtkGridTransform::SafeDownCast(transform->GetTransformFromParentAs("vtkGirdTransform"));
+	vtkOrientedGridTransform* transformFromParent = vtkOrientedGridTransform::SafeDownCast( transform->GetTransformFromParentAs("vtkOrientedGirdTransform") );//->GetTransformFromParentAs("vtkGirdTransform")
 	
 	if (!transformFromParent) {
 	  std::cerr << "CreateVectorFromTransform: No transform from parent!" << std::endl;
