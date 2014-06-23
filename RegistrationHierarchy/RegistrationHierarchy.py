@@ -377,6 +377,8 @@ class RegistrationHierarchyLogic:
 
       regParameters.register()
       slicer.mrmlScene.RemoveNode(phaseNode)
+      if i > 0:
+	      break
 
     slicer.mrmlScene.RemoveNode(regParameters.warpVolume)
     slicer.mrmlScene.RemoveNode(regParameters.vectorVolume)
@@ -786,7 +788,7 @@ class registrationParameters():
 	print "Not enough parameters"
 	return
 	
-      registrationName = self.patientName + "_" + self.movingNumber + "_" + self.referenceNumber
+      registrationName = self.patientName + "_fix" + self.referenceNumber  + "_mov" + self.movingNumber
       if self.warpVolume:
 	self.warpVolume.SetName(registrationName+"_warped")
       if self.vectorVolume:
@@ -801,9 +803,9 @@ class registrationParameters():
       #save nodes
       self.saveNodes()
       #Switch
-      self.switchPhase()
       
-      registrationName = self.patientName + "_" + self.referenceNumber + "_"+ self.movingNumber 
+      
+      registrationName = self.patientName + "_fix"  + self.movingNumber + "_mov" + self.referenceNumber
       if self.warpVolume:
 	self.warpVolume.SetName(registrationName+"_warped")
       if self.vectorVolume:
@@ -811,9 +813,12 @@ class registrationParameters():
       if self.mhaOn:
 	self.vf_F_name = self.vectorDirectory + registrationName + "_vf.mha"
 
-      slicer.cli.run(plmslcRegistration, None, self.parameters, wait_for_completion=True)
-      #save nodes
-      self.saveNodes()
+      self.setParameters()
+      self.switchPhase()
+      
+      #slicer.cli.run(plmslcRegistration, None, self.parameters, wait_for_completion=True)
+      ##Save nodes
+      #self.saveNodes()
       
 	  
     def saveNodes(self):
@@ -871,10 +876,10 @@ class registrationParameters():
       parameters["stage_1_resolution"] = '4,4,2'
       parameters["stage_1_grid_size"] = '50'
       parameters["stage_1_regularization"] = '0.005'
-      parameters["stage_1_its"] = '200'
+      parameters["stage_1_its"] = '20'
       parameters["plmslc_output_warped_1"] = ''
       
-      parameters["enable_stage_2"] = True
+      parameters["enable_stage_2"] = False
       parameters["stage_2_resolution"] = '1,1,1'
       parameters["stage_2_grid_size"] = '15'
       parameters["stage_1_regularization"] = '0.005'
