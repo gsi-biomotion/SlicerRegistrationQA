@@ -10,6 +10,7 @@
 #include <QFileDialog>
 #include <QCheckBox>
 #include <QTimer>
+#include <QStandardItemModel>
 
 // SlicerQt includes
 #include <qSlicerAbstractCoreModule.h>
@@ -176,6 +177,12 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 			d->InputWarpedComboBox->setCurrentNode(pNode->GetWarpedVolumeNodeID());
 		} else {
 			this->warpedVolumeChanged(d->InputWarpedComboBox->currentNode());
+		}
+
+		if (pNode->GetSubjectHierarchyNodeID()) {
+			d->InputSubjectComboBox->setCurrentNode(pNode->GetSubjectHierarchyNodeID());
+		} else {
+			this->subjectHierarchyChanged(d->InputSubjectComboBox->currentNode());
 		}
 
 		if (pNode->GetOutputModelNodeID()) {
@@ -405,6 +412,22 @@ void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* no
 // 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
 // 	logic->ImageDifference();
 }
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::subjectHierarchyChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	//TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		return;
+	}
+
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveSubjectHierarchyNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
+}
+
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* node) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
@@ -449,12 +472,19 @@ void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* nod
 // 	pNode->DisableModifiedEventOff();
 // }
 
+QStandardItemModel model;
+
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::setup() {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 	d->setupUi(this);
 	this->Superclass::setup();
 	d->StillErrorLabel->setVisible(false);
+
+	//new
+	d->subjectTab->setModel(d->logic()->getTreeViewModel());
+
+	//end new
 
 	connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegistrationQualityParametersNode(vtkMRMLNode*)));
 
@@ -481,6 +511,9 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
+
+	connect(d->xmlFileInput, SIGNAL(editingFinished()), this, SLOT (xmlFileNameEdited()));
+	connect(d->loadXMLButton, SIGNAL(clicked()), this, SLOT (loadXMLClicked()));
 }
 
 //-----------------------------------------------------------------------------
@@ -720,3 +753,20 @@ void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(double check
 	pNode->SetCheckerboardPattern(checkboardPattern);
 	pNode->DisableModifiedEventOff();
 }
+
+void qSlicerRegistrationQualityModuleWidget::xmlFileNameEdited() {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	cout << "Neuer Text: " << d->xmlFileInput->text().toStdString() << endl;
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	pNode->DisableModifiedEventOn();
+	pNode->SetXMLFileName(d->xmlFileInput->text().toStdString());
+	pNode->DisableModifiedEventOff();
+}
+
+void qSlicerRegistrationQualityModuleWidget::loadXMLClicked() {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+	d->logic()->ReadRegistrationXML();
+}
+

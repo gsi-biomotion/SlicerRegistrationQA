@@ -24,6 +24,7 @@ class vtkMRMLRegistrationQualityNode;
 class vtkSlicerVolumesLogic;
 class DIRQAImage;
 class vtkMRMLSubjectHierarchyNode;
+class QStandardItemModel;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkSlicerRegistrationQualityLogic :
@@ -46,6 +47,7 @@ public:
 								std::vector<vtkMRMLSubjectHierarchyNode*>& phaseNodes,
 								std::string shNodeTag);
 	void ReadRegistrationXML();
+	QStandardItemModel* getTreeViewModel();
 	void SquaredDifference(int state);
 	void FalseColor(int state);
 	void Flicker(int opacity);
@@ -83,6 +85,8 @@ protected:
 	vtkSmartPointer<vtkImageData> TransformField;
 	/// Parameter set MRML node
 	vtkMRMLRegistrationQualityNode* RegistrationQualityNode;
+
+// 	QStandardItemModel* subjectModel;
 
 private:
 	vtkSlicerRegistrationQualityLogic(const vtkSlicerRegistrationQualityLogic&);// Not implemented

@@ -56,6 +56,7 @@
 
 #include <tinyxml.h>
 #include <DIRQAImage.h>
+#include <QStandardItemModel>
 
 class vtkSlicerRegistrationQualityLogic::vtkInternal {
 public:
@@ -81,6 +82,7 @@ vtkSlicerRegistrationQualityLogic::vtkSlicerRegistrationQualityLogic() {
 vtkSlicerRegistrationQualityLogic::~vtkSlicerRegistrationQualityLogic() {
 	vtkSetAndObserveMRMLNodeMacro(this->RegistrationQualityNode, NULL);
 	delete this->Internal;
+// 	delete subjectModel;
 }
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::SetVolumesLogic(vtkSlicerVolumesLogic* logic) {
@@ -392,14 +394,15 @@ void vtkSlicerRegistrationQualityLogic::associateImagesToPhase(
 		// phaseNodes has same order (and size) as images
 		vtkMRMLSubjectHierarchyNode* currentWarpedImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
 			GetMRMLScene(), phaseNodes.at(imageIndex), NULL, shNodeTag.c_str(), NULL);
-		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
-		currentWarpedImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
+// 		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
+// 		currentWarpedImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
 	}
 }
 
 void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scene*/) {
 
-	TiXmlDocument doc("/home/brandtts/steeringfile.xml");
+// 	TiXmlDocument doc("/home/brandtts/steeringfile.xml");
+	TiXmlDocument doc(RegistrationQualityNode->GetXMLFileName().c_str());
 	if(doc.LoadFile()) {
 		// 		dump(&doc);
 	} else {
@@ -517,12 +520,19 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 
 		vtkMRMLSubjectHierarchyNode* currentImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
 			scene, currentPhase, NULL, "Image", NULL);
-		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
-		currentImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
+// 		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
+// 		currentImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
 	}
 
 	associateImagesToPhase(images, warped, phaseNodes, "Warped");
 	associateImagesToPhase(images, vector, phaseNodes, "Vector");
+
+	cout << "registrationSHNode->GetID() = " << registrationSHNode->GetID() << endl;
+	this->RegistrationQualityNode->SetAndObserveSubjectHierarchyNodeID(registrationSHNode->GetID());
+}
+
+QStandardItemModel* vtkSlicerRegistrationQualityLogic::getTreeViewModel() {
+	return NULL/*subjectModel*/;
 }
 
 
@@ -533,7 +543,7 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 		throw std::runtime_error("Internal Error, see command line!");
 	}
 
-	ReadRegistrationXML(/*GetMRMLScene()*/);
+// 	ReadRegistrationXML(/*GetMRMLScene()*/);
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(

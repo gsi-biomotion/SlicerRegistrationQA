@@ -58,6 +58,9 @@ protected slots:
 	void inverseConsistClicked(bool state);
 	// Parameters
 	void setCheckerboardPattern(double);
+	void xmlFileNameEdited();
+	void loadXMLClicked();
+	void subjectHierarchyChanged(vtkMRMLNode*);
 
 protected:
 	QScopedPointer<qSlicerRegistrationQualityModuleWidgetPrivate> d_ptr;

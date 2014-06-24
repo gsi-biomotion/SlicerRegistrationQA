@@ -39,6 +39,10 @@ public:
 	vtkGetStringMacro(WarpedVolumeNodeID);
 	void SetAndObserveWarpedVolumeNodeID(const char* id);
 
+	vtkSetStringMacro(SubjectHierarchyNodeID);
+	vtkGetStringMacro(SubjectHierarchyNodeID);
+	void SetAndObserveSubjectHierarchyNodeID(const char* id);
+
 	vtkSetStringMacro(OutputModelNodeID);
 	vtkGetStringMacro(OutputModelNodeID);
 	void SetAndObserveOutputModelNodeID(const char* id);
@@ -79,6 +83,15 @@ public:
 			MovieRun ^= 1<<2;
 			Modified();
 		}
+	}
+
+	virtual void SetXMLFileName(std::string file) {
+		xmlFileName = file;
+		Modified();
+	}
+
+	virtual std::string GetXMLFileName() {
+		return xmlFileName;
 	}
 
 	// Checkerboard parameters
@@ -131,11 +144,14 @@ protected:
 	char* ReferenceVolumeNodeID;
 	char* WarpedVolumeNodeID;
 	char* OutputModelNodeID;
+	char* SubjectHierarchyNodeID;
 
 	int MovieBoxRedState;
 	int MovieBoxYellowState;
 	int MovieBoxGreenState;
 	int MovieRun;
+
+	std::string xmlFileName;
 
 	char* CheckerboardVolumeNodeID;
 	int CheckerboardPattern;
