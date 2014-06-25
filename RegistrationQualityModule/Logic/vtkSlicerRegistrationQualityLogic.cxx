@@ -657,6 +657,7 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::Jacobian(vtkMRMLVect
 	// Create new scalar volume
 	vtkNew<vtkMRMLScalarVolumeNode> outputVolumeNew;
 	vtkNew<vtkMRMLScalarVolumeDisplayNode> sDisplayNode;
+	sDisplayNode->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
 	this->GetMRMLScene()->AddNode(sDisplayNode.GetPointer());
 	outputVolumeNew->SetAndObserveDisplayNodeID(sDisplayNode->GetID());
 	outputVolumeNew->SetAndObserveStorageNodeID(NULL);
@@ -724,6 +725,7 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::InverseConsist(vtkMR
 	// Create new scalar volume
 	vtkNew<vtkMRMLScalarVolumeNode> outputVolumeNew;
 	vtkNew<vtkMRMLScalarVolumeDisplayNode> sDisplayNode;
+	sDisplayNode->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
 	this->GetMRMLScene()->AddNode(sDisplayNode.GetPointer());
 	outputVolumeNew->SetAndObserveDisplayNodeID(sDisplayNode->GetID());
 	outputVolumeNew->SetAndObserveStorageNodeID(NULL);
