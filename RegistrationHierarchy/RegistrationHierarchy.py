@@ -182,6 +182,8 @@ class RegistrationHierarchyWidget:
   def onDirqaAllPhaseButton(self):
     logic = RegistrationHierarchyLogic()
     logic.computeDIRQAfromHierarchyNode(self.regHierarchy)
+    logic.writeData(self.regHierarchy)
+    self.setStandardModel(self.regHierarchy)
 
 
   def showMenu(self, pos):
@@ -219,13 +221,15 @@ class RegistrationHierarchyWidget:
 	print "Can't load reference phase"
 	return
       logic.computeDIRQAfromHierarchyNode(node,refPhaseNode)
-      self.setStandardModel(self.regHierarchy)
+      
       
   #def itemSelection(self,item):
     #print "Wooh"
   
   def setStandardModel(self,regHierarchy):
 
+    
+    self.model.clear()
     if not regHierarchy:
       return
 
@@ -235,7 +239,7 @@ class RegistrationHierarchyWidget:
     if regHierarchy.GetNumberOfChildrenNodes() < 1:
       print "Error, Selected Subject Hiearchy doesn't have any child contour nodes."
     
-    self.model.clear()
+    
     self.model.setHorizontalHeaderLabels(['Registration Node: '])
     #List that holds all data
     self.phaseItems = []
@@ -253,22 +257,31 @@ class RegistrationHierarchyWidget:
 	dirqaList = []
 	for j in range(0,phaseNode.GetNumberOfChildrenNodes()):
 	  dirqaNode = phaseNode.GetNthChildNode(j)
+	  dirqaName = dirqaNode.GetNameWithoutPostfix()
 	  #Create item for each dirqa node
 	  dirqaItem = qt.QStandardItem()
 	  dirqaItem.setData(dirqaNode)
-	  dirqaItem.setText(dirqaNode.GetNameWithoutPostfix())
+	  dirqaItem.setText(dirqaName)
 	  phaseItem.appendRow(dirqaItem)
 	  dirqaList.append(dirqaItem)
 	  
 	  #Look for statistics:
-	  if dirqaNode.GetNameWithoutPostfix() == NAME_ABSDIFF:
-	    text = ''
-	    text = dirqaItem.text() + " "
-	    text += 'Mean: ' + dirqaNode.GetAttribute('Mean') + " "
-	    text += 'STD: ' + dirqaNode.GetAttribute('STD') + " "
-	    text += 'Max: ' + dirqaNode.GetAttribute('Max') + " "
-	    text += 'Min: ' + dirqaNode.GetAttribute('Min')
-	    dirqaItem.setText(text)
+	  stringList = []
+	  if dirqaName == NAME_ABSDIFF or dirqaName == NAME_JACOBIAN or dirqaName == NAME_INVCONSIST:
+	    stringList = ["Mean","STD","Max","Min"]
+		  
+	  if dirqaName == NAME_VECTOR or dirqaName == NAME_INVVECTOR:
+	    stringList = ["x","y","z"]
+	    
+	  
+	  if stringList:
+	    for i in range(0,len(stringList)):
+	      if not dirqaNode.GetAttribute(stringList[i]):
+	        continue
+	      text = ''
+	      text = dirqaItem.text() + " "
+	      text += stringList[i] + ': ' + dirqaNode.GetAttribute(stringList[i]) + " "
+	      dirqaItem.setText(text)
 	    
 	    
 	self.dirqaItems.append(dirqaList)
@@ -316,7 +329,7 @@ class RegistrationHierarchyLogic:
   def __init__(self):
     pass
 
-  def automaticRegistration(self,regHierarchy):
+  def automaticRegistration(self,regHierarchy, overwrite = True, resample = []):
     if not regHierarchy:
       print "No registration Hierarchy"
       return
@@ -337,10 +350,19 @@ class RegistrationHierarchyLogic:
       print "No children nodes."
       return
      
-    regParameters = registrationParameters(patientName,refPhaseNode, referenceNumber)
+    
+    regParameters = registrationParameters(patientName,refPhaseNode, referenceNumber, resample)
     
     regParameters.warpDirectory = regHierarchy.GetAttribute("DIR" + NAME_WARP )
     regParameters.vectorDirectory = regHierarchy.GetAttribute("DIR" + NAME_VECTOR )
+    
+    if not os.path.exists(regParameters.warpDirectory):
+      print regParameters.warpDirectory + " directory doesn't exist - create!"
+      return
+      
+    if not os.path.exists(regParameters.vectorDirectory):
+      print regParameters.vectorDirectory + " directory doesn't exist - create!"
+      return 
     
     if warpedOn:
       regParameters.setWarpVolume()
@@ -350,26 +372,46 @@ class RegistrationHierarchyLogic:
       
     regParameters.mhaOn = mhaOn
     
-    pbar = progressBar(("Registering all phases"))
-    pbar.setValue(0)
-    pbar.show()
+    beginPhase = 0
+
+    
     #Loop through all phases:
-    for i in range(0,nPhases):
+    for i in range(beginPhase,nPhases):
       phaseHierarchyNode = regHierarchy.GetNthChildNode(i)   
-      pbar.setValue(i/nPhases)
-      
-      if phaseHierarchyNode.GetID() == regHierarchy.GetAttribute(NAME_REFPHASE):
-	print "Skiping reference phase"
-	continue
-  
-      
+
       phaseNumber = phaseHierarchyNode.GetAttribute('PhaseNumber')
+      
+      #phaseNode = nextPhaseVolume
+      
+      #if not i == nPhases:
+        #nextPhaseVolume = self.getVolumeFromChild(regHierarchy.GetNthChildNode(i+1),NAME_CT)
+        
+      if phaseHierarchyNode.GetID() == regHierarchy.GetAttribute(NAME_REFPHASE):
+	print "Skipping reference phase"
+	continue
+      
+      #If there's already vector hierarchy node, then eithen remove node or skip this phase :
+      if phaseHierarchyNode.GetChildWithName(phaseHierarchyNode,NAME_VECTOR):
+	#If inverse registration wasn't completed or if we have overwrite option, repeat registration
+	#Otherwise skip.
+	if overwrite or not phaseHierarchyNode.GetChildWithName(phaseHierarchyNode,NAME_INVVECTOR):
+	  slicer.mrmlScene.RemoveNode(phaseHierarchyNode.GetChildWithName(phaseHierarchyNode,NAME_VECTOR))
+	  if phaseHierarchyNode.GetChildWithName(phaseHierarchyNode,NAME_INVVECTOR):
+	    slicer.mrmlScene.RemoveNode(phaseHierarchyNode.GetChildWithName(phaseHierarchyNode,NAME_INVVECTOR))
+	  if phaseHierarchyNode.GetChildWithName(phaseHierarchyNode,NAME_WARP):
+	    slicer.mrmlScene.RemoveNode(phaseHierarchyNode.GetChildWithName(phaseHierarchyNode,NAME_WARP))
+	  if phaseHierarchyNode.GetChildWithName(phaseHierarchyNode,NAME_INVWARP):
+	    slicer.mrmlScene.RemoveNode(phaseHierarchyNode.GetChildWithName(phaseHierarchyNode,NAME_INVWARP))
+	else:
+	  print "Skipping phase: " + phaseHierarchyNode.GetNameWithoutPostfix()
+	  continue
       
       phaseNode = self.getVolumeFromChild(phaseHierarchyNode,NAME_CT)
       if not phaseNode:
 	print "Can't load phase from: " + phaseHierarchyNode.GetNameWithoutPostfix()
 	continue
-      
+
+
       regParameters.movingNode = phaseNode
       regParameters.movingNumber = phaseNumber
       regParameters.movingHierarchy = phaseHierarchyNode
@@ -377,14 +419,35 @@ class RegistrationHierarchyLogic:
 
       regParameters.register()
       slicer.mrmlScene.RemoveNode(phaseNode)
-      if i > 0:
-	      break
 
+
+    #Remove all volumes from scene, to free memory 
     slicer.mrmlScene.RemoveNode(regParameters.warpVolume)
     slicer.mrmlScene.RemoveNode(regParameters.vectorVolume)
-    pbar.close()
+    #slicer.mrmlScene.RemoveNode(refPhaseNode)
+    
+    self.createTrafo(regParameters.vectorDirectory,patientName,nPhases,int(referenceNumber))
+
       
 
+  def createTrafo(self,directoryPath,patientName,numberOfPhases,referencePhase):
+    output_str = '!filetype trptrf\n'
+    output_str += '!fileversion 20081222\n'
+    output_str += '!filedate 20110325\n'
+    output_str += '!patientname ' + patientName + '\n'
+    output_str += '!trafomethod SCBT\n'
+    output_str += '!states ' + str(numberOfPhases) + '\n'
+    output_str += '!refstate ' + str(referencePhase) + '\n'
+    output_str += '!invert 0\n'
+    output_str += '!FinalRegistrationMatrix 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1\n'
+    output_str += '!PreTrafoMatrix 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1\n'
+    
+    filePath = directoryPath + patientName + '.trf'
+    f = open(filePath,"wb+")
+    f.write(output_str)
+    f.close()
+    
+    
   def computeDIRQAfromHierarchyNode(self,regHierarchy):
     #Look for DIRQA module
     try:
@@ -420,55 +483,95 @@ class RegistrationHierarchyLogic:
 
     #Loop through all phases, find biggest changes in vector field:
     maxVectorNode = None
-    maxPhaseHierarchy = slicer.util.getNode(regHierarchy.GetAttribute('MaxPhaseHierarchy'))
+    maxInvVectorNode = None
+    maxPhaseHierarchy = None
+    if regHierarchy.GetAttribute('MaxPhaseHierarchy'):
+      maxPhaseHierarchy = slicer.util.getNode(regHierarchy.GetAttribute('MaxPhaseHierarchy'))
     
     maxVectorValue = -1
-    if not maxPhaseHierarchy:
-      #Loading from python module (LoadCTX) takes time. Solution is to load all volumes in advance:
-      self.loadAllChildren(regHierarchy,NAME_VECTOR)
-      print "Starting Loop"
+    
+    #We need some clever way to find maxPhaseHierarchy. For now it'll be phase 05 or 01 if there is just one phase.
+    
+    #if not maxPhaseHierarchy:
+      #self.findMaxPhaseHierarchy(regHierarchy)
+      
+    #If there are just two phases, one is reference, the other is then max
+    if nPhases == 2:
       for i in range(0,nPhases):
         phaseHierarchyNode = regHierarchy.GetNthChildNode(i)   
-      
         if phaseHierarchyNode.GetID() == regHierarchy.GetAttribute(NAME_REFPHASE):
-	  print "Skiping reference phase"
 	  continue
-      
-        vectorNode = self.getVolumeFromChild(phaseHierarchyNode,NAME_VECTOR)
-        if not vectorNode:
-	  print "Can't load phase from: " + phaseHierarchyNode.GetNameWithoutPostfix()
-	  continue
-      
-        #Find out phase with the biggest max value in vector field
-        array = abs(slicer.util.array(vectorNode.GetID()))
-        vectorMax = array.max()
-        if vectorMax > maxVectorValue:
-	  maxVectorNode = vectorNode
-	  print "New value is " + str(maxVectorValue)
-	  maxPhaseHierarchy = phaseHierarchyNode
-	  maxVectorValue = vectorMax
-
+        maxPhaseHierarchy = phaseHierarchyNode
     else:
-      maxVectorNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_VECTOR)
-      print maxVectorNode.GetName()
-      phaseHierarchyNode = maxPhaseHierarchy
-      array = abs(slicer.util.array(maxVectorNode.GetID()))
-      maxVectorValue = array.max()
-	
+      for i in range(0,nPhases):
+	phaseHierarchyNode = regHierarchy.GetNthChildNode(i)   
+        if phaseHierarchyNode.GetID() == regHierarchy.GetAttribute(NAME_REFPHASE):
+	  continue
+        if phaseHierarchyNode.GetAttribute("PhaseNumber") == "05":
+          maxPhaseHierarchy = phaseHierarchyNode
+    
+    if not maxPhaseHierarchy:
+      print "No maxPhaseHierarchy was found."
+      return
+      
+    vectorArray = None
     if not maxVectorNode:
-      print "Phase with max vector field could not be found."
-      return
-    else:
-      print "Phase with max vector value: " + phaseHierarchyNode.GetNameWithoutPostfix() + " with: " + str(maxVectorValue) + "mm"
-    
-    
-    regHierarchy.SetAttribute('MaxPhaseHierarchy',maxPhaseHierarchy.GetID())
-    #TODO: Find max value in 3D and compare it with spacing 
-    spacing = maxVectorNode.GetSpacing()
-    if maxVectorValue < spacing[0] and maxVectorValue < spacing[2]:
-      print "All vector field values are smaller than spacing."
-      return
+      maxVectorNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_VECTOR)
       
+      if maxVectorNode:
+	try:
+	  vectorArray = slicer.util.array(maxVectorNode.GetID())
+	except AttributeError:
+          import sys
+          sys.stderr.write('Cannot make vectorArray.')
+    
+    #Load also invVector
+    if not maxInvVectorNode:
+      maxInvVectorNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVVECTOR)
+      if maxInvVectorNode:
+	try:
+	  invVectorArray = slicer.util.array(maxInvVectorNode.GetID())
+	except AttributeError:
+          import sys
+          sys.stderr.write('Cannot make invVectorArray.')
+    
+    #Check max and min vector values
+    n = 0
+    m = 0
+    vectorMax = [0,0,0,0]
+    
+    if vectorArray.any():
+      spacing = maxVectorNode.GetSpacing()
+      for i in range(0,3):
+        vectorMax[i] = np.max(abs(vectorArray[:,:,:,i]))
+        if  vectorMax < spacing[i]:
+	  print "Vector field values are smaller than spacing: " + str(vectorMax[i]) + "(" + spacing[i] +  ")"
+	  n += 1
+
+      if n == 3:
+        print "All vector field values are smaller than spacing."
+    
+    self.writeStatistics(maxPhaseHierarchy.GetChildWithName(maxPhaseHierarchy,NAME_VECTOR),vectorMax,True)
+    
+    #Check max and min invVector values
+    invVectorMax = [0,0,0,0]
+    if invVectorArray.any():
+      spacing = maxInvVectorNode.GetSpacing()
+      for i in range(0,3):
+        invVectorMax[i] = np.max(abs(invVectorArray[:,:,:,i]))
+        if  invVectorMax < spacing[i]:
+	  print "Vector field values are smaller than spacing: " + str(invVectorMax[i]) + "(" + spacing[i] + ")"
+	  m += 1
+
+      if m == 3:
+        print "All inv vector field values are smaller than spacing."
+    
+    self.writeStatistics(maxPhaseHierarchy.GetChildWithName(maxPhaseHierarchy,NAME_INVVECTOR),invVectorMax,True)
+    
+    #Stop DIRQA if both vector fields are small:
+    if n == 3 & m == 3:
+      print "All vector field values are smaller than spacing, completing DIRQA."
+      return
     
     #AbsoluteDifference
     
@@ -494,19 +597,28 @@ class RegistrationHierarchyLogic:
 	#arrayWarp[:] = (arrayWarp[:] - minArray) * normFactor
 	#absDiffNodeWarp.GetImageData().Modified()
 	
-	#absDiffHierarchy = self.createChild(maxPhaseHierarchy,NAME_ABSDIFF)
-	#absDiffHierarchy.SetAssociatedNodeID(absDiffNodeWarp.GetID())
+	absDiffHierarchy = self.createChild(maxPhaseHierarchy,NAME_ABSDIFF)
+	absDiffHierarchy.SetAssociatedNodeID(absDiffNodeWarp.GetID())
 	
 	#Statistics
-	statisticsArray = [0,0,0,0]
-	DIRQALogic.CalculateStatistics(absDiffNodeWarp,statisticsArray)
-	self.writeStatistics(absDiffHierarchy,statisticsArray)
+	statisticsArrayWarp = [0,0,0,0]
+	statisticsArrayPhase = [0,0,0,0]
+	DIRQALogic.CalculateStatistics(absDiffNodeWarp,statisticsArrayWarp)
+	DIRQALogic.CalculateStatistics(absDiffNodePhase, statisticsArrayPhase)
+	#Compare mean and STD with phase hierarchy
+	for i in range(0,2):
+	  statisticsArrayWarp[i] = 1 - (statisticsArrayWarp[i]/statisticsArrayPhase[i])
+	self.writeStatistics(absDiffHierarchy,statisticsArrayWarp)
       else:
 	print "Can't compute Absolute Difference."
 
-    return
     #Jacobian
     
+    #Check for maxVectorNode
+    if not maxVectorNode:
+      print "Could not load maxVectorNode"
+      return
+      
     #Check if it's already computed
     jacobianNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_JACOBIAN)
     if not jacobianNode:
@@ -527,9 +639,8 @@ class RegistrationHierarchyLogic:
     #Check if it's already computed
     invConsistNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVCONSIST)
     if not invConsistNode:
-      invVectorNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVVECTOR)
-      if invVectorNode:
-	invConsistNode = DIRQALogic.InverseConsist(maxVectorNode,invVectorNode,roiNode)
+      if maxInvVectorNode:
+	invConsistNode = DIRQALogic.InverseConsist(maxVectorNode,maxInvVectorNode,roiNode)
 	if invConsistNode:
 	  invConsistHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVCONSIST)
 	  invConsistHierarchy.SetAssociatedNodeID(invConsistNode.GetID())
@@ -542,12 +653,94 @@ class RegistrationHierarchyLogic:
 	  print "Can't compute Inverse Consistency."
       else:
 	print "Can't load inverse vector field."
+    
+    print "Finished Dirqa!"
+    return
 	   
-  def writeStatistics(self,hierarchyNode,statisticsArray):
-    hierarchyNode.SetAttribute("Mean",str(round(statisticsArray[0],2)))
-    hierarchyNode.SetAttribute("STD",str(round(statisticsArray[1],2)))
-    hierarchyNode.SetAttribute("Max",str(round(statisticsArray[2],2)))
-    hierarchyNode.SetAttribute("Min",str(round(statisticsArray[3],2)))
+  
+  #TODO: Not tested
+  #def findMaxPhaseHierarchy(self,regHierarchy):
+    ##Loading from python module (LoadCTX) takes time. Solution is to load all volumes in advance:
+      #self.loadAllChildren(regHierarchy,NAME_VECTOR)
+      #print "Starting Loop"
+      #for i in range(0,nPhases):
+        #phaseHierarchyNode = regHierarchy.GetNthChildNode(i)   
+      
+        #if phaseHierarchyNode.GetID() == regHierarchy.GetAttribute(NAME_REFPHASE):
+	  #print "Skiping reference phase"
+	  #continue
+      
+        #vectorNode = self.getVolumeFromChild(phaseHierarchyNode,NAME_VECTOR)
+        #if not vectorNode:
+	  #print "Can't load phase from: " + phaseHierarchyNode.GetNameWithoutPostfix()
+	  #continue
+      
+        ##Find out phase with the biggest max value in vector field
+        #array = abs(slicer.util.array(vectorNode.GetID()))
+        #vectorMax = array.max()
+        #if vectorMax > maxVectorValue:
+	  #maxVectorNode = vectorNode
+	  #print "New value is " + str(maxVectorValue)
+	  #maxPhaseHierarchy = phaseHierarchyNode
+	  #maxVectorValue = vectorMax
+
+    #else:
+      #maxVectorNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_VECTOR)
+      #print maxVectorNode.GetName()
+      #phaseHierarchyNode = maxPhaseHierarchy
+      #array = abs(slicer.util.array(maxVectorNode.GetID()))
+      #maxVectorValue = array.max()
+	
+    #if not maxVectorNode:
+      #print "Phase with max vector field could not be found."
+      #return
+    #else:
+      #print "Phase with max vector value: " + phaseHierarchyNode.GetNameWithoutPostfix() + " with: " + str(maxVectorValue) + "mm"
+  
+  def writeData(self,regHierarchy):
+    output_str = "DIRQA for: " + regHierarchy.GetNameWithoutPostfix() + " \n"
+    for i in range(0,regHierarchy.GetNumberOfChildrenNodes()):
+      phaseNode = regHierarchy.GetNthChildNode(i)
+      if phaseNode.GetNumberOfChildrenNodes() > 0:
+	for j in range(0,phaseNode.GetNumberOfChildrenNodes()):
+	  dirqaNode = phaseNode.GetNthChildNode(j)
+	  dirqaName = dirqaNode.GetNameWithoutPostfix()
+	  #Look for statistics:
+	  stringList = []
+	  if dirqaName == NAME_ABSDIFF or dirqaName == NAME_JACOBIAN or dirqaName == NAME_INVCONSIST:
+	    stringList = ["Mean","STD","Max","Min"]
+		  
+	  if dirqaName == NAME_VECTOR or dirqaName == NAME_INVVECTOR:
+	    stringList = ["x","y","z"]
+	  
+	  if stringList and dirqaNode.GetAttribute(stringList[0]):
+	    output_str += dirqaName + " \n"
+	    for i in range(0,len(stringList)):
+	      if not dirqaNode.GetAttribute(stringList[i]):
+	        continue
+	      output_str += stringList[i] + ': ' + dirqaNode.GetAttribute(stringList[i]) + " "
+	      output_str += " \n"
+    directoryPath = regHierarchy.GetAttribute("DIR" + NAME_DIRQA)
+    if not directoryPath:
+      print "Can't get Dirqa directory."
+      return
+    filePath = directoryPath + 'DirqaData.txt'
+    f = open(filePath,"wb+")
+    f.write(output_str)
+    f.close()
+    print "Wrote dirqa data to: " + filePath
+    
+  def writeStatistics(self,hierarchyNode,statisticsArray, vector = False):
+    if vector:
+      stringList = ["x","y","z"]
+    else:
+      stringList = ["Mean","STD","Max","Min"]
+    if len(stringList) > len(statisticsArray):
+      print "Cannot write statistics, not enough data."
+      return
+    for i in range(0,len(stringList)):
+      hierarchyNode.SetAttribute(stringList[i],str(round(statisticsArray[i],2)))
+
     
   def createChild(self,hierarchyNode,string):
     newHierarchy = slicer.vtkMRMLSubjectHierarchyNode()
@@ -569,6 +762,19 @@ class RegistrationHierarchyLogic:
       return
       
     if volume.IsA('vtkMRMLVolumeNode'):
+      if not volume.GetDisplayNodeID():
+	displayNode = None
+        if volume.IsA('vtkMRMLScalarVolumeNode'):
+	  displayNode = slicer.vtkMRMLScalarVolumeDisplayNode()
+          displayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey")
+        if volume.IsA('vtkMRMLVectorVolumeNode'):
+	  displayNode = slicer.vtkMRMLVectorVolumeDisplayNode()
+          displayNode.SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey")
+        if displayNode:
+	  slicer.mrmlScene.AddNode(displayNode)
+	  volume.SetAndObserveDisplayNodeID(displayNode.GetID())
+      else:
+	volume.GetDisplayNode().SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey")
       selectionNode = slicer.app.applicationLogic().GetSelectionNode()
       selectionNode.SetReferenceActiveVolumeID(volume.GetID())
       slicer.app.applicationLogic().PropagateVolumeSelection(0)
@@ -611,7 +817,6 @@ class RegistrationHierarchyLogic:
   
   #Loads volume from hierarchyNode. Can find it there or tries to load it from disk.
   def loadVolumeFromHierarchyNode(self,hierarchyNode):
-    volume = None
      #Look for existing associated nodes:
     if hierarchyNode.GetAssociatedNodeID():
       volume = slicer.util.getNode(hierarchyNode.GetAssociatedNodeID())
@@ -619,6 +824,7 @@ class RegistrationHierarchyLogic:
 	return volume
 
     filePath = hierarchyNode.GetAttribute('FilePath')
+    volume = None
     if filePath:
       #Special case for ctx files
       if filePath.find('ctx') > -1:
@@ -638,24 +844,25 @@ class RegistrationHierarchyLogic:
 	  hierarchyNode.SetAssociatedNodeID(volume.GetID())
 	  return volume
       else:
-	if slicer.util.loadVolume(filePath):
-	  #TODO: Not good solution, needs fix"
-	  volume = slicer.util.getNode(os.path.splitext(os.path.basename(filePath))[0])
-	  if not volume:
-	    print "Can't find volume " + os.path.basename(filePath)
-	    return None
-	  #Write it in hierarchy node for later use
-	  hierarchyNode.SetAssociatedNodeID(volume.GetID())
-	else:
-	  print "Can't load volume from: " + filePath
+	volumesLogic = slicer.vtkSlicerVolumesLogic()
+	volumesLogic.SetMRMLScene(slicer.mrmlScene)
+	slicerVolumeName = os.path.splitext(os.path.basename(filePath))[0]
+	volume = volumesLogic.AddArchetypeVolume(filePath,slicerVolumeName)
+	if not volume:
+	  print "Can't load volume " + os.path.basename(filePath)
 	  return None
+	#Write it in hierarchy node for later use
+	hierarchyNode.SetAssociatedNodeID(volume.GetID())
+
     else:
       print "Can't get file Path from: " + hierarchyNode.GetNameWithoutPostfix()
-      return False
+      return None
+
     return volume
+
     
   #Save node to disk and write it to subject hierarchy
-  def saveAndWriteNode(self,node,hierarchyNode,string,filePath,cbtOn = False):
+  def saveAndWriteNode(self,node,hierarchyNode,string,filePath,cbtOn = False,resample = []):
     if not node or not hierarchyNode or not string:
       print "Not enough input parameters."
       return False
@@ -674,7 +881,7 @@ class RegistrationHierarchyLogic:
       
       import SaveTRiP
       saveTripLogic = SaveTRiP.SaveTRiPLogic()
-      saveTripLogic.writeTRiPdata(directory,extension='.cbt',nodeID = node.GetID() , aix = True)
+      saveTripLogic.writeTRiPdata(directory,extension='.cbt',nodeID = node.GetID() , aix = True, resample = resample)
       return True
     
     if slicer.util.saveNode(node,filePath):
@@ -752,7 +959,7 @@ class RegistrationHierarchyTest(unittest.TestCase):
     
 #Class that holds all info for registration 
 class registrationParameters():
-    def __init__(self,patientName,referenceNode,referenceNumber):
+    def __init__(self,patientName,referenceNode,referenceNumber,resample = []):
       self.patientName = patientName
       self.referenceNode = referenceNode
       self.referenceNumber = referenceNumber
@@ -766,6 +973,7 @@ class registrationParameters():
       self.vectorDirectory = ''
       self.vf_F_name = ''
       self.mhaOn = False
+      self.resample = resample
 
     def setWarpVolume(self):
       warpVolume = slicer.vtkMRMLScalarVolumeNode()
@@ -788,7 +996,7 @@ class registrationParameters():
 	print "Not enough parameters"
 	return
 	
-      registrationName = self.patientName + "_fix" + self.referenceNumber  + "_mov" + self.movingNumber
+      registrationName = self.patientName + "_"  + self.movingNumber + "_" + self.referenceNumber
       if self.warpVolume:
 	self.warpVolume.SetName(registrationName+"_warped")
       if self.vectorVolume:
@@ -800,12 +1008,15 @@ class registrationParameters():
       #run plastimatch registration
       plmslcRegistration= slicer.modules.plastimatch_slicer_bspline
       slicer.cli.run(plmslcRegistration, None, self.parameters, wait_for_completion=True)
+      #Resample if neccesary
+      #TODO: Descripton in process.
+      #self.resampleVectorVolume()
       #save nodes
       self.saveNodes()
       #Switch
       
       
-      registrationName = self.patientName + "_fix"  + self.movingNumber + "_mov" + self.referenceNumber
+      registrationName = self.patientName + "_"  + self.referenceNumber+ "_" + self.movingNumber
       if self.warpVolume:
 	self.warpVolume.SetName(registrationName+"_warped")
       if self.vectorVolume:
@@ -816,27 +1027,38 @@ class registrationParameters():
       self.setParameters()
       self.switchPhase()
       
-      #slicer.cli.run(plmslcRegistration, None, self.parameters, wait_for_completion=True)
-      ##Save nodes
-      #self.saveNodes()
+      slicer.cli.run(plmslcRegistration, None, self.parameters, wait_for_completion=True)
+      #Resample if neccesary
+      #TODO: Descripton in process.
+      #self.resampleVectorVolume()
+      #Save nodes
+      self.saveNodes(switch = True)
       
 	  
-    def saveNodes(self):
+    def saveNodes(self,switch = False):
       logic = RegistrationHierarchyLogic()
       if self.warpVolume:
 	if not self.warpDirectory:
 	  print "No directory"
 	  return	  
+	if switch:
+	  name = NAME_INVWARP
+	else:
+	  name = NAME_WARP
 	filePath = self.warpDirectory + self.warpVolume.GetName() + ".nrrd"
-	if logic.saveAndWriteNode(self.warpVolume,self.movingHierarchy,NAME_WARP,filePath):
+	if logic.saveAndWriteNode(self.warpVolume,self.movingHierarchy,name,filePath):
 	  print "Saved Warped Image " + self.warpVolume.GetName()
       
       if self.vectorVolume:
 	if not self.vectorDirectory:
 	  print "No directory"
 	  return	  
+	if switch:
+	  name = NAME_VECTOR
+	else:
+	  name = NAME_INVVECTOR
 	filePath = self.vectorDirectory + self.vectorVolume.GetName() + "_x.ctx"
-	if logic.saveAndWriteNode(self.vectorVolume,self.movingHierarchy,NAME_VECTOR,filePath,True):
+	if logic.saveAndWriteNode(self.vectorVolume,self.movingHierarchy,name,filePath,True,self.resample):
 	  print "Saved vector field."
       
     
@@ -856,6 +1078,8 @@ class registrationParameters():
 
       parameters["plmslc_fixed_fiducials"] = ''
       parameters["plmslc_moving_fiducials"] = ''
+      
+      parameters["metric"] = "MSE" #"MI
 
       if self.warpVolume:
 	parameters["plmslc_output_warped"] = self.warpVolume
@@ -871,15 +1095,15 @@ class registrationParameters():
       else:
 	parameters["plmslc_output_vf_f"] = self.vf_F_name
       
-      parameters["enable_stage_0"] = False
+      parameters["enable_stage_0"] = True
       
       parameters["stage_1_resolution"] = '4,4,2'
       parameters["stage_1_grid_size"] = '50'
       parameters["stage_1_regularization"] = '0.005'
-      parameters["stage_1_its"] = '20'
+      parameters["stage_1_its"] = '200'
       parameters["plmslc_output_warped_1"] = ''
       
-      parameters["enable_stage_2"] = False
+      parameters["enable_stage_2"] = True
       parameters["stage_2_resolution"] = '1,1,1'
       parameters["stage_2_grid_size"] = '15'
       parameters["stage_1_regularization"] = '0.005'
@@ -893,6 +1117,57 @@ class registrationParameters():
       parameters["stage_3_its"] = '100'
       parameters["plmslc_output_warped_3"] = ''
       self.parameters = parameters
+      
+    def resampleVectorVolume(self):
+      if not self.vectorVolume or not self.vectorVolume.IsA('vtkMRMLVectorVolumeNode'):
+        print "No vector volume for resampling."
+        return
+      
+      if self.resample == []:
+	print "No resample values."
+	return
+	
+      if not len(self.resample) == 3:
+        print "Too many values for resampling."
+        return
+      
+      oldVectorVolume = self.vectorVolume
+      
+      #Create new vector volume
+      newVectorVolume = slicer.vtkMRMLVectorVolumeNode()
+      newVectorVolume.SetName(oldVectorVolume.GetName())
+      slicer.mrmlScene.AddNode(newVectorVolume)
+      
+      #Create strings for resampling
+      spacing = ''
+      size = ''
+      for i in range(0,len(self.resample)):
+        spacing += str(oldVectorVolume.GetSpacing()[i]*self.resample[i])
+        #extent = oldVectorVolume.GetImageData().GetExtent[2*i+1]
+        extent = oldVectorVolume.GetImageData().GetExtent()[2*i+1]+1
+        size += str(extent/self.resample[i])
+        if i < 2:
+	  spacing += ','
+	  size += ','
+
+      print "Resampling " + oldVectorVolume.GetName() + " to new pixel size " + size 
+      
+      #Set parameters
+      parameters = {} 
+      parameters["inputVolume"] = oldVectorVolume.GetID()
+      parameters["outputVolume"] = newVectorVolume.GetID()
+      parameters["referenceVolume"] = ''
+      parameters["outputImageSpacing"] = spacing
+      parameters["outputImageSize"] = size
+      
+      #Do resampling
+      resampleScalarVolume = slicer.modules.resamplescalarvectordwivolume
+      clNode = slicer.cli.run(resampleScalarVolume, None, parameters, wait_for_completion=True)
+      
+      #Remove old vector node and set new:
+      self.vectorVolume = newVectorVolume
+      slicer.mrmlScene.RemoveNode(oldVectorVolume)
+      
     
 def progressBar(message):
     progressBar = qt.QProgressDialog(slicer.util.mainWindow())
