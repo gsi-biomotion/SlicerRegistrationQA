@@ -409,6 +409,7 @@ class ReadRegistrationNodeLogic:
     ctDirectoryNative = patientDirectory + '4DCT_1/MHA/'
     ctDirectoryContrast = patientDirectory  + '4DCT_2/MHA/'
     
+    
     if fromContrast:
       print "Making registration from contrast."
       registrationNodeFromContrast = subjectNode.GetChildWithName(subjectNode,'Registration Node From Contrast')
@@ -556,6 +557,9 @@ class ReadRegistrationNodeLogic:
     return
     
   def createFromContrastHierarchy(self,registrationNode,referencePhase, ctDirectoryContrast, ctDirectoryNative):
+      if not os.path.exists(ctDirectoryContrast) or os.path.exists(ctDirectoryContrast): 
+        print "No directories."
+        return
       warpDirectory = registrationNode.GetAttribute("DIR" + NAME_WARP )
       vectorDirectory = registrationNode.GetAttribute("DIR" + NAME_VECTOR )
       #Create two phases - contrast (00) and native (01)
@@ -598,6 +602,9 @@ class ReadRegistrationNodeLogic:
     vectorDirectory = registrationNode.GetAttribute("DIR" + NAME_VECTOR )
     
    
+    if not os.path.exists(ctDirectory): 
+        print "No directories."
+        return
     for fileName in os.listdir(ctDirectory):
 
       #Looking for file names that end with 0.0% or 0%
