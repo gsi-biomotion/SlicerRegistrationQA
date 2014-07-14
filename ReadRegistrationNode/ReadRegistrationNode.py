@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 import os
 import unittest
 from __main__ import vtk, qt, ctk, slicer
@@ -297,8 +298,8 @@ class ReadRegistrationNodeWidget:
       return 
     
     ##self.pathCT.text = '/u/kanderle/AIXd/Data/HIT/' + patientName + '/13062014/'
-    #self.pathCT.text = '/u/motion/Data/PatientData/HIT/' + patientName + '/'
-    self.pathCT.text = '/u/motion/Data/PatientData/HIT/' + patientName + '/25062014/'
+    #self.pathCT.text = '/u/motion/Data/PatientData/HIT/' + patientName + '/13062014/'
+    self.pathCT.text = '/u/motion/Data/PatientData2/PIGS/' + patientName + '/'
 
   
   def checkCheckboxes(self):	  
@@ -404,18 +405,18 @@ class ReadRegistrationNodeLogic:
     
     ##ctDirectoryNative = patientDirectory + '4DCT_1/NRRD/'
     ##ctDirectoryContrast = patientDirectory + '4DCT_2/NRRD/'
-    #ctDirectoryNative = patientDirectory + 'Native/MHA/'
-    #ctDirectoryContrast = patientDirectory  + 'Contrast/MHA/'
-    ctDirectoryNative = patientDirectory + '4DCT_1/MHA/'
-    ctDirectoryContrast = patientDirectory  + '4DCT_2/MHA/'
+    ctDirectoryNative = patientDirectory + 'native/MHA/'
+    ctDirectoryContrast = patientDirectory  + 'contrast/MHA/'
+    #ctDirectoryNative = patientDirectory + '4DCT_1/MHA/'
+    #ctDirectoryContrast = patientDirectory  + '4DCT_2/MHA/'
     
     
     if fromContrast:
       print "Making registration from contrast."
       registrationNodeFromContrast = subjectNode.GetChildWithName(subjectNode,'Registration Node From Contrast')
       if not registrationNodeFromContrast:
-        #vectorDirectory = patientDirectory + 'Native/Registration/FromContrast/'
-        vectorDirectory = patientDirectory + '4DCT_1/Registration/FromContrast/'
+        vectorDirectory = patientDirectory + 'native/Registration/FromContrast/'
+        #vectorDirectory = patientDirectory + '4DCT_1/Registration/FromContrast/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Next, create Registration Node for registration from Contrast
@@ -451,8 +452,8 @@ class ReadRegistrationNodeLogic:
       registrationNodeNative4D = subjectNode.GetChildWithName(subjectNode,'Registration Node Native 4D')
       if not registrationNodeNative4D:
         #First create registration node
-        vectorDirectory = patientDirectory + '4DCT_1/Registration/4D/'
-        #vectorDirectory = patientDirectory + 'Native/Registration/4D/'
+        #vectorDirectory = patientDirectory + '4DCT_1/Registration/4D/'
+        vectorDirectory = patientDirectory + 'native/Registration/4D/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Create Registration node
@@ -488,8 +489,8 @@ class ReadRegistrationNodeLogic:
       registrationNodeContrast4D = subjectNode.GetChildWithName(subjectNode,'Registration Node Contrast 4D')
       if not registrationNodeContrast4D:
         #First create registration node
-        vectorDirectory = patientDirectory + '4DCT_2/Registration/4D/'
-        #vectorDirectory = patientDirectory + 'Contrast/Registration/4D/'
+        #vectorDirectory = patientDirectory + '4DCT_2/Registration/4D/'
+        vectorDirectory = patientDirectory + 'contrast/Registration/4D/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Create Registration node
