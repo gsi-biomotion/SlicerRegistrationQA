@@ -14,6 +14,7 @@ NAME_INVWARP = 'InvWarpedImage' #Warped image from reference phase (reference + 
 NAME_VECTOR = 'Vector' #Vector Field from phase to reference phase
 NAME_INVVECTOR = 'InvVector' #Vector from reference phase to phase
 NAME_ABSDIFF = 'AbsoluteDifference'
+NAME_INVABSDIFF = 'InvAbsoluteDifference'
 NAME_JACOBIAN = 'Jacobian'
 NAME_INVCONSIST = 'InverseConsistency'
 NAME_REFPHASE = 'ReferenceHierarchyNode'
@@ -267,7 +268,7 @@ class RegistrationHierarchyWidget:
 	  
 	  #Look for statistics:
 	  stringList = []
-	  if dirqaName == NAME_ABSDIFF or dirqaName == NAME_JACOBIAN or dirqaName == NAME_INVCONSIST:
+	  if dirqaName == NAME_ABSDIFF or dirqaName == NAME_INVABSDIFF or dirqaName == NAME_JACOBIAN or dirqaName == NAME_INVCONSIST:
 	    stringList = ["Mean","STD","Max","Min"]
 		  
 	  if dirqaName == NAME_VECTOR or dirqaName == NAME_INVVECTOR:
@@ -573,6 +574,29 @@ class RegistrationHierarchyLogic:
       print "All vector field values are smaller than spacing, completing DIRQA."
       return
     
+    #Inverse Consistency
+    
+    #Check if it's already computed
+    invConsistNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVCONSIST)
+    if not invConsistNode:
+      if maxInvVectorNode:
+	invConsistNode = DIRQALogic.InverseConsist(maxVectorNode,maxInvVectorNode,roiNode)
+	if invConsistNode:
+	  invConsistHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVCONSIST)
+	  invConsistHierarchy.SetAssociatedNodeID(invConsistNode.GetID())
+	  
+	  #Statistics
+	  statisticsArray = [0,0,0,0]
+	  DIRQALogic.CalculateStatistics(invConsistNode,statisticsArray)
+	  self.writeStatistics(invConsistHierarchy,statisticsArray)
+	else:
+	  print "Can't compute Inverse Consistency."
+      else:
+	print "Can't load inverse vector field."
+    
+    print "Finished Dirqa!"
+    return
+    
     #AbsoluteDifference
     
     #Check if it's already computed
@@ -612,6 +636,45 @@ class RegistrationHierarchyLogic:
       else:
 	print "Can't compute Absolute Difference."
 
+    #InvAbsoluteDifference
+    
+    #Check if it's already computed
+    invAbsDiffNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVABSDIFF)
+    if not absDiffNode:
+      invWarpNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVWARP)
+      if warpNode:
+        if not phaseNode:
+	  phaseNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_CT)
+	if phaseNode:
+          invAbsDiffNodeWarp = DIRQALogic.AbsoluteDifference(phaseNode,invWarpNode,roiNode)
+      if invAbsDiffNodeWarp:
+	#TODO: Use ITK filters
+	#arrayWarp = slicer.util.array(absDiffNodeWarp.GetID())
+	#arrayPhase = slicer.util.array(absDiffNodePhase.GetID())
+	
+	##Find relative change of Warped image
+	#arrayWarp[:] = arrayPhase[:] - arrayWarp[:]
+	#maxArray = arrayWarp.max()
+	#minArray = arrayWarp.min()
+	#normFactor = 100 / ( maxArray - minArray)
+	#arrayWarp[:] = (arrayWarp[:] - minArray) * normFactor
+	#absDiffNodeWarp.GetImageData().Modified()
+	
+	invAbsDiffHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVABSDIFF)
+	invAbsDiffHierarchy.SetAssociatedNodeID(invAbsDiffNodeWarp.GetID())
+	
+	#Statistics
+	statisticsArrayInvWarp = [0,0,0,0]
+	DIRQALogic.CalculateStatistics(invAbsDiffNodeWarp,statisticsArrayInvWarp)
+	#Compare mean and STD with phase hierarchy
+	if statisticsArrayPhase:
+	  for i in range(0,2):
+	    statisticsArrayInvWarp[i] = 1 - (statisticsArrayInvWarp[i]/statisticsArrayPhase[i])
+		  
+	self.writeStatistics(invAbsDiffHierarchy,statisticsArrayInvWarp)
+      else:
+	print "Can't compute Inverse Absolute Difference."
+    
     #Jacobian
     
     #Check for maxVectorNode
@@ -634,28 +697,7 @@ class RegistrationHierarchyLogic:
       else:
 	print "Can't compute Jacobian."
 	
-    #Inverse Consistency
-    
-    #Check if it's already computed
-    invConsistNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVCONSIST)
-    if not invConsistNode:
-      if maxInvVectorNode:
-	invConsistNode = DIRQALogic.InverseConsist(maxVectorNode,maxInvVectorNode,roiNode)
-	if invConsistNode:
-	  invConsistHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVCONSIST)
-	  invConsistHierarchy.SetAssociatedNodeID(invConsistNode.GetID())
-	  
-	  #Statistics
-	  statisticsArray = [0,0,0,0]
-	  DIRQALogic.CalculateStatistics(invConsistNode,statisticsArray)
-	  self.writeStatistics(invConsistHierarchy,statisticsArray)
-	else:
-	  print "Can't compute Inverse Consistency."
-      else:
-	print "Can't load inverse vector field."
-    
-    print "Finished Dirqa!"
-    return
+ 
 	   
   
   #TODO: Not tested
