@@ -579,7 +579,7 @@ class RegistrationHierarchyLogic:
     #Check if it's already computed
     invConsistNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVCONSIST)
     if not invConsistNode:
-      if maxInvVectorNode:
+      if maxInvVectorNode and maxVectorNode:
 	invConsistNode = DIRQALogic.InverseConsist(maxVectorNode,maxInvVectorNode,roiNode)
 	if invConsistNode:
 	  invConsistHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVCONSIST)
@@ -592,10 +592,8 @@ class RegistrationHierarchyLogic:
 	else:
 	  print "Can't compute Inverse Consistency."
       else:
-	print "Can't load inverse vector field."
+	print "Can't load vector field."
     
-    print "Finished Dirqa!"
-    return
     
     #AbsoluteDifference
     
@@ -696,6 +694,9 @@ class RegistrationHierarchyLogic:
 	self.writeStatistics(jacobianHierarchy,statisticsArray)
       else:
 	print "Can't compute Jacobian."
+	
+    print "Finished Dirqa!"
+    return
 	
  
 	   
