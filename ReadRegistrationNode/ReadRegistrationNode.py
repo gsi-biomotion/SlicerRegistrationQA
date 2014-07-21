@@ -139,15 +139,15 @@ class ReadRegistrationNodeWidget:
     #
     self.patientName = qt.QLineEdit()     
     self.patientName.setToolTip( "Input patient name" )
-    self.patientName.text = 'Adalbert'
+    self.patientName.text = 'Lung001'
     parametersFormLayout.addRow("Patient Name:", self.patientName)
     #
     # Find CT
     #
-    self.selectCT = qt.QPushButton("Create Default Directories")
-    self.selectCT.toolTip = "Creates default directories based on Patient Name."
-    self.selectCT.enabled = True
-    parametersFormLayout.addRow(self.selectCT)
+    #self.selectCT = qt.QPushButton("Create Default Directories")
+    #self.selectCT.toolTip = "Creates default directories based on Patient Name."
+    #self.selectCT.enabled = True
+    #parametersFormLayout.addRow(self.selectCT)
     # CT Directory
     self.pathCT = qt.QLineEdit()     
     self.pathCT.setToolTip( "Input the path to CT Directory" )
@@ -196,7 +196,7 @@ class ReadRegistrationNodeWidget:
     #self.parent.layout().addWidget(self.chartFrame)
     self.fromContrastCheckBox = qt.QCheckBox()     
     self.fromContrastCheckBox.setToolTip( "Check for registration from contrast" )
-    self.fromContrastCheckBox.setCheckState(0)
+    self.fromContrastCheckBox.setCheckState(2)
     parametersFormLayout.addRow("Registration from contrast CT:", self.fromContrastCheckBox)
     
     # Registration 4D Native
@@ -208,7 +208,7 @@ class ReadRegistrationNodeWidget:
     # Registration 4D Contrast
     self.contrast4DCheckBox = qt.QCheckBox()     
     self.contrast4DCheckBox.setToolTip( "Check for registration of 4DCT contrast" )
-    self.contrast4DCheckBox.setCheckState(2)
+    self.contrast4DCheckBox.setCheckState(0)
     parametersFormLayout.addRow("Registration of 4DCT contrast:", self.contrast4DCheckBox)
     
     # Resample 4D
@@ -242,7 +242,7 @@ class ReadRegistrationNodeWidget:
     parametersFormLayout.addRow(self.dirqaButton)
     
     # connections
-    self.selectCT.connect('clicked(bool)', self.onSelectCT)
+    #self.selectCT.connect('clicked(bool)', self.onSelectCT)
     self.createHierarchyButton.connect('clicked(bool)', self.onCreateHierarchyButton)
     self.registerAllButton.connect('clicked(bool)', self.onRegisterAllButton)
     self.dirqaButton.connect('clicked(bool)', self.onDirqaButton)
@@ -297,9 +297,9 @@ class ReadRegistrationNodeWidget:
       print "Input Patient Name!"
       return 
     
-    ##self.pathCT.text = '/u/kanderle/AIXd/Data/HIT/' + patientName + '/13062014/'
+    self.pathCT.text = '/u/kanderle/AIXd/Data/FC/' + patientName + '/'
     #self.pathCT.text = '/u/motion/Data/PatientData/HIT/' + patientName + '/13062014/'
-    self.pathCT.text = '/u/motion/Data/PatientData2/PIGS/' + patientName + '/'
+    #self.pathCT.text = '/u/motion/Data/PatientData2/PIGS/' + patientName + '/'
 
   
   def checkCheckboxes(self):	  
@@ -389,6 +389,7 @@ class ReadRegistrationNodeLogic:
     
     #Reference phase remains 00 throughout registration
     referencePhase = "00"
+    referencePhaseContrast = "01"
     
     #First make subject Hierarchy Node
     #Create Patient Node
@@ -403,10 +404,11 @@ class ReadRegistrationNodeLogic:
     
     #From Contrast Registration
     
+    
     ##ctDirectoryNative = patientDirectory + '4DCT_1/NRRD/'
     ##ctDirectoryContrast = patientDirectory + '4DCT_2/NRRD/'
-    ctDirectoryNative = patientDirectory + 'native/MHA/'
-    ctDirectoryContrast = patientDirectory  + 'contrast/MHA/'
+    ctDirectoryNative = patientDirectory + 'CTX/'
+    ctDirectoryContrast = '/u/motion/AIXd/Data/PatientData/FC/' + patientName +'/4D/Phases/Plan/'
     #ctDirectoryNative = patientDirectory + '4DCT_1/MHA/'
     #ctDirectoryContrast = patientDirectory  + '4DCT_2/MHA/'
     
@@ -415,7 +417,7 @@ class ReadRegistrationNodeLogic:
       print "Making registration from contrast."
       registrationNodeFromContrast = subjectNode.GetChildWithName(subjectNode,'Registration Node From Contrast')
       if not registrationNodeFromContrast:
-        vectorDirectory = patientDirectory + 'native/Registration/FromContrast/'
+        vectorDirectory = patientDirectory + 'Registration/Plan/'
         #vectorDirectory = patientDirectory + '4DCT_1/Registration/FromContrast/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
@@ -431,11 +433,11 @@ class ReadRegistrationNodeLogic:
         registrationNodeFromContrast.SetAttribute('DIR' + NAME_VECTOR,vectorDirectory)
         registrationNodeFromContrast.SetAttribute('DIR' + NAME_DIRQA,dirqaDirectory)
       
-        registrationNodeFromContrast.SetAttribute('ReferenceNumber',referencePhase)
+        registrationNodeFromContrast.SetAttribute('ReferenceNumber',referencePhaseContrast)
         registrationNodeFromContrast.SetAttribute('PatientName',patientName)
         slicer.mrmlScene.AddNode(registrationNodeFromContrast)
       
-        self.createFromContrastHierarchy(registrationNodeFromContrast,referencePhase, ctDirectoryContrast,ctDirectoryNative)
+        self.createFromContrastHierarchy(registrationNodeFromContrast,referencePhaseContrast, ctDirectoryContrast,ctDirectoryNative)
 	  
       #Make registration
       if register:
@@ -453,7 +455,7 @@ class ReadRegistrationNodeLogic:
       if not registrationNodeNative4D:
         #First create registration node
         #vectorDirectory = patientDirectory + '4DCT_1/Registration/4D/'
-        vectorDirectory = patientDirectory + 'native/Registration/4D/'
+        vectorDirectory = patientDirectory + '/Registration/4D/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Create Registration node
@@ -558,15 +560,17 @@ class ReadRegistrationNodeLogic:
     return
     
   def createFromContrastHierarchy(self,registrationNode,referencePhase, ctDirectoryContrast, ctDirectoryNative):
-      if not os.path.exists(ctDirectoryContrast) or os.path.exists(ctDirectoryContrast): 
-        print "No directories."
+      if not os.path.exists(ctDirectoryContrast) or not os.path.exists(ctDirectoryNative): 
+        print "No directories:"
+        print ctDirectoryContrast
+        print ctDirectoryNative
         return
       warpDirectory = registrationNode.GetAttribute("DIR" + NAME_WARP )
       vectorDirectory = registrationNode.GetAttribute("DIR" + NAME_VECTOR )
       #Create two phases - contrast (00) and native (01)
       phaseNode0 = vtkMRMLSubjectHierarchyNode()
       phaseNode0.SetParentNodeID(registrationNode.GetID())
-      phaseNode0.SetName('Contrast')
+      phaseNode0.SetName('4DRef')
       phaseNode0.SetLevel('Series')
       phaseNode0.SetAttribute('Directory',ctDirectoryContrast)
       phaseNode0.SetAttribute('PhaseNumber',"00")
@@ -574,28 +578,30 @@ class ReadRegistrationNodeLogic:
       
       phaseNode1 = vtkMRMLSubjectHierarchyNode()
       phaseNode1.SetParentNodeID(registrationNode.GetID())
-      phaseNode1.SetName('Native')
+      phaseNode1.SetName('Plan')
       phaseNode1.SetLevel('Series')
       phaseNode1.SetAttribute('Directory',ctDirectoryNative)
       phaseNode1.SetAttribute('PhaseNumber',"01")
       slicer.mrmlScene.AddNode(phaseNode1)
       
-      self.checkWarpDirectory(warpDirectory, phaseNode1, "01")
-      self.checkVectorDirectory(vectorDirectory, phaseNode1, "01")
+      self.checkWarpDirectory(warpDirectory, phaseNode0, "00")
+      self.checkVectorDirectory(vectorDirectory, phaseNode0, "00")
       #Link reference phase
-      registrationNode.SetAttribute('ReferenceHierarchyNode',phaseNode0.GetID())
+      registrationNode.SetAttribute('ReferenceHierarchyNode',phaseNode1.GetID())
       
       #Look for 00 files
       #TODO: Change to .mha
-      for fileName in os.listdir(ctDirectoryContrast):
-	if fileName.find('_00.mha') > -1:
+      for fileName in os.listdir(ctDirectoryNative):
+	if fileName.find('_00.ctx') > -1:
 	  ctNode = self.createChild(phaseNode0,NAME_CT)
+	  ctNode.SetAttribute('FilePath',ctDirectoryNative+fileName)
+	  
+      for fileName in os.listdir(ctDirectoryContrast):
+	if fileName.find('ctx') > -1:
+	  ctNode = self.createChild(phaseNode1,NAME_CT)
 	  ctNode.SetAttribute('FilePath',ctDirectoryContrast+fileName)
 	  
-      for fileName in os.listdir(ctDirectoryNative):
-	if fileName.find('_00.mha') > -1:
-	  ctNode = self.createChild(phaseNode1,NAME_CT)
-	  ctNode.SetAttribute('FilePath',ctDirectoryNative+fileName)
+      
   
   def create4DHierarchy(self,registrationNode,referencePhase):
     ctDirectory = registrationNode.GetAttribute("DIR" + NAME_CT )
@@ -621,7 +627,7 @@ class ReadRegistrationNodeLogic:
         #continue
       
       #index = fileName.find('.ctx')
-      index = fileName.find('.mha')
+      index = fileName.find('.ctx')
       if not index > -1:
 	continue
       #Try to find out, which phase do we have
@@ -663,9 +669,9 @@ class ReadRegistrationNodeLogic:
         index = file.find('_warped.nrrd')
 	if index > -1:
 	  #Find out warpedimage or invWarpedImage
-	  if file[index-5:index-3] == phase:
+	  if file[index-2:index] == phase:
 	    warpNode = self.createChild(phaseNode,NAME_WARP)
-	  elif file[index-2:index] == phase:
+	  elif file[index-8:index-6] == phase:
 	    warpNode = self.createChild(phaseNode,NAME_INVWARP)
 	  else:
 	    continue
