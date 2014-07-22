@@ -577,6 +577,7 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->FalseColorCheckBox, SIGNAL(clicked(bool)), this, SLOT (falseColorClicked(bool)));
 	connect(d->CheckerboardCheckBox, SIGNAL(clicked(bool)), this, SLOT (checkerboardClicked(bool)));
 	connect(d->AbsoluteDiffCheckBox, SIGNAL(clicked(bool)), this, SLOT (absoluteDiffClicked(bool)));
+	connect(d->FiducialsCheckBox, SIGNAL(clicked(bool)), this, SLOT (fiducialClicked(bool)));
 	connect(d->JacobianCheckBox, SIGNAL(clicked(bool)), this, SLOT (jacobianClicked(bool)));
 	connect(d->InverseConsistCheckBox, SIGNAL(clicked(bool)), this, SLOT (inverseConsistClicked(bool)));
 
@@ -590,6 +591,10 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
 }
+
+//-----------------------------------------------------------------------------
+// Image Checks
+//-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
 // Squared Difference
@@ -627,7 +632,42 @@ void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 
 }
 //-----------------------------------------------------------------------------
-// Image Checks
+// Fiducials distance
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::fiducialClicked(bool state) {
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+
+	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+	try {
+		d->logic()->FiducialDifference(state);
+	} catch (std::runtime_error e) {
+		d->StillErrorLabel->setText(e.what());
+		d->StillErrorLabel->setVisible(true);
+		d->AbsoluteDiffCheckBox->toggle();
+		cerr << e.what() << endl;
+		QApplication::restoreOverrideCursor();
+		return;
+	}
+	d->StillErrorLabel->setText("");
+	d->FalseColorCheckBox->setChecked(false);
+	d->CheckerboardCheckBox->setChecked(false);
+	d->JacobianCheckBox->setChecked(false);
+	d->InverseConsistCheckBox->setChecked(false);
+
+	if (state){
+	  d->absoluteDiffMeanSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[0]);
+	  d->absoluteDiffSTDSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[1]);
+	  }
+	else{
+	  d->absoluteDiffMeanSpinBox->setValue(0);
+	  d->absoluteDiffSTDSpinBox->setValue(0);
+	  }
+	QApplication::restoreOverrideCursor();
+
+}
+//-----------------------------------------------------------------------------
+// False Color
 //-----------------------------------------------------------------------------
 
 void qSlicerRegistrationQualityModuleWidget::falseColorClicked(bool state) {
@@ -648,7 +688,9 @@ void qSlicerRegistrationQualityModuleWidget::falseColorClicked(bool state) {
 	d->AbsoluteDiffCheckBox->setChecked(false);
 	d->JacobianCheckBox->setChecked(false);
 }
-
+//-----------------------------------------------------------------------------
+// Checkerboard
+//-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::checkerboardClicked(bool state){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 // 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();

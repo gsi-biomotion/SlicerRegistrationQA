@@ -51,8 +51,9 @@ protected slots:
 // 	void checkerboardVolumeChanged(vtkMRMLNode*);
 // 	void absoluteDiffVolumeChanged(vtkMRMLNode*);
 
-	void absoluteDiffClicked(bool state);
 	// Image Checks
+	void absoluteDiffClicked(bool state);
+	void fiducialClicked(bool state);
 	void falseColorClicked(bool state);
 	void checkerboardClicked(bool state);
 	void movieToggle();
