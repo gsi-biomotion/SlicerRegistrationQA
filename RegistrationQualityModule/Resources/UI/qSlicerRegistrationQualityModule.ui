@@ -682,6 +682,89 @@
 											</property>
 										</widget>
 									</item>
+									<item row="4" column="2">
+										<widget class="QDoubleSpinBox" name="FiducialMeanSpinBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="accessibleName">
+												<string></string>
+											</property>
+											<property name="readOnly">
+												<bool>true</bool>
+											</property>
+											<property name="disabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="4" column="1">
+										<widget class="QLabel" name="FiducialMeanValueLabel">
+											<property name="enabled">
+												<bool>true</bool>
+											</property>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Mean Value:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="4" column="0">
+										<widget class="QCheckBox" name="FiducialsCheckBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+													<horstretch>50</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Fiducials</string>
+											</property>
+											<property name="Enabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="5" column="1">
+										<widget class="QLabel" name="FiducialsMaxLabel">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Max:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="5" column="2">
+										<widget class="QDoubleSpinBox" name="FiducialsMaxSpinBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="accessibleName">
+												<string></string>
+											</property>
+											<property name="readOnly">
+												<bool>true</bool>
+											</property>
+											<property name="disabled" stdset="0">
+												<bool>false</bool>
+											</property>
+										</widget>
+									</item>
 								</layout>
 							</widget>
 						</item>
