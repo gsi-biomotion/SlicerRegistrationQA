@@ -53,7 +53,7 @@ protected slots:
 
 	// Image Checks
 	void absoluteDiffClicked(bool state);
-	void fiducialClicked(bool state);
+	void fiducialCalculate(bool reference);
 	void falseColorClicked(bool state);
 	void checkerboardClicked(bool state);
 	void movieToggle();
@@ -65,7 +65,6 @@ protected slots:
 	void inverseConsistClicked(bool state);
 	// Parameters
 	void setCheckerboardPattern(double);
-
 
 protected:
 	QScopedPointer<qSlicerRegistrationQualityModuleWidgetPrivate> d_ptr;

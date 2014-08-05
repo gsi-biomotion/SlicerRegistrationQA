@@ -682,87 +682,156 @@
 											</property>
 										</widget>
 									</item>
-									<item row="4" column="2">
-										<widget class="QDoubleSpinBox" name="FiducialMeanSpinBox">
+									<item row="4" column="0" colspan="3">
+										<widget class="QGroupBox" name="FiducialsGroupBox">
 											<property name="sizePolicy">
-												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
 													<horstretch>0</horstretch>
 													<verstretch>0</verstretch>
 												</sizepolicy>
 											</property>
-											<property name="accessibleName">
-												<string></string>
+											<property name="title">
+												<string>Fiducals distance</string>
 											</property>
-											<property name="readOnly">
-												<bool>true</bool>
-											</property>
-											<property name="disabled" stdset="0">
-												<bool>false</bool>
-											</property>
-										</widget>
-									</item>
-									<item row="4" column="1">
-										<widget class="QLabel" name="FiducialMeanValueLabel">
-											<property name="enabled">
-												<bool>true</bool>
-											</property>
-											<property name="sizePolicy">
-												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-													<horstretch>0</horstretch>
-													<verstretch>0</verstretch>
-												</sizepolicy>
-											</property>
-											<property name="text">
-												<string>Mean Value:</string>
-											</property>
-										</widget>
-									</item>
-									<item row="4" column="0">
-										<widget class="QCheckBox" name="FiducialsCheckBox">
-											<property name="sizePolicy">
-												<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-													<horstretch>50</horstretch>
-													<verstretch>0</verstretch>
-												</sizepolicy>
-											</property>
-											<property name="text">
-												<string>Fiducials</string>
-											</property>
-											<property name="Enabled" stdset="0">
-												<bool>false</bool>
-											</property>
-										</widget>
-									</item>
-									<item row="5" column="1">
-										<widget class="QLabel" name="FiducialsMaxLabel">
-											<property name="sizePolicy">
-												<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-													<horstretch>0</horstretch>
-													<verstretch>0</verstretch>
-												</sizepolicy>
-											</property>
-											<property name="text">
-												<string>Max:</string>
-											</property>
-										</widget>
-									</item>
-									<item row="5" column="2">
-										<widget class="QDoubleSpinBox" name="FiducialsMaxSpinBox">
-											<property name="sizePolicy">
-												<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-													<horstretch>0</horstretch>
-													<verstretch>0</verstretch>
-												</sizepolicy>
-											</property>
-											<property name="accessibleName">
-												<string></string>
-											</property>
-											<property name="readOnly">
-												<bool>true</bool>
-											</property>
-											<property name="disabled" stdset="0">
-												<bool>false</bool>
-											</property>
+											<layout class="QGridLayout" name="fiducialsGridLayout">
+												<item row="0" column="1">
+													<widget class="QLabel" name="FiducalsReferenceLabel">
+														<property name="enabled">
+															<bool>true</bool>
+														</property>
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="text">
+															<string>Reference:</string>
+														</property>
+													</widget>
+												</item>
+												<item row="0" column="2">
+													<widget class="QLabel" name="InvFiducalsReferenceLabel">
+														<property name="enabled">
+															<bool>true</bool>
+														</property>
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="text">
+															<string>Inverse:</string>
+														</property>
+													</widget>
+												</item>
+												<item row="1" column="0">
+													<widget class="QLabel" name="FiducialsMeanValueLabel">
+														<property name="enabled">
+															<bool>true</bool>
+														</property>
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="text">
+															<string>Mean Value (mm):</string>
+														</property>
+													</widget>
+												</item>
+												<item row="1" column="1">
+													<widget class="QDoubleSpinBox" name="FiducialsMeanSpinBox">
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="accessibleName">
+															<string></string>
+														</property>
+														<property name="readOnly">
+															<bool>true</bool>
+														</property>
+														<property name="disabled" stdset="0">
+															<bool>false</bool>
+														</property>
+													</widget>
+												</item>
+												<item row="1" column="2">
+													<widget class="QDoubleSpinBox" name="InvFiducialsMeanSpinBox">
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="accessibleName">
+															<string></string>
+														</property>
+														<property name="readOnly">
+															<bool>true</bool>
+														</property>
+														<property name="disabled" stdset="0">
+															<bool>false</bool>
+														</property>
+													</widget>
+												</item>
+												<item row="2" column="0">
+													<widget class="QLabel" name="FiducialsMaxLabel">
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="text">
+															<string>Maximum difference (mm):</string>
+														</property>
+													</widget>
+												</item>
+												<item row="2" column="1">
+													<widget class="QDoubleSpinBox" name="FiducialsMaxSpinBox">
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="accessibleName">
+															<string></string>
+														</property>
+														<property name="readOnly">
+															<bool>true</bool>
+														</property>
+														<property name="disabled" stdset="0">
+															<bool>false</bool>
+														</property>
+													</widget>
+												</item>
+												<item row="2" column="2">
+													<widget class="QDoubleSpinBox" name="InvFiducialsMaxSpinBox">
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="accessibleName">
+															<string></string>
+														</property>
+														<property name="readOnly">
+															<bool>true</bool>
+														</property>
+														<property name="disabled" stdset="0">
+															<bool>false</bool>
+														</property>
+													</widget>
+												</item>
+											</layout>
 										</widget>
 									</item>
 								</layout>

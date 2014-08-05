@@ -9,6 +9,8 @@
 #include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLVectorVolumeNode.h>
 #include <vtkMRMLGridTransformNode.h>
+#include <vtkMRMLAnnotationROINode.h>
+#include <vtkMRMLMarkupsFiducialNode.h>
 // STD includes
 #include <cstdlib>
 
@@ -38,20 +40,23 @@ public:
 	 * Will either remake or account for scenario some other way
 	 */
 
-	void AbsoluteDifference(int state);
+        void CalculateDIRQAFrom(int number, int state);
+	vtkMRMLScalarVolumeNode* AbsoluteDifference(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*, vtkMRMLAnnotationROINode* inputROI = NULL);
+	bool CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transofrm, double statisticValues[4],bool absoluteDifference=true);
 	void FalseColor(int state);
 	void Flicker(int opacity);
 	void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
 	void Movie();
 	void Checkerboard(int state);
 	void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
-	void Jacobian(int state);
-	void InverseConsist(int state);
-	void SetDefaultDisplay(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*);
+	vtkMRMLScalarVolumeNode* Jacobian(vtkMRMLVectorVolumeNode *vectorVolume,vtkMRMLAnnotationROINode *inputROI = NULL);
+	vtkMRMLScalarVolumeNode* InverseConsist(vtkMRMLVectorVolumeNode *vectorVolume1,vtkMRMLVectorVolumeNode *vectorVolume2,vtkMRMLAnnotationROINode *inputROI=NULL);
+	void SetDefaultDisplay();
 	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double statisticValues[4]);
 	vtkMRMLGridTransformNode* CreateTransformFromVector(vtkMRMLVectorVolumeNode* vectorVolume);
 	vtkMRMLVectorVolumeNode* CreateVectorFromTransform(vtkMRMLTransformNode* transform);
 	
+
 
 public:
 	void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);
@@ -65,6 +70,7 @@ protected:
 	~vtkSlicerRegistrationQualityLogic();
 
 	virtual void RegisterNodes();
+	
 
 	virtual void SetMRMLSceneInternal(vtkMRMLScene* newScene);
 
@@ -73,11 +79,13 @@ protected:
 	virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node);
 	virtual void OnMRMLSceneEndImport();
 	virtual void OnMRMLSceneEndClose();
+	void InvertXandY(vtkImageData* imageData);
 
 protected:
 	vtkSmartPointer<vtkImageData> TransformField;
 	/// Parameter set MRML node
 	vtkMRMLRegistrationQualityNode* RegistrationQualityNode;
+	
 
 private:
 	vtkSlicerRegistrationQualityLogic(const vtkSlicerRegistrationQualityLogic&);// Not implemented

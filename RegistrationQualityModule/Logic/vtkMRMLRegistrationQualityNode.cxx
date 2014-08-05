@@ -35,6 +35,9 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->AbsoluteDiffVolumeNodeID = NULL;
 	AbsoluteDiffStatistics[0] = AbsoluteDiffStatistics[1] = AbsoluteDiffStatistics[2] = AbsoluteDiffStatistics[3] = 0;
 
+	FiducialsStatistics[0] = FiducialsStatistics[1] = FiducialsStatistics[2] = FiducialsStatistics[3] = 0;
+	InvFiducialsStatistics[0] = InvFiducialsStatistics[1] = InvFiducialsStatistics[2] = InvFiducialsStatistics[3] = 0;
+	
 	this->JacobianVolumeNodeID = NULL;
 	JacobianStatistics[0] = JacobianStatistics[1] = JacobianStatistics[2] = JacobianStatistics[3] = 0;
 

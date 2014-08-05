@@ -120,6 +120,12 @@ public:
 
 	vtkSetVector4Macro(AbsoluteDiffStatistics, double);
 	vtkGetVector4Macro(AbsoluteDiffStatistics, double);
+	
+	vtkSetVector4Macro(FiducialsStatistics, double);
+	vtkGetVector4Macro(FiducialsStatistics, double);
+	
+	vtkSetVector4Macro(InvFiducialsStatistics, double);
+	vtkGetVector4Macro(InvFiducialsStatistics, double);
 
 
 	// Jacobian parameters:
@@ -171,7 +177,9 @@ protected:
 	char* AbsoluteDiffVolumeNodeID;
 	double AbsoluteDiffStatistics[4];
 
-
+	double FiducialsStatistics[4];
+	double InvFiducialsStatistics[4];
+	
 	char* JacobianVolumeNodeID;
 	double JacobianStatistics[4];
 
