@@ -926,7 +926,7 @@ vtkMRMLGridTransformNode* vtkSlicerRegistrationQualityLogic::CreateTransformFrom
 	this->InvertXandY( gridImage_Ras.GetPointer() );
 
 	// Origin
-	gridImage_Ras->SetOrigin( - vectorVolume->GetOrigin()[0], - vectorVolume->GetOrigin()[1], vectorVolume->GetOrigin()[2] );
+	gridImage_Ras->SetOrigin( vectorVolume->GetOrigin()[0], vectorVolume->GetOrigin()[1], vectorVolume->GetOrigin()[2] );
 
 	// Spacing
 	gridImage_Ras->SetSpacing( vectorVolume->GetSpacing()[0], vectorVolume->GetSpacing()[1], vectorVolume->GetSpacing()[2] );
@@ -1064,7 +1064,7 @@ vtkMRMLVectorVolumeNode* vtkSlicerRegistrationQualityLogic::CreateVectorFromTran
 	//Spacing
 	vectorVolume->SetSpacing( gridImage_Ras->GetSpacing()[0], gridImage_Ras->GetSpacing()[1], gridImage_Ras->GetSpacing()[2] );
 	//Origin
-	vectorVolume->SetOrigin( -gridImage_Ras->GetOrigin()[0], -gridImage_Ras->GetOrigin()[1], gridImage_Ras->GetOrigin()[2] );
+	vectorVolume->SetOrigin( gridImage_Ras->GetOrigin()[0], gridImage_Ras->GetOrigin()[1], gridImage_Ras->GetOrigin()[2] );
 	// Dimensions
 	int dims[3];
 	gridImage_Ras->GetDimensions(dims);
