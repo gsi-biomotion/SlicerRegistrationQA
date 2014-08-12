@@ -492,7 +492,7 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 		distanceDiff = 0;
 		for (int j=0; j<3; j++) {
 			//Calculate absolute difference in mm
-			if (absoluteDifference) 	distanceDiff += fabs(warpedPosition[j] - movingPosition[j]);
+			if (absoluteDifference) 	distanceDiff += fabs(referencePosition[j] - movingPosition[j]) - fabs(referencePosition[j] - warpedPosition[j]);
 			else {
 				//Calculate relative difference before and after transformation
 				if ( referencePosition[j] !=  movingPosition[j] ) {
@@ -504,12 +504,17 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 				}
 			}
 		}
-
-		if ( distanceDiff > maxDistance) maxDistance = distanceDiff;
-		if ( distanceDiff < minDistance) minDistance = distanceDiff;
+		if ( i == 0  ){
+				maxDistance = distanceDiff;
+				minDistance = distanceDiff;
+		}
+		else{
+			if ( distanceDiff > maxDistance) maxDistance = distanceDiff;
+			if ( distanceDiff < minDistance) minDistance = distanceDiff;
+		}
 
 		sumDistance += distanceDiff;
-		std::cerr << "Position: " << i << "," << " with distance: " << distanceDiff <<   std::endl;
+		std::cerr << "Fiducial: " << i <<"/" << fiducialNumber << "," << " with distance: " << distanceDiff <<   std::endl;
 	}
 	statisticValues[0] = sumDistance / (  fiducialNumber);
 	statisticValues[2] = maxDistance;
