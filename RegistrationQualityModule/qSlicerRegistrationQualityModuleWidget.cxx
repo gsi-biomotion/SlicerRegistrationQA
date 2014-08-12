@@ -702,7 +702,6 @@ void qSlicerRegistrationQualityModuleWidget::falseColorClicked(bool state) {
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 
 	try {
-	  std::cerr << "Trying like crazy!" << std::endl;
 		d->logic()->FalseColor(state);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
