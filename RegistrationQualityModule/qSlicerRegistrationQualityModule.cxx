@@ -87,7 +87,7 @@ QIcon qSlicerRegistrationQualityModule::icon() const {
 QStringList qSlicerRegistrationQualityModule::categories() const {
 	return QStringList() << "Registration";
 }
-
+	
 //-----------------------------------------------------------------------------
 QStringList qSlicerRegistrationQualityModule::dependencies() const {
 	return QStringList();
@@ -96,21 +96,18 @@ QStringList qSlicerRegistrationQualityModule::dependencies() const {
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModule::setup() {
 	this->Superclass::setup();
-	
+
 	  vtkSlicerRegistrationQualityLogic* registrationQualityLogic =
     vtkSlicerRegistrationQualityLogic::SafeDownCast(this->logic());
-	qSlicerAbstractCoreModule* volumesModule =
-	qSlicerCoreApplication::application()->moduleManager()->module("Volumes");
-	
-      if (volumesModule)
-	{
-	vtkSlicerVolumesLogic* volumesLogic = 
-	  vtkSlicerVolumesLogic::SafeDownCast(volumesModule->logic());
-	registrationQualityLogic->SetVolumesLogic(volumesLogic);
-	}
-      else
-	{
-	qWarning() << "Volumes module is not found";
+	qSlicerAbstractCoreModule* volumesModule = qSlicerCoreApplication::application()->
+		moduleManager()->module("Volumes");
+
+	if (volumesModule) {
+		vtkSlicerVolumesLogic* volumesLogic =
+		vtkSlicerVolumesLogic::SafeDownCast(volumesModule->logic());
+		registrationQualityLogic->SetVolumesLogic(volumesLogic);
+	} else {
+		qWarning() << "Volumes module is not found";
 	}
 }
 

@@ -86,7 +86,7 @@ protected:
 	/// Parameter set MRML node
 	vtkMRMLRegistrationQualityNode* RegistrationQualityNode;
 
-// 	QStandardItemModel* subjectModel;
+	QStandardItemModel* subjectModel;
 
 private:
 	vtkSlicerRegistrationQualityLogic(const vtkSlicerRegistrationQualityLogic&);// Not implemented

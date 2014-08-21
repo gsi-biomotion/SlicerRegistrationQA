@@ -49,21 +49,15 @@ void DIRQAImage::readFromXML(TiXmlNode const& n) {
 		throw std::runtime_error("Error: Cannot construct DIRQAImage, XMLNode is not of type element");
 	} /*else cout << "DIRQAImage(TiXmlNode): Node is Element" << endl;*/
 
-	switch(imageTypes.at(nElement->Value())) {
-		case IMAGE:
-// 			cout << "DIRQAImage(TiXmlNode): Node is \"image\"" << endl;
-			imageType = IMAGE;
-			break;
-		case WARPED:
-// 			cout << "DIRQAImage(TiXmlNode): Node is \"warped\"" << endl;
-			imageType = WARPED;
-			break;
-		case VECTOR:
-// 			cout << "DIRQAImage(TiXmlNode): Node is \"vector\"" << endl;
-			imageType = VECTOR;
-			break;
-		default:
-			throw std::runtime_error("Error: Invalid element in xml-File");
+	try {
+		imageType = imageTypes.at(nElement->Value());
+	} catch (std::out_of_range ex) {
+		throw std::runtime_error("Error: Invalid XML-tag");
+	}
+
+	//TODO: jacobian, ... and throw this out
+	if( imageType!=IMAGE && imageType!=VECTOR && imageType!=WARPED) {
+		throw std::runtime_error("Error: Invalid element in xml-File");
 	}
 
 	if(nElement->QueryIntAttribute( "index", &movingIndex ) != TIXML_SUCCESS) {

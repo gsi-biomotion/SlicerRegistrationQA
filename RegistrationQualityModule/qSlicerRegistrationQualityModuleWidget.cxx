@@ -472,8 +472,6 @@ void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* nod
 // 	pNode->DisableModifiedEventOff();
 // }
 
-QStandardItemModel model;
-
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::setup() {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
@@ -483,6 +481,7 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 
 	//new
 	d->subjectTab->setModel(d->logic()->getTreeViewModel());
+	d->subjectTab->header()->hide();
 
 	//end new
 
@@ -767,6 +766,31 @@ void qSlicerRegistrationQualityModuleWidget::xmlFileNameEdited() {
 
 void qSlicerRegistrationQualityModuleWidget::loadXMLClicked() {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
-	d->logic()->ReadRegistrationXML();
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if(pNode->GetXMLFileName() == "") {
+
+		QString fileName = QFileDialog::getOpenFileName( NULL,
+														 QString( tr( "Select Registration XML-File" ) ),
+														 QDir::homePath(),
+														 QString( tr( "XML-Files ( *.xml )" ) ) );
+		cout << fileName.toAscii().data() << endl;
+		if ( !fileName.isNull() ) {
+			d->xmlFileInput->setText(fileName);
+			pNode->SetXMLFileName(fileName.toAscii().data());
+		} else {
+			return;
+		}
+	}
+
+	try {
+		d->logic()->ReadRegistrationXML();
+	} catch (std::runtime_error e) {
+		d->StillErrorLabel->setText(e.what());
+		d->StillErrorLabel->setVisible(true);
+		cerr << e.what() << endl;
+		return;
+	}
+	d->StillErrorLabel->setText("");
 }
 

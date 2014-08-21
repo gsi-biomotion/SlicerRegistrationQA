@@ -28,9 +28,7 @@
 #include <vtkMRMLSliceLogic.h>
 
 #include <vtkMRMLSubjectHierarchyNode.h>
-#include <vtkSubjectHierarchyConstants.h>
-#include "qSlicerSubjectHierarchyPluginHandler.h"
-#include "qSlicerSubjectHierarchyDefaultPlugin.h"
+#include <vtkMRMLSubjectHierarchyConstants.h>
 
 // VTK includes
 #include <vtkNew.h>
@@ -74,6 +72,7 @@ vtkStandardNewMacro(vtkSlicerRegistrationQualityLogic);
 //----------------------------------------------------------------------------
 vtkSlicerRegistrationQualityLogic::vtkSlicerRegistrationQualityLogic() {
 	this->RegistrationQualityNode = NULL;
+	subjectModel = new QStandardItemModel();
 	this->TransformField = vtkSmartPointer<vtkImageData>::New();
 	this->Internal = new vtkInternal;
 }
@@ -82,7 +81,7 @@ vtkSlicerRegistrationQualityLogic::vtkSlicerRegistrationQualityLogic() {
 vtkSlicerRegistrationQualityLogic::~vtkSlicerRegistrationQualityLogic() {
 	vtkSetAndObserveMRMLNodeMacro(this->RegistrationQualityNode, NULL);
 	delete this->Internal;
-// 	delete subjectModel;
+	delete subjectModel;
 }
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::SetVolumesLogic(vtkSlicerVolumesLogic* logic) {
@@ -374,6 +373,12 @@ void vtkSlicerRegistrationQualityLogic::associateImagesToPhase(
 	std::vector<vtkSmartPointer<DIRQAImage> >& warped,
 	std::vector<vtkMRMLSubjectHierarchyNode*>& phaseNodes,
 	std::string shNodeTag) {
+
+	if (!GetMRMLScene() || !RegistrationQualityNode) {
+		vtkErrorMacro("associateImagesToPhase: Invalid scene or parameter set node!");
+		return;
+	}
+
 	uint32_t imageIndex = 0;
 
 	// Associate warped images to corresponding phase-SH-nodes
@@ -396,21 +401,47 @@ void vtkSlicerRegistrationQualityLogic::associateImagesToPhase(
 			GetMRMLScene(), phaseNodes.at(imageIndex), NULL, shNodeTag.c_str(), NULL);
 // 		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
 // 		currentWarpedImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
+		currentWarpedImage = currentWarpedImage!=NULL?NULL:currentWarpedImage;
+	}
+}
+
+void appendSHNodeToQItem(vtkMRMLSubjectHierarchyNode* node, QStandardItem* item) {
+	if(!item || !node) return;
+
+	for(int i=0; i<(node->GetNumberOfChildrenNodes()); ++i) {
+		vtkMRMLSubjectHierarchyNode* childNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node->GetNthChildNode(i));
+		if(!childNode) {
+			cout << "Error: SHNode is NULL!" << endl;
+			continue;
+		}
+		QStandardItem* newItem = new QStandardItem(childNode->GetNameWithoutPostfix().c_str());
+		appendSHNodeToQItem(childNode, newItem);
+		item->appendRow(newItem);
 	}
 }
 
 void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scene*/) {
 
 // 	TiXmlDocument doc("/home/brandtts/steeringfile.xml");
-	TiXmlDocument doc(RegistrationQualityNode->GetXMLFileName().c_str());
-	if(doc.LoadFile()) {
-		// 		dump(&doc);
-	} else {
-		cout << "Fehler beim Laden" << endl;
-		throw std::runtime_error("Unable to read XML-File");
+	std::string xmlFileName = RegistrationQualityNode->GetXMLFileName();
+	if(xmlFileName == "") {
+		throw std::runtime_error("Please enter path to proper XML file!");
 	}
 
+	TiXmlDocument doc(xmlFileName.c_str());
+	if(!doc.LoadFile()) {
+		cout << "Fehler beim Laden" << endl;
+		throw std::runtime_error("Unable to read XML-File");
+	}/* else {
+		// 		dump(&doc);
+	}*/
+
 	vtkMRMLScene* scene = GetMRMLScene();
+
+	if (!scene || !RegistrationQualityNode) {
+		vtkErrorMacro("ReadRegistrationXML: Invalid scene or parameter set node!");
+		return;
+	}
 
 	// First accumulate all "images" etc. from file
 	std::vector<vtkSmartPointer<DIRQAImage> > images;
@@ -421,11 +452,14 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 // 	qSlicerSubjectHierarchyDefaultPlugin* shDefaultPlugin = qSlicerSubjectHierarchyPluginHandler::instance()->defaultPlugin();
 // 	vtkMRMLSubjectHierarchyNode* regSHNode = shDefaultPlugin->createChildNode(NULL,"Registration");
 
-	TiXmlNode *child=doc.FirstChild();
-	while(child!=0 && child->Type()!=TiXmlNode::TINYXML_ELEMENT) child=child->NextSibling();
-
 	// Maps strings ("image", ...) to enum-values (IMAGE, ...)
 	DIRQAImage::initHashMap();
+
+	TiXmlNode *child=doc.FirstChild("dirqafile"); //TODO check NULL
+	if(!child) {
+		cout << "XML-File has wrong format" << endl;
+		throw std::runtime_error("Unable to read XML-File");
+	}
 
 	child=child->FirstChild(/*"image"*/);
 	while(child!=0) {
@@ -507,13 +541,13 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 
 	// Don't need SmartPointers here (Nodes are created within the scene)
 	vtkMRMLSubjectHierarchyNode* registrationSHNode = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
-		scene, NULL, vtkSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_SUBJECT, "Registration", NULL);
+		scene, NULL, vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_SUBJECT, "Registration", NULL);
 
 	// Each image defines one phase. Phase name like image tag
 	std::vector<vtkMRMLSubjectHierarchyNode*> phaseNodes;
 	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = images.begin(); it!=images.end(); ++it) {
 		vtkMRMLSubjectHierarchyNode* currentPhase = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
-			scene, registrationSHNode, vtkSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_STUDY,
+			scene, registrationSHNode, vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_STUDY,
 			(*it)->getTag().c_str(), NULL
 		);
 		phaseNodes.push_back(currentPhase);
@@ -522,6 +556,7 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 			scene, currentPhase, NULL, "Image", NULL);
 // 		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
 // 		currentImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
+		currentImage = currentImage!=NULL?NULL:currentImage;
 	}
 
 	associateImagesToPhase(images, warped, phaseNodes, "Warped");
@@ -529,10 +564,16 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 
 	cout << "registrationSHNode->GetID() = " << registrationSHNode->GetID() << endl;
 	this->RegistrationQualityNode->SetAndObserveSubjectHierarchyNodeID(registrationSHNode->GetID());
+
+	subjectModel->clear();
+	QStandardItem* item = new QStandardItem(registrationSHNode->GetNameWithoutPostfix().c_str());
+	appendSHNodeToQItem(registrationSHNode, item);
+	subjectModel->appendRow(item);
+
 }
 
 QStandardItemModel* vtkSlicerRegistrationQualityLogic::getTreeViewModel() {
-	return NULL/*subjectModel*/;
+	return subjectModel;
 }
 
 
@@ -1017,7 +1058,7 @@ void vtkSlicerRegistrationQualityLogic::SetDefaultDisplay(vtkMRMLScalarVolumeNod
 void vtkSlicerRegistrationQualityLogic
 ::CalculateStatistics(vtkMRMLScalarVolumeNode *inputVolume, double statisticValues[4] ) {
 	vtkNew<vtkImageAccumulate> StatImage;
-	StatImage->SetInput(inputVolume->GetImageData());
+	StatImage->SetInputData(inputVolume->GetImageData());
 	StatImage->Update();
 	statisticValues[0]= StatImage->GetMean()[0];
 	statisticValues[1]= StatImage->GetStandardDeviation()[0];
