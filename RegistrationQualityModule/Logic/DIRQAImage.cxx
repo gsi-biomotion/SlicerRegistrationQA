@@ -140,6 +140,10 @@ int DIRQAImage::getFixedIndex() {
 	return fixedIndex;
 }
 
+std::string const& DIRQAImage::getFileName() const {
+	return fileName;
+}
+
 bool DIRQAImage::isLoaded() {
 	return loaded;
 }

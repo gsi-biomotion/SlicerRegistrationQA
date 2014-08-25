@@ -11,6 +11,7 @@
 #include <QCheckBox>
 #include <QTimer>
 #include <QStandardItemModel>
+#include <QMenu>
 
 // SlicerQt includes
 #include <qSlicerAbstractCoreModule.h>
@@ -480,8 +481,20 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	d->StillErrorLabel->setVisible(false);
 
 	//new
-	d->subjectTab->setModel(d->logic()->getTreeViewModel());
-	d->subjectTab->header()->hide();
+	d->subjectTreeView->setModel(d->logic()->getTreeViewModel());
+	d->subjectTreeView->header()->hide();
+
+	contextMenu = new QMenu(d->subjectTreeView);
+	contextMenuShowAction = new QAction("Show",contextMenu);
+	contextMenu->addAction(contextMenuShowAction);
+	connect(contextMenu, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuClicked(QAction*)));
+
+
+
+	d->subjectTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(d->subjectTreeView, SIGNAL(customContextMenuRequested(QPoint const&)), this, SLOT(treeViewContextMenu(QPoint const&)));
+
+	connect(d->loadPhaseButton, SIGNAL(clicked(bool)), this, SLOT(loadPhaseClicked(bool)));
 
 	//end new
 
@@ -514,6 +527,34 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->xmlFileInput, SIGNAL(editingFinished()), this, SLOT (xmlFileNameEdited()));
 	connect(d->loadXMLButton, SIGNAL(clicked()), this, SLOT (loadXMLClicked()));
 }
+
+// newNode
+
+void qSlicerRegistrationQualityModuleWidget::treeViewContextMenu(QPoint const& clickedPoint) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	cout << "Context Menu! x=" << clickedPoint.x() << " y=" << clickedPoint.y();
+	QModelIndex index = d->subjectTreeView->indexAt(clickedPoint);
+	cout << " data=" << index.data().toString().toStdString() << endl;
+
+	contextMenu->popup(d->subjectTreeView->mapToGlobal(clickedPoint));
+}
+
+void qSlicerRegistrationQualityModuleWidget::contextMenuClicked(QAction*) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+	cout << "Context Menu Action" << endl;
+	QModelIndex index = d->subjectTreeView->selectionModel()->currentIndex();
+	d->logic()->showNode(&index);
+}
+
+void qSlicerRegistrationQualityModuleWidget::loadPhaseClicked(bool) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+	cout << "loadPhase" << endl;
+	QModelIndex index = d->subjectTreeView->selectionModel()->currentIndex();
+	d->logic()->showNode(&index);
+}
+
+// end new
 
 //-----------------------------------------------------------------------------
 // Squared Difference

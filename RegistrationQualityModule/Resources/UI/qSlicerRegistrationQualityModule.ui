@@ -128,7 +128,7 @@
 									<attribute name="title">
 										<string>Classic</string>
 									</attribute>
-									<layout class="QFormLayout" name="formLayout_2">
+									<layout class="QFormLayout" name="classicLayout">
 										<item row="0" column="0">
 											<widget class="QLabel" name="InputVolumeLabel_2">
 												<property name="toolTip">
@@ -159,288 +159,321 @@
 													</stringlist>
 												</property>
 												<property name="baseName">
-													<string/>
-													</property>
-													<property name="noneEnabled">
-														<bool>true</bool>
-													</property>
-													<property name="addEnabled">
-														<bool>false</bool>
-													</property>
-													<property name="removeEnabled">
-														<bool>true</bool>
-													</property>
-													<property name="editEnabled">
-														<bool>true</bool>
-													</property>
-													<property name="renameEnabled">
-														<bool>true</bool>
-													</property>
-												</widget>
-											</item>
-											<item row="1" column="0">
-												<widget class="QLabel" name="Input_VolumeLabel_3">
-													<property name="toolTip">
-														<string>Warped image for visualizing transform nodes</string>
-													</property>
-													<property name="text">
-														<string>Warped Image</string>
-													</property>
-												</widget>
-											</item>
-											<item row="1" column="1">
-												<widget class="qMRMLNodeComboBox" name="InputWarpedComboBox">
-													<property name="enabled">
-														<bool>false</bool>
-													</property>
-													<property name="sizePolicy">
-														<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-															<horstretch>0</horstretch>
-															<verstretch>0</verstretch>
-														</sizepolicy>
-													</property>
-													<property name="toolTip">
-														<string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Warped image for visualizing transform nodes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-													</property>
-													<property name="nodeTypes">
-														<stringlist>
-															<string>vtkMRMLScalarVolumeNode</string>
-														</stringlist>
-													</property>
-													<property name="baseName">
-														<string/>
-														</property>
-														<property name="noneEnabled">
-															<bool>true</bool>
-														</property>
-														<property name="addEnabled">
-															<bool>false</bool>
-														</property>
-														<property name="removeEnabled">
-															<bool>true</bool>
-														</property>
-														<property name="editEnabled">
-															<bool>true</bool>
-														</property>
-														<property name="renameEnabled">
-															<bool>true</bool>
-														</property>
-													</widget>
-												</item>
-												<item row="2" column="0">
-													<widget class="QLabel" name="InputVolumeLabel">
-														<property name="toolTip">
-															<string>Input deformation field as a vector volume</string>
-														</property>
-														<property name="text">
-															<string>Deformation Field</string>
-														</property>
-													</widget>
-												</item>
-												<item row="2" column="1">
-													<widget class="qMRMLNodeComboBox" name="InputFieldComboBox">
-														<property name="enabled">
-															<bool>false</bool>
-														</property>
-														<property name="sizePolicy">
-															<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-																<horstretch>0</horstretch>
-																<verstretch>0</verstretch>
-															</sizepolicy>
-														</property>
-														<property name="toolTip">
-															<string>Input deformation field as a vector volume</string>
-														</property>
-														<property name="nodeTypes">
-															<stringlist>
-																<string>vtkMRMLVectorVolumeNode</string>
-																<string>vtkMRMLTransformNode</string>
-															</stringlist>
-														</property>
-														<property name="baseName">
-															<string/>
-															</property>
-															<property name="noneEnabled">
-																<bool>true</bool>
-															</property>
-															<property name="addEnabled">
-																<bool>false</bool>
-															</property>
-															<property name="removeEnabled">
-																<bool>true</bool>
-															</property>
-															<property name="editEnabled">
-																<bool>true</bool>
-															</property>
-															<property name="renameEnabled">
-																<bool>true</bool>
-															</property>
-														</widget>
-													</item>
-													<item row="3" column="0">
-														<widget class="QLabel" name="InputVolumeLabel_inv">
-															<property name="toolTip">
-																<string>Input deformation field as a vector volume</string>
-															</property>
-															<property name="text">
-																<string>Inverse Deformation</string>
-															</property>
-														</widget>
-													</item>
-													<item row="3" column="1">
-														<widget class="qMRMLNodeComboBox" name="InputInvFieldComboBox">
-															<property name="enabled">
-																<bool>false</bool>
-															</property>
-															<property name="sizePolicy">
-																<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-																	<horstretch>0</horstretch>
-																	<verstretch>0</verstretch>
-																</sizepolicy>
-															</property>
-															<property name="toolTip">
-																<string>Input deformation field as a vector volume</string>
-															</property>
-															<property name="nodeTypes">
-																<stringlist>
-																	<string>vtkMRMLVectorVolumeNode</string>
-																	<string>vtkMRMLTransformNode</string>
-																</stringlist>
-															</property>
-															<property name="baseName">
-																<string/>
-																</property>
-																<property name="noneEnabled">
-																	<bool>true</bool>
-																</property>
-																<property name="addEnabled">
-																	<bool>false</bool>
-																</property>
-																<property name="removeEnabled">
-																	<bool>true</bool>
-																</property>
-																<property name="editEnabled">
-																	<bool>true</bool>
-																</property>
-																<property name="renameEnabled">
-																	<bool>true</bool>
-																</property>
-															</widget>
-														</item>
-													</layout>
-												</widget>
-												<widget class="QTreeView" name="subjectTab">
-													<attribute name="title">
-														<string>Subject Hierarchy</string>
-													</attribute>
-												</widget>
-												<widget class="QWidget" name="xmlTab">
-													<attribute name="title">
-														<string>XML</string>
-													</attribute>
-													<layout class="QFormLayout" name="formLayout">
-														<property name="fieldGrowthPolicy">
-															<enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-														</property>
-														<item row="0" column="0">
-															<widget class="QPushButton" name="loadXMLButton">
-																<property name="text">
-																	<string>Load XML-File</string>
-																</property>
-															</widget>
-														</item>
-														<item row="0" column="1">
-															<widget class="QLineEdit" name="xmlFileInput"/>
-															</item>
-															<item row="1" column="1">
-																<widget class="qMRMLNodeComboBox" name="InputSubjectComboBox">
-																	<property name="enabled">
-																		<bool>true</bool>
-																	</property>
-																	<property name="sizePolicy">
-																		<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-																			<horstretch>0</horstretch>
-																			<verstretch>0</verstretch>
-																		</sizepolicy>
-																	</property>
-																	<property name="toolTip">
-																		<string>Input Subject Hierarchy</string>
-																	</property>
-																	<property name="nodeTypes">
-																		<stringlist>
-																			<string>vtkMRMLSubjectHierarchyNode</string>
-																		</stringlist>
-																	</property>
-																	<property name="baseName">
-																		<string/>
-																		</property>
-																		<property name="noneEnabled">
-																			<bool>true</bool>
-																		</property>
-																		<property name="addEnabled">
-																			<bool>false</bool>
-																		</property>
-																		<property name="removeEnabled">
-																			<bool>true</bool>
-																		</property>
-																		<property name="editEnabled">
-																			<bool>true</bool>
-																		</property>
-																		<property name="renameEnabled">
-																			<bool>true</bool>
-																		</property>
-																	</widget>
-																</item>
-																<item row="1" column="0">
-																	<widget class="QLabel" name="Input_SubjectLabel_4">
-																		<property name="toolTip">
-																			<string>Input Subject Hierarchy</string>
-																		</property>
-																		<property name="text">
-																			<string>Subject Hierarchy</string>
-																		</property>
-																	</widget>
-																</item>
-																<item row="2" column="0">
-																	<widget class="QLabel" name="OutputModelLabel">
-																		<property name="text">
-																			<string>Output HTML</string>
-																		</property>
-																	</widget>
-																</item>
-																<item row="2" column="1">
-																	<widget class="qMRMLNodeComboBox" name="OutputModelComboBox">
-																		<property name="enabled">
-																			<bool>false</bool>
-																		</property>
-																		<property name="sizePolicy">
-																			<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-																				<horstretch>0</horstretch>
-																				<verstretch>0</verstretch>
-																			</sizepolicy>
-																		</property>
-																		<property name="toolTip">
-																			<string>Output model visualizing deformation field</string>
-																		</property>
-																		<property name="nodeTypes">
-																			<stringlist>
-																				<string>vtkMRMLModelNode</string>
-																			</stringlist>
-																		</property>
-																		<property name="noneEnabled">
-																			<bool>true</bool>
-																		</property>
-																		<property name="editEnabled">
-																			<bool>false</bool>
-																		</property>
-																		<property name="renameEnabled">
-																			<bool>true</bool>
-																		</property>
-																	</widget>
-																</item>
-															</layout>
-														</widget>
-													</widget>
+													<string></string>
+												</property>
+												<property name="noneEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="addEnabled">
+													<bool>false</bool>
+												</property>
+												<property name="removeEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="editEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="renameEnabled">
+													<bool>true</bool>
+												</property>
+											</widget>
+										</item>
+										<item row="1" column="0">
+											<widget class="QLabel" name="Input_VolumeLabel_3">
+												<property name="toolTip">
+													<string>Warped image for visualizing transform nodes</string>
+												</property>
+												<property name="text">
+													<string>Warped Image</string>
+												</property>
+											</widget>
+										</item>
+										<item row="1" column="1">
+											<widget class="qMRMLNodeComboBox" name="InputWarpedComboBox">
+												<property name="enabled">
+													<bool>false</bool>
+												</property>
+												<property name="sizePolicy">
+													<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+														<horstretch>0</horstretch>
+														<verstretch>0</verstretch>
+													</sizepolicy>
+												</property>
+												<property name="toolTip">
+													<string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Warped image for visualizing transform nodes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+												</property>
+												<property name="nodeTypes">
+													<stringlist>
+														<string>vtkMRMLScalarVolumeNode</string>
+													</stringlist>
+												</property>
+												<property name="baseName">
+													<string></string>
+												</property>
+												<property name="noneEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="addEnabled">
+													<bool>false</bool>
+												</property>
+												<property name="removeEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="editEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="renameEnabled">
+													<bool>true</bool>
+												</property>
+											</widget>
+										</item>
+										<item row="2" column="0">
+											<widget class="QLabel" name="InputVolumeLabel">
+												<property name="toolTip">
+													<string>Input deformation field as a vector volume</string>
+												</property>
+												<property name="text">
+													<string>Deformation Field</string>
+												</property>
+											</widget>
+										</item>
+										<item row="2" column="1">
+											<widget class="qMRMLNodeComboBox" name="InputFieldComboBox">
+												<property name="enabled">
+													<bool>false</bool>
+												</property>
+												<property name="sizePolicy">
+													<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+														<horstretch>0</horstretch>
+														<verstretch>0</verstretch>
+													</sizepolicy>
+												</property>
+												<property name="toolTip">
+													<string>Input deformation field as a vector volume</string>
+												</property>
+												<property name="nodeTypes">
+													<stringlist>
+														<string>vtkMRMLVectorVolumeNode</string>
+														<string>vtkMRMLTransformNode</string>
+													</stringlist>
+												</property>
+												<property name="baseName">
+													<string></string>
+												</property>
+												<property name="noneEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="addEnabled">
+													<bool>false</bool>
+												</property>
+												<property name="removeEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="editEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="renameEnabled">
+													<bool>true</bool>
+												</property>
+											</widget>
+										</item>
+										<item row="3" column="0">
+											<widget class="QLabel" name="InputVolumeLabel_inv">
+												<property name="toolTip">
+													<string>Input deformation field as a vector volume</string>
+												</property>
+												<property name="text">
+													<string>Inverse Deformation</string>
+												</property>
+											</widget>
+										</item>
+										<item row="3" column="1">
+											<widget class="qMRMLNodeComboBox" name="InputInvFieldComboBox">
+												<property name="enabled">
+													<bool>false</bool>
+												</property>
+												<property name="sizePolicy">
+													<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+														<horstretch>0</horstretch>
+														<verstretch>0</verstretch>
+													</sizepolicy>
+												</property>
+												<property name="toolTip">
+													<string>Input deformation field as a vector volume</string>
+												</property>
+												<property name="nodeTypes">
+													<stringlist>
+														<string>vtkMRMLVectorVolumeNode</string>
+														<string>vtkMRMLTransformNode</string>
+													</stringlist>
+												</property>
+												<property name="baseName">
+													<string></string>
+												</property>
+												<property name="noneEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="addEnabled">
+													<bool>false</bool>
+												</property>
+												<property name="removeEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="editEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="renameEnabled">
+													<bool>true</bool>
+												</property>
+											</widget>
+										</item>
+									</layout>
+								</widget>
+
+
+								<widget class="QWidget" name="subjectTab">
+									<property name="enabled">
+										<bool>true</bool>
+									</property>
+									<property name="cursor">
+										<cursorShape>ArrowCursor</cursorShape>
+									</property>
+									<attribute name="title">
+										<string>Subject Hierarchy</string>
+									</attribute>
+									<layout class="QFormLayout" name="subjectHierarchyLayout">
+										<item row="0" column="0" colspan="2">
+											<widget class="QTreeView" name="subjectTreeView">
+												<attribute name="title">
+													<string>Subject Hierarchy</string>
+												</attribute>
+											</widget>
+										</item>
+										<item row="1" column="0">
+											<widget class="QPushButton" name="loadPhaseButton">
+												<property name="text">
+													<string>Load Phase</string>
+												</property>
+											</widget>
+										</item>
+										<item row="1" column="1">
+											<widget class="QPushButton" name="calcPhaseButton">
+												<property name="text">
+													<string>Calc Phase</string>
+												</property>
+											</widget>
+										</item>
+									</layout>
+								</widget>
+
+
+								<widget class="QWidget" name="xmlTab">
+									<attribute name="title">
+										<string>XML</string>
+									</attribute>
+									<layout class="QFormLayout" name="xmlLayout">
+										<property name="fieldGrowthPolicy">
+											<enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+										</property>
+										<item row="0" column="0">
+											<widget class="QPushButton" name="loadXMLButton">
+												<property name="text">
+													<string>Load XML-File</string>
+												</property>
+											</widget>
+										</item>
+										<item row="0" column="1">
+											<widget class="QLineEdit" name="xmlFileInput"></widget>
+										</item>
+										<item row="1" column="1">
+											<widget class="qMRMLNodeComboBox" name="InputSubjectComboBox">
+												<property name="enabled">
+													<bool>true</bool>
+												</property>
+												<property name="sizePolicy">
+													<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+														<horstretch>0</horstretch>
+														<verstretch>0</verstretch>
+													</sizepolicy>
+												</property>
+												<property name="toolTip">
+													<string>Input Subject Hierarchy</string>
+												</property>
+												<property name="nodeTypes">
+													<stringlist>
+														<string>vtkMRMLSubjectHierarchyNode</string>
+													</stringlist>
+												</property>
+												<property name="baseName">
+													<string></string>
+												</property>
+												<property name="noneEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="addEnabled">
+													<bool>false</bool>
+												</property>
+												<property name="removeEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="editEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="renameEnabled">
+													<bool>true</bool>
+												</property>
+											</widget>
+										</item>
+										<item row="1" column="0">
+											<widget class="QLabel" name="Input_SubjectLabel_4">
+												<property name="toolTip">
+													<string>Input Subject Hierarchy</string>
+												</property>
+												<property name="text">
+													<string>Subject Hierarchy</string>
+												</property>
+											</widget>
+										</item>
+										<item row="2" column="0">
+											<widget class="QLabel" name="OutputModelLabel">
+												<property name="text">
+													<string>Output HTML</string>
+												</property>
+											</widget>
+										</item>
+										<item row="2" column="1">
+											<widget class="qMRMLNodeComboBox" name="OutputModelComboBox">
+												<property name="enabled">
+													<bool>false</bool>
+												</property>
+												<property name="sizePolicy">
+													<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+														<horstretch>0</horstretch>
+														<verstretch>0</verstretch>
+													</sizepolicy>
+												</property>
+												<property name="toolTip">
+													<string>Output model visualizing deformation field</string>
+												</property>
+												<property name="nodeTypes">
+													<stringlist>
+														<string>vtkMRMLModelNode</string>
+													</stringlist>
+												</property>
+												<property name="noneEnabled">
+													<bool>true</bool>
+												</property>
+												<property name="editEnabled">
+													<bool>false</bool>
+												</property>
+												<property name="renameEnabled">
+													<bool>true</bool>
+												</property>
+											</widget>
+										</item>
+									</layout>
+								</widget>
+							</widget>
 						</item>
 					</layout>
 				</widget>

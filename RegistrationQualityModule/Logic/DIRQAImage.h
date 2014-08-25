@@ -40,6 +40,7 @@ public:
 	std::string getTag();
 	int getIndex();
 	int getFixedIndex();
+	std::string const& getFileName() const;
  	bool isLoaded();
 	void load(vtkSlicerVolumesLogic*);
 

@@ -307,6 +307,121 @@ void dump(TiXmlNode* n, int indent=0) {
 	}
 }
 
+vtkMRMLSubjectHierarchyNode* vtkSlicerRegistrationQualityLogic::getPhaseByIndex(int index) {
+	if(!RegistrationQualityNode->GetSubjectHierarchyNodeID()) {
+		cout << "Error: No SubjectHierarchyNodeID" << endl;
+		return NULL;
+	}
+	vtkMRMLSubjectHierarchyNode* shNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
+		GetMRMLScene()->GetNodeByID(RegistrationQualityNode->GetSubjectHierarchyNodeID()));
+
+	if(!shNode) {
+		cout << "Error: Invalid RegistrationNode" << endl;
+		return NULL;
+	}
+
+	cout << "looking for index " << index << endl;
+	for(int i=0; i<=index;i++) {
+		cout << "trying node " << i << endl;
+		vtkMRMLSubjectHierarchyNode* childNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(shNode->GetNthChildNode(index));
+		if(childNode) {
+			cout << "node " << i << " exists" << endl;
+			const char* attr = childNode->GetAttribute("index");
+			if(attr && atoi(attr) == index) {
+				cout << "node " << i << " has correct index: " << attr << endl;
+				return childNode;
+			}
+		}
+	}
+
+	return NULL;
+
+}
+
+bool vtkSlicerRegistrationQualityLogic::loadFromSHNode(vtkMRMLSubjectHierarchyNode* sHNode) {
+	if(!sHNode) {
+		cout << "Error: Cannot load from nullpointer" << endl;
+		return false;
+	}
+
+	const char* filename = sHNode->GetAttribute("filename");
+	const char* tag = sHNode->GetAttribute("tag");
+	cout << "Image: " << sHNode->GetID() << " file=" << (filename!=NULL?filename:"invalid") << endl;
+
+	if(filename && tag && !sHNode->GetAssociatedNodeID()) {
+		vtkMRMLVolumeNode* imageNode = Internal->VolumesLogic->AddArchetypeVolume(filename, tag, 0, NULL);
+
+		if(imageNode) {
+			sHNode->SetAssociatedNodeID(imageNode->GetID());
+			cout << "New volume successfully loaded!" << endl;
+		} else {
+			cout << "Volume could not be loaded!" << endl;
+			return false;
+		}
+	}
+	return true;
+}
+
+void vtkSlicerRegistrationQualityLogic::showNode(QModelIndex* index) {
+
+	if(!index->isValid()) {
+		cout << "vtkSlicerRegistrationQualityLogic::showNode: Invalid QModelIndex" << endl;
+		return;
+	}
+
+	if(index->parent().isValid()) {
+		cout << "vtkSlicerRegistrationQualityLogic::showNode: Parent index should not be valid for phase node" << endl;
+		return;
+	}
+
+	vtkMRMLSubjectHierarchyNode* node = vtkMRMLSubjectHierarchyNode::SafeDownCast(static_cast<vtkObjectBase*>(
+		getTreeViewModel()->itemFromIndex(*index)->data().value<void*>()));
+	if(!node) {
+		cout << "node is null" << endl;
+		return;
+	}
+
+	cout << "NodeID: " << node->GetID() << endl;
+
+	vtkMRMLSubjectHierarchyNode* imageSHNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(node,"Image");
+	if(imageSHNode) {
+		loadFromSHNode(imageSHNode);
+	} else {
+		cout << "no child with name \"Image\"" << endl;
+	}
+
+	vtkMRMLSubjectHierarchyNode* warpedSHNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(node,"Warped");
+	if(warpedSHNode) {
+		loadFromSHNode(warpedSHNode);
+	} else {
+		cout << "no child with name \"Warped\"" << endl;
+	}
+
+	vtkMRMLSubjectHierarchyNode* vectorSHNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(node,"Vector");
+	if(vectorSHNode) {
+		loadFromSHNode(vectorSHNode);
+	} else {
+		cout << "no child with name \"Vector\"" << endl;
+	}
+
+	const char* refIndex = node->GetAttribute("reference");
+	if(!refIndex) {
+		cout << "Error: No reference phase" << endl;
+	}
+	vtkMRMLSubjectHierarchyNode* refNode = getPhaseByIndex(atoi(refIndex));
+	if(refNode) {
+		vtkMRMLSubjectHierarchyNode* refImageNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(refNode,"Image");
+		if(refImageNode) {
+			loadFromSHNode(refImageNode);
+		} else {
+			cout << "no child with name \"Image\" in reference node" << endl;
+		}
+	} else {
+		cout << "Error: Reference Node doesn't exist?" << endl;
+	}
+
+}
+
 bool vtkSlicerRegistrationQualityLogic::checkRegistrationIndices(
 	std::vector<vtkSmartPointer<DIRQAImage> >& images,
 	std::vector<vtkSmartPointer<DIRQAImage> >& warped) {
@@ -400,7 +515,24 @@ void vtkSlicerRegistrationQualityLogic::associateImagesToPhase(
 		vtkMRMLSubjectHierarchyNode* currentWarpedImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
 			GetMRMLScene(), phaseNodes.at(imageIndex), NULL, shNodeTag.c_str(), NULL);
 // 		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
-// 		currentWarpedImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
+		currentWarpedImage->SetAttribute("filename",(*it)->getFileName().c_str());
+		currentWarpedImage->SetAttribute("tag",(*it)->getTag().c_str());
+
+		char refIndex[21]; // enough for 64bit numbers + \0
+		sprintf(refIndex,"%d",(*it)->getFixedIndex());
+		const char* reference = phaseNodes.at(imageIndex)->GetAttribute("reference");
+
+// 		currentWarpedImage->SetAttribute("reference",refIndex); // set image attribute
+		if(reference) { // set phase attribute
+			if(atoi(reference) != (*it)->getFixedIndex()) {
+				throw std::runtime_error("Error: Inconsistent reference phase within phase.");
+			} else {
+				cout << "ref phase already set" << endl;
+			}
+		} else {
+			phaseNodes.at(imageIndex)->SetAttribute("reference",refIndex);
+			cout << "setting ref phase" << endl;
+		}
 		currentWarpedImage = currentWarpedImage!=NULL?NULL:currentWarpedImage;
 	}
 }
@@ -414,7 +546,9 @@ void appendSHNodeToQItem(vtkMRMLSubjectHierarchyNode* node, QStandardItem* item)
 			cout << "Error: SHNode is NULL!" << endl;
 			continue;
 		}
-		QStandardItem* newItem = new QStandardItem(childNode->GetNameWithoutPostfix().c_str());
+		QStandardItem* newItem = new QStandardItem();
+		newItem->setText(childNode->GetNameWithoutPostfix().c_str());
+		newItem->setData(QVariant::fromValue(static_cast<void*>(childNode)));
 		appendSHNodeToQItem(childNode, newItem);
 		item->appendRow(newItem);
 	}
@@ -463,7 +597,7 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 
 	child=child->FirstChild(/*"image"*/);
 	while(child!=0) {
-		cout << "--constructor--" << endl;
+// 		cout << "--constructor--" << endl;
 		vtkSmartPointer<DIRQAImage> di = vtkSmartPointer<DIRQAImage>::New();
 		di->readFromXML(*child);
 		// 		di->load(Internal->VolumesLogic);
@@ -554,8 +688,15 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 
 		vtkMRMLSubjectHierarchyNode* currentImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
 			scene, currentPhase, NULL, "Image", NULL);
+
+		char index[21]; // enough for 64bit numbers + \0
+		sprintf(index,"%d",(*it)->getIndex());
+		currentPhase->SetAttribute("index",index);
+
 // 		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
 // 		currentImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
+		currentImage->SetAttribute("filename",(*it)->getFileName().c_str());
+		currentImage->SetAttribute("tag",(*it)->getTag().c_str());
 		currentImage = currentImage!=NULL?NULL:currentImage;
 	}
 
@@ -566,16 +707,15 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 	this->RegistrationQualityNode->SetAndObserveSubjectHierarchyNodeID(registrationSHNode->GetID());
 
 	subjectModel->clear();
-	QStandardItem* item = new QStandardItem(registrationSHNode->GetNameWithoutPostfix().c_str());
+	QStandardItem* item = subjectModel->invisibleRootItem();
 	appendSHNodeToQItem(registrationSHNode, item);
-	subjectModel->appendRow(item);
+// 	subjectModel->appendRow(item);
 
 }
 
 QStandardItemModel* vtkSlicerRegistrationQualityLogic::getTreeViewModel() {
 	return subjectModel;
 }
-
 
 //--- Image Checks -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
@@ -752,7 +892,6 @@ void vtkSlicerRegistrationQualityLogic::Movie() {
 		}
 	}
 }
-
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 	//   Calling checkerboardfilter cli. Logic has been copied and modified from CropVolumeLogic onApply.
@@ -826,7 +965,6 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 				this->RegistrationQualityNode->GetCheckerboardVolumeNodeID()));
 	this->SetForegroundImage(checkerboardVolume,referenceVolume,0);
 }
-
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::Jacobian(int state) {
 

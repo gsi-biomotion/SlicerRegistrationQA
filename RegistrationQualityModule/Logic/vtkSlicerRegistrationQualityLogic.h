@@ -25,6 +25,7 @@ class vtkSlicerVolumesLogic;
 class DIRQAImage;
 class vtkMRMLSubjectHierarchyNode;
 class QStandardItemModel;
+class QModelIndex;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkSlicerRegistrationQualityLogic :
@@ -59,6 +60,9 @@ public:
 	void InverseConsist(int state);
 	void SetDefaultDisplay(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*);
 	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double statisticValues[4]);
+	vtkMRMLSubjectHierarchyNode* getPhaseByIndex(int index);
+	bool loadFromSHNode(vtkMRMLSubjectHierarchyNode* sHNode);
+	void showNode(QModelIndex* index);
 
 public:
 	void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);
