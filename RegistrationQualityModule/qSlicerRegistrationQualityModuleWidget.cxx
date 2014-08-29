@@ -418,6 +418,8 @@ void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* no
 void qSlicerRegistrationQualityModuleWidget::subjectHierarchyChanged(vtkMRMLNode* node) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 
+	cout << "qSlicerRegistrationQualityModuleWidget::subjectHierarchyChanged()" << endl;
+
 	//TODO: Move into updatefrommrml?
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 	if (!pNode || !this->mrmlScene() || !node) {
@@ -489,6 +491,9 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	contextMenu->addAction(contextMenuShowAction);
 	connect(contextMenu, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuClicked(QAction*)));
 
+	// Make the ComboBox only show "Registration" nodes.
+	d->InputSubjectComboBox->addAttribute("vtkMRMLSubjectHierarchyNode","DIRQARegistration");
+	connect(d->InputSubjectComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(subjectHierarchyChanged(vtkMRMLNode*)));
 
 
 	d->subjectTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -499,14 +504,11 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	//end new
 
 	connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegistrationQualityParametersNode(vtkMRMLNode*)));
-
 	connect(d->InputFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(vectorVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputInvFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(invVectorVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
 	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
-//	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
-//	connect(d->SquaredDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(squaredDiffVolumeChanged(vtkMRMLNode*)));
 
 	connect(d->FalseColorCheckBox, SIGNAL(clicked(bool)), this, SLOT (falseColorClicked(bool)));
 	connect(d->CheckerboardCheckBox, SIGNAL(clicked(bool)), this, SLOT (checkerboardClicked(bool)));

@@ -514,9 +514,9 @@ void vtkSlicerRegistrationQualityLogic::associateImagesToPhase(
 		// phaseNodes has same order (and size) as images
 		vtkMRMLSubjectHierarchyNode* currentWarpedImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
 			GetMRMLScene(), phaseNodes.at(imageIndex), NULL, shNodeTag.c_str(), NULL);
-// 		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
 		currentWarpedImage->SetAttribute("filename",(*it)->getFileName().c_str());
 		currentWarpedImage->SetAttribute("tag",(*it)->getTag().c_str());
+		currentWarpedImage->SetAttribute("DIRQAWarped",""); // TODO set for Vector, ... accordingly
 
 		char refIndex[21]; // enough for 64bit numbers + \0
 		sprintf(refIndex,"%d",(*it)->getFixedIndex());
@@ -673,9 +673,13 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 		return;
 	}
 
+	// Create main SubjectHierarchyNode
 	// Don't need SmartPointers here (Nodes are created within the scene)
 	vtkMRMLSubjectHierarchyNode* registrationSHNode = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
 		scene, NULL, vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_SUBJECT, "Registration", NULL);
+
+	// Set SubjectHierarchy "node type" (used for the NodeComboBox)
+	registrationSHNode->SetAttribute("DIRQARegistration","");
 
 	// Each image defines one phase. Phase name like image tag
 	std::vector<vtkMRMLSubjectHierarchyNode*> phaseNodes;
@@ -688,6 +692,10 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 
 		vtkMRMLSubjectHierarchyNode* currentImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
 			scene, currentPhase, NULL, "Image", NULL);
+
+		// Set SubjectHierarchy "node types"
+		currentPhase->SetAttribute("DIRQAPhase","");
+		currentImage->SetAttribute("DIRQAImage","");
 
 		char index[21]; // enough for 64bit numbers + \0
 		sprintf(index,"%d",(*it)->getIndex());
