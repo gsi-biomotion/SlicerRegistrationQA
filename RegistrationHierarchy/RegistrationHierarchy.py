@@ -750,7 +750,7 @@ class RegistrationHierarchyLogic:
 	  dirqaName = dirqaNode.GetNameWithoutPostfix()
 	  #Look for statistics:
 	  stringList = []
-	  if dirqaName == NAME_ABSDIFF or dirqaName == NAME_JACOBIAN or dirqaName == NAME_INVCONSIST:
+	  if dirqaName == NAME_ABSDIFF or dirqaName == NAME_INVABSDIFF or dirqaName == NAME_JACOBIAN or dirqaName == NAME_INVCONSIST:
 	    stringList = ["Mean","STD","Max","Min"]
 		  
 	  if dirqaName == NAME_VECTOR or dirqaName == NAME_INVVECTOR:
@@ -881,6 +881,8 @@ class RegistrationHierarchyLogic:
       elif filePath.find('cbt') > -1:
 	import LoadCTX
         loadLogic = LoadCTX.LoadCTXLogic()
+        print filePath
+        print loadLogic.loadCube(filePath,3)
         volume = slicer.util.getNode(loadLogic.loadCube(filePath,3))
         if volume:
 	   #Write it in hierarchy node for later use

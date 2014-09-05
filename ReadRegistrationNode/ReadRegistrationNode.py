@@ -297,8 +297,8 @@ class ReadRegistrationNodeWidget:
       print "Input Patient Name!"
       return 
     
-    self.pathCT.text = '/u/kanderle/AIXd/Data/FC/' + patientName + '/'
-    #self.pathCT.text = '/u/motion/Data/PatientData/HIT/' + patientName + '/13062014/'
+    #self.pathCT.text = '/u/kanderle/AIXd/Data/FC/' + patientName + '/'
+    self.pathCT.text = '/u/motion/Data/PatientData/HIT/' + patientName + '/'
     #self.pathCT.text = '/u/motion/Data/PatientData2/PIGS/' + patientName + '/'
 
   
@@ -407,18 +407,19 @@ class ReadRegistrationNodeLogic:
     
     ##ctDirectoryNative = patientDirectory + '4DCT_1/NRRD/'
     ##ctDirectoryContrast = patientDirectory + '4DCT_2/NRRD/'
-    ctDirectoryNative = patientDirectory + 'CTX/'
-    ctDirectoryContrast = '/u/motion/AIXd/Data/PatientData/FC/' + patientName +'/4D/Phases/Plan/'
-    #ctDirectoryNative = patientDirectory + '4DCT_1/MHA/'
-    #ctDirectoryContrast = patientDirectory  + '4DCT_2/MHA/'
+    #ctDirectoryNative = patientDirectory + 'CTX/'
+    #ctDirectoryContrast = '/u/motion/AIXd/Data/PatientData/FC/' + patientName +'/4D/Phases/Plan/'
+    ctDirectoryNative = patientDirectory + '4DCT_1/CTX/'
+    ctDirectoryContrast = patientDirectory  + '4DCT_2/CTX/'
     
     
     if fromContrast:
       print "Making registration from contrast."
       registrationNodeFromContrast = subjectNode.GetChildWithName(subjectNode,'Registration Node From Contrast')
       if not registrationNodeFromContrast:
-        vectorDirectory = patientDirectory + 'Registration/Plan/'
+        #vectorDirectory = patientDirectory + 'Registration/Plan/'
         #vectorDirectory = patientDirectory + '4DCT_1/Registration/FromContrast/'
+        vectorDirectory = '/u/kanderle/MHA/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Next, create Registration Node for registration from Contrast
@@ -592,12 +593,12 @@ class ReadRegistrationNodeLogic:
       #Look for 00 files
       #TODO: Change to .mha
       for fileName in os.listdir(ctDirectoryNative):
-	if fileName.find('_00.ctx') > -1:
+	if fileName.find('_00.nrrd') > -1:
 	  ctNode = self.createChild(phaseNode0,NAME_CT)
 	  ctNode.SetAttribute('FilePath',ctDirectoryNative+fileName)
 	  
       for fileName in os.listdir(ctDirectoryContrast):
-	if fileName.find('ctx') > -1:
+	if fileName.find('_00.nrrd') > -1:
 	  ctNode = self.createChild(phaseNode1,NAME_CT)
 	  ctNode.SetAttribute('FilePath',ctDirectoryContrast+fileName)
 	  
@@ -681,16 +682,27 @@ class ReadRegistrationNodeLogic:
   def checkVectorDirectory(self, vectorDirectory, phaseNode, phase):
     if os.path.exists(vectorDirectory):
       for file in os.listdir(vectorDirectory):
-	index = file.find('_x.cbt')
-        if index > -1:
-	  if file[index-5:index-3] == phase:
-	    vectorNode = self.createChild(phaseNode,NAME_VECTOR)
-	  elif file[index-2:index] == phase:
-	    vectorNode = self.createChild(phaseNode,NAME_INVVECTOR)
+	index = file.find('_vf.mha')
+	if index > -1:
+	  #Find out warpedimage or invWarpedImage
+	  if file[index-2:index] == phase:
+	    warpNode = self.createChild(phaseNode,NAME_VECTOR)
+	  elif file[index-8:index-6] == phase:
+	    warpNode = self.createChild(phaseNode,NAME_INVVECTOR)
 	  else:
 	    continue
-	  if vectorNode:
-	    vectorNode.SetAttribute('FilePath',vectorDirectory+file)
+	  if warpNode:
+	    warpNode.SetAttribute('FilePath',vectorDirectory+file)
+	#index = file.find('_x.cbt')
+        #if index > -1:
+	  #if file[index-5:index-3] == phase:
+	    #vectorNode = self.createChild(phaseNode,NAME_VECTOR)
+	  #elif file[index-2:index] == phase:
+	    #vectorNode = self.createChild(phaseNode,NAME_INVVECTOR)
+	  #else:
+	    #continue
+	  #if vectorNode:
+	    #vectorNode.SetAttribute('FilePath',vectorDirectory+file)
       
 
   def createChild(self,hierarchyNode,string):
