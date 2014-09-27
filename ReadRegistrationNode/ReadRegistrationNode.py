@@ -298,7 +298,7 @@ class ReadRegistrationNodeWidget:
       return 
     
     #self.pathCT.text = '/u/kanderle/AIXd/Data/FC/' + patientName + '/'
-    self.pathCT.text = '/u/motion/Data/PatientData/HIT/' + patientName + '/'
+    self.pathCT.text = '/u/motion/Data/PatientData/HIT/' + patientName + '/25062014/'
     #self.pathCT.text = '/u/motion/Data/PatientData2/PIGS/' + patientName + '/'
 
   
