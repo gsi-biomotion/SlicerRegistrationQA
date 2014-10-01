@@ -19,7 +19,7 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->InvVectorVolumeNodeID = NULL;
 	this->ReferenceVolumeNodeID = NULL;
 	this->WarpedVolumeNodeID = NULL;
-	this->OutputModelNodeID = NULL;
+	this->OutputDirectory = NULL;
 	this->ROINodeID = NULL;
 
 	//Checkerboard Parameters
@@ -37,6 +37,8 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->InverseConsistVolumeNodeID = NULL;
 	InverseConsistStatistics[0] = InverseConsistStatistics[1] = InverseConsistStatistics[2] = InverseConsistStatistics[3] = 0;
 
+	NumberOfScreenshots = 1;
+	
 	MovieBoxRedState = 0;
 	MovieBoxYellowState = 0;
 	MovieBoxGreenState = 0;
@@ -50,7 +52,7 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetInvVectorVolumeNodeID(NULL);
 	this->SetReferenceVolumeNodeID(NULL);
 	this->SetWarpedVolumeNodeID(NULL);
-	this->SetOutputModelNodeID(NULL);
+	this->SetOutputDirectory(NULL);
 	this->SetROINodeID(NULL);
 	this->SetCheckerboardVolumeNodeID(NULL);
 	this->SetAbsoluteDiffVolumeNodeID(NULL);
@@ -84,8 +86,8 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 			this->SetWarpedVolumeNodeID(attValue);
 			continue;
 		}
-		if (!strcmp(attName, "OutputModelNodeID")) {
-			this->SetOutputModelNodeID(attValue);
+		if (!strcmp(attName, "OutputDirectory")) {
+			this->SetOutputDirectory(attValue);
 			continue;
 		}
 		if (!strcmp(attName, "ROINodeID")) {
@@ -146,8 +148,8 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 			<< (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\"";
 	of << indent << " WarpedVolumeNodeID=\""
 			<< (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\"";
-	of << indent << " OutputModelNodeID=\""
-			<< (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\"";
+	of << indent << " OutputDirectory=\""
+			<< (this->OutputDirectory ? this->OutputDirectory : "NULL") << "\"";
 	of << indent << " ROINodeID=\""
 			<< (this->ROINodeID ? this->ROINodeID : "NULL") << "\"";
 
@@ -178,7 +180,7 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 	this->SetInvVectorVolumeNodeID(node->GetInvVectorVolumeNodeID());
 	this->SetReferenceVolumeNodeID(node->GetReferenceVolumeNodeID());
 	this->SetWarpedVolumeNodeID(node->GetWarpedVolumeNodeID());
-	this->SetOutputModelNodeID(node->GetOutputModelNodeID());
+	this->SetOutputDirectory(node->GetOutputDirectory());
 	this->SetROINodeID(node->GetROINodeID());
 
 // 	this->SetCheckerboardVolumeNodeID(node->GetCheckerboardVolumeNodeID());
@@ -204,8 +206,8 @@ void vtkMRMLRegistrationQualityNode::UpdateReferenceID(const char *oldID, const 
 		this->SetAndObserveInvVectorVolumeNodeID(newID);
 	}
 
-	if (this->OutputModelNodeID && !strcmp(oldID, this->OutputModelNodeID)) {
-		this->SetAndObserveOutputModelNodeID(newID);
+	if (this->OutputDirectory && !strcmp(oldID, this->OutputDirectory)) {
+		this->SetAndObserveOutputDirectory(newID);
 	}
 }
 
@@ -257,14 +259,14 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveWarpedVolumeNodeID(const char*
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveOutputModelNodeID(const char* id) {
-	if (this->OutputModelNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->OutputModelNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveOutputDirectory(const char* id) {
+	if (this->OutputDirectory) {
+		this->Scene->RemoveReferencedNodeID(this->OutputDirectory, this);
 	}
-	this->SetOutputModelNodeID(id);
+	this->SetOutputDirectory(id);
 
 	if (id) {
-		this->Scene->AddReferencedNodeID(this->OutputModelNodeID, this);
+		this->Scene->AddReferencedNodeID(this->OutputDirectory, this);
 	}
 }
 //----------------------------------------------------------------------------
@@ -339,8 +341,8 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 	os << indent << " WarpedNodeID = "
 			<< (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\n";
 
-	os << indent << " OutputModelNodeID = "
-			<< (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\n";
+	os << indent << " OutputDirectory = "
+			<< (this->OutputDirectory ? this->OutputDirectory : "NULL") << "\n";
 	os << indent << " ROINodeID = "
 			<< (this->ROINodeID ? this->ROINodeID : "NULL") << "\n";
 // 	os << indent << " CheckerboardVolumeNodeID = "

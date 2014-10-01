@@ -10,6 +10,8 @@
 #include <QFileDialog>
 #include <QCheckBox>
 #include <QTimer>
+#include <QInputDialog>
+#include <QLineEdit>
 
 // SlicerQt includes
 #include <qSlicerAbstractCoreModule.h>
@@ -176,12 +178,6 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 			d->InputWarpedComboBox->setCurrentNode(pNode->GetWarpedVolumeNodeID());
 		} else {
 			this->warpedVolumeChanged(d->InputWarpedComboBox->currentNode());
-		}
-
-		if (pNode->GetOutputModelNodeID()) {
-			d->OutputModelComboBox->setCurrentNode(pNode->GetOutputModelNodeID());
-		} else {
-			this->outputModelChanged(d->OutputModelComboBox->currentNode());
 		}
 		
 		if (pNode->GetROINodeID()) {
@@ -412,17 +408,22 @@ void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* no
 // 	logic->ImageDifference();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* node) {
+void qSlicerRegistrationQualityModuleWidget::outputDirectoyChanged() {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 
 	//TODO: Move into updatefrommrml?
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	if (!pNode || !this->mrmlScene() || !node) {
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+	QString fileName = QFileDialog::getExistingDirectory(NULL, QString( tr("Set directory for output file") ));
+	
+	if (fileName.isNull()) {
 		return;
 	}
 
 	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveOutputModelNodeID(node->GetID());
+	pNode->SetAndObserveOutputDirectory(fileName.toAscii().data());
 	pNode->DisableModifiedEventOff();
 }
 //-----------------------------------------------------------------------------
@@ -452,11 +453,13 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->InputInvFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(invVectorVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
-	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
 	connect(d->ROIInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(ROIChanged(vtkMRMLNode*)));
 //	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
 //	connect(d->AbsoluteDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(absoluteDiffVolumeChanged(vtkMRMLNode*)));
 
+	connect(d->SaveScreenshotPushButton, SIGNAL(clicked()), this, SLOT(saveScreenshotClicked()));
+	connect(d->SaveOutputFilePushButton, SIGNAL(clicked()), this, SLOT(saveOutputFileClicked()));
+	
 	connect(d->FalseColorCheckBox, SIGNAL(clicked(bool)), this, SLOT (falseColorClicked(bool)));
 	connect(d->CheckerboardCheckBox, SIGNAL(clicked(bool)), this, SLOT (checkerboardClicked(bool)));
 	connect(d->AbsoluteDiffCheckBox, SIGNAL(clicked(bool)), this, SLOT (absoluteDiffClicked(bool)));
@@ -474,6 +477,66 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
 }
 
+//-----------------------------------------------------------------------------
+// Output File
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::saveScreenshotClicked() {
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+
+	
+	
+	if (! pNode->GetOutputDirectory() ) {
+		this->outputDirectoyChanged();
+	}
+	
+	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+	
+	bool ok;
+	QString text = QInputDialog::getText(NULL, tr("QInputDialog::getText()"),
+                                          tr("Screenshot description:"), QLineEdit::Normal,
+                                        tr("Image of jacobian."), &ok);
+	const char *description = NULL;
+	if ( ok && !text.isEmpty() ) {
+		description = text.toUtf8().constData(); 
+	}
+	
+	try {
+		d->logic()->saveScreenshot(description);
+	} catch (std::runtime_error e) {
+		d->StillErrorLabel->setText(e.what());
+		d->StillErrorLabel->setVisible(true);
+		d->AbsoluteDiffCheckBox->toggle();
+		cerr << e.what() << endl;
+		QApplication::restoreOverrideCursor();
+		return;
+	}
+	QApplication::restoreOverrideCursor();
+}
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::saveOutputFileClicked() {
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+
+	
+	
+	if (! pNode->GetOutputDirectory() ) {
+		this->outputDirectoyChanged();
+	}
+	
+	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+	try {
+		d->logic()->saveOutputFile();
+	} catch (std::runtime_error e) {
+		d->StillErrorLabel->setText(e.what());
+		d->StillErrorLabel->setVisible(true);
+		d->AbsoluteDiffCheckBox->toggle();
+		cerr << e.what() << endl;
+		QApplication::restoreOverrideCursor();
+		return;
+	}
+	QApplication::restoreOverrideCursor();
+}
 //-----------------------------------------------------------------------------
 // Squared Difference
 //-----------------------------------------------------------------------------

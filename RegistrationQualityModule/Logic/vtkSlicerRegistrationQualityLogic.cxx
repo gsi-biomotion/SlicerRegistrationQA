@@ -11,6 +11,11 @@
 #include "qSlicerModuleFactoryManager.h"
 #include "qSlicerModuleManager.h"
 #include <vtkSlicerCLIModuleLogic.h>
+#include "qSlicerIO.h"
+#include "qSlicerCoreIOManager.h"
+#include "qMRMLLayoutManager.h"
+#include "qSlicerLayoutManager.h"
+
 
 // MRML includes
 #include <vtkMRMLVectorVolumeNode.h>
@@ -23,10 +28,15 @@
 #include <vtkMRMLSliceNode.h>
 #include <vtkMRMLSliceCompositeNode.h>
 #include "vtkSlicerVolumesLogic.h"
+#include "vtkSlicerAnnotationModuleLogic.h"
 #include "vtkMRMLViewNode.h"
 #include "vtkSlicerCLIModuleLogic.h"
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLSliceLogic.h>
+#include "vtkMRMLAnnotationSnapshotNode.h"
+#include "vtkMRMLAnnotationSnapshotStorageNode.h"
+#include "qMRMLUtils.h"
+#include "qMRMLScreenShotDialog.h"
 
 // VTK includes
 #include <vtkNew.h>
@@ -43,6 +53,9 @@
 #include <vtkLookupTable.h>
 #include <vtkMath.h>
 #include <vtkImageAccumulate.h>
+
+// CTK includes
+#include <ctkVTKWidgetsUtils.h>
 
 // STD includes
 #include <iostream>
@@ -84,6 +97,7 @@ vtkSlicerVolumesLogic* vtkSlicerRegistrationQualityLogic::GetVolumesLogic() {
 	return this->Internal->VolumesLogic;
 }
 //----------------------------------------------------------------------------
+
 void vtkSlicerRegistrationQualityLogic::PrintSelf(ostream& os, vtkIndent indent) {
 	this->Superclass::PrintSelf(os, indent);
 }
@@ -164,7 +178,91 @@ void vtkSlicerRegistrationQualityLogic::OnMRMLSceneEndImport() {
 void vtkSlicerRegistrationQualityLogic::OnMRMLSceneEndClose() {
 	this->Modified();
 }
+//---------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::saveScreenshot(const char *description) {
+	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
+	    vtkErrorMacro("SaveScreenshot: Invalid scene or parameter set node!");
+	    return;
+	}
+	
+	if (!this->RegistrationQualityNode->GetOutputDirectory()) {
+		vtkErrorMacro("SaveScreenshot: No output Directory!");
+		return;
+	}
+	
+	int screenShotNumber = this->RegistrationQualityNode->GetNumberOfScreenshots();
+	std::ostringstream convert;
+	convert << screenShotNumber;
+	std::string outSS;
+	std::string Name("Screenshot_");
+	outSS = Name + convert.str();
+	
+	std::string directory = this->RegistrationQualityNode->GetOutputDirectory();
 
+	
+	//Add snapshot node
+	vtkMRMLAnnotationSnapshotNode* screenShotNode = NULL;
+	vtkNew<vtkMRMLAnnotationSnapshotNode> screenShotNodeNew;
+		
+	vtkNew<vtkMRMLAnnotationSnapshotStorageNode> screenShotStorageNode;
+	this->GetMRMLScene()->AddNode(screenShotStorageNode.GetPointer());
+	screenShotNodeNew->SetAndObserveStorageNodeID(screenShotStorageNode->GetID());
+	
+	this->GetMRMLScene()->AddNode(screenShotNodeNew.GetPointer());
+	screenShotNode = screenShotNodeNew.GetPointer();
+	
+	screenShotNode->SetName(outSS.c_str());
+	if (description) screenShotNode->SetSnapshotDescription(description);
+	screenShotNode->SetScreenShotType(4);
+	
+	//Get Image Data - copied from qMRMLScreenShotDialog
+	qSlicerApplication* app = qSlicerApplication::application();
+	qSlicerLayoutManager* layoutManager = app->layoutManager();
+	
+
+	QWidget* widget = 0;
+	widget = layoutManager->viewport();
+	QImage screenShot = ctk::grabVTKWidget(layoutManager->viewport());
+	
+	// Rescale the image which gets saved
+// 	QImage rescaledScreenShot = screenShot.scaled(screenShot.size().width()
+//       * d->scaleFactorSpinBox->value(), screenShot.size().height()
+//       * d->scaleFactorSpinBox->value());
+//	 convert the screenshot from QPixmap to vtkImageData and store it with this class
+	vtkNew<vtkImageData> newImageData;
+	qMRMLUtils::qImageToVtkImageData(screenShot,
+                                         newImageData.GetPointer());
+					 
+	screenShotNode->SetScreenShot(newImageData.GetPointer());
+	
+	//Save screenshot	
+	qSlicerCoreIOManager* coreIOManager = qSlicerCoreApplication::application()->coreIOManager();
+	qSlicerIO::IOProperties fileParameters;
+	char fileName[512];
+	sprintf(fileName, "%s/%s.png", directory.c_str(), outSS.c_str());
+	
+	fileParameters["nodeID"] = screenShotNode->GetID();
+	fileParameters["fileName"] = fileName;
+	
+	
+	
+	if (coreIOManager->saveNodes("AnnotationFile", fileParameters)) {
+		std::cerr << "Saved Screenshot to: " << fileName << "" << std::endl;	
+	} else{
+		vtkErrorMacro("SaveScreenshot: Cannot save screenshot!");
+	}
+	
+	//Increase screen shot number
+	screenShotNumber += 1;
+	this->RegistrationQualityNode->DisableModifiedEventOn();
+	this->RegistrationQualityNode->SetNumberOfScreenshots(screenShotNumber);
+	this->RegistrationQualityNode->DisableModifiedEventOff();
+}
+//---------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::saveOutputFile() {
+	this->Modified();
+}
+//---------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::AbsoluteDifference(int state) {
 
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
@@ -198,11 +296,10 @@ void vtkSlicerRegistrationQualityLogic::AbsoluteDifference(int state) {
 	}
 
 	if (!this->RegistrationQualityNode->GetAbsoluteDiffVolumeNodeID()){
-	  if(!this->Internal->VolumesLogic)
-	      {
+	if(!this->Internal->VolumesLogic){
 		std::cerr << "AbsoluteDifference: ERROR: failed to get hold of Volumes logic" << std::endl;
 		return;
-	      }
+	}
 
 	  vtkMRMLScalarVolumeNode *outputVolume = NULL;
 	    vtkMRMLScalarVolumeNode *svnode = vtkMRMLScalarVolumeNode::SafeDownCast(referenceVolume);

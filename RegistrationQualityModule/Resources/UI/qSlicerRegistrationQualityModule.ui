@@ -357,17 +357,10 @@
 									<property name="fieldGrowthPolicy">
 										<enum>QFormLayout::AllNonFixedFieldsGrow</enum>
 									</property>
-									<item row="0" column="0">
-										<widget class="QLabel" name="OutputModelLabel">
-											<property name="text">
-												<string>Output HTML</string>
-											</property>
-										</widget>
-									</item>
-									<item row="0" column="1">
-										<widget class="qMRMLNodeComboBox" name="OutputModelComboBox">
+<!--									<item row="0" column="0">
+										<widget class="QPushButton" name="SetFileNamePushButton">
 											<property name="enabled">
-												<bool>false</bool>
+												<bool> true </bool>
 											</property>
 											<property name="sizePolicy">
 												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -375,22 +368,49 @@
 													<verstretch>0</verstretch>
 												</sizepolicy>
 											</property>
+											<property name="text">
+												<string>Output File</string>
+											</property>
 											<property name="toolTip">
-												<string>Output model visualizing deformation field</string>
+												<string>Opens file dialog to set directory for output file.</string>
 											</property>
-											<property name="nodeTypes">
-												<stringlist>
-													<string>vtkMRMLModelNode</string>
-												</stringlist>
+										</widget>
+									</item>-->
+									<item row="0" column="0">
+										<widget class="QPushButton" name="SaveScreenshotPushButton">
+											<property name="enabled">
+												<bool> true </bool>
 											</property>
-											<property name="noneEnabled">
-												<bool>true</bool>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
 											</property>
-											<property name="editEnabled">
-												<bool>false</bool>
+											<property name="text">
+												<string>Save Screenshot</string>
 											</property>
-											<property name="renameEnabled">
-												<bool>true</bool>
+											<property name="toolTip">
+												<string>Save the current screenshot for output file.</string>
+											</property>
+										</widget>
+									</item>
+									<item row="0" column="1">
+										<widget class="QPushButton" name="SaveOutputFilePushButton">
+											<property name="enabled">
+												<bool> true </bool>
+											</property>
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="text">
+												<string>Save Output File</string>
+											</property>
+											<property name="toolTip">
+												<string>Saves the output.</string>
 											</property>
 										</widget>
 									</item>

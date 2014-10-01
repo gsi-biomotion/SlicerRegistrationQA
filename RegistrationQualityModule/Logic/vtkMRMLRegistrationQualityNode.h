@@ -39,14 +39,16 @@ public:
 	vtkGetStringMacro(WarpedVolumeNodeID);
 	void SetAndObserveWarpedVolumeNodeID(const char* id);
 
-	vtkSetStringMacro(OutputModelNodeID);
-	vtkGetStringMacro(OutputModelNodeID);
-	void SetAndObserveOutputModelNodeID(const char* id);
+	vtkSetStringMacro(OutputDirectory);
+	vtkGetStringMacro(OutputDirectory);
+	void SetAndObserveOutputDirectory(const char* id);
 	
 	vtkSetStringMacro(ROINodeID);
 	vtkGetStringMacro (ROINodeID);
 	void SetAndObserveROINodeID(const char* id);
 
+	vtkGetMacro(NumberOfScreenshots, int);
+	vtkSetMacro(NumberOfScreenshots, int);
 	// Movie parameters
 	vtkGetMacro(MovieBoxRedState, int);
 	vtkGetMacro(MovieBoxYellowState, int);
@@ -134,9 +136,11 @@ protected:
 	char* InvVectorVolumeNodeID;
 	char* ReferenceVolumeNodeID;
 	char* WarpedVolumeNodeID;
-	char* OutputModelNodeID;
+	char* OutputDirectory;
 	char *ROINodeID;
 
+	int NumberOfScreenshots;
+	
 	int MovieBoxRedState;
 	int MovieBoxYellowState;
 	int MovieBoxGreenState;

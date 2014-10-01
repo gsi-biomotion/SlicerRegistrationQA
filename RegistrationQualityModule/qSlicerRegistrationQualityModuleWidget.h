@@ -36,7 +36,7 @@ protected slots:
 	void invVectorVolumeChanged(vtkMRMLNode*);
 	void referenceVolumeChanged(vtkMRMLNode*);
 	void warpedVolumeChanged(vtkMRMLNode*);
-	void outputModelChanged(vtkMRMLNode*);
+	void outputDirectoyChanged();
 	void ROIChanged(vtkMRMLNode*);
 
 	void movieBoxRedStateChanged(int state);
@@ -46,6 +46,9 @@ protected slots:
 // 	void checkerboardVolumeChanged(vtkMRMLNode*);
 // 	void absoluteDiffVolumeChanged(vtkMRMLNode*);
 
+	void saveScreenshotClicked();
+	void saveOutputFileClicked();
+	
 	void absoluteDiffClicked(bool state);
 	// Image Checks
 	void falseColorClicked(bool state);
