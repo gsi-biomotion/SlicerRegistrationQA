@@ -179,7 +179,7 @@ void vtkSlicerRegistrationQualityLogic::OnMRMLSceneEndClose() {
 	this->Modified();
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::saveScreenshot(const char *description) {
+void vtkSlicerRegistrationQualityLogic::SaveScreenshot(const char* description) {
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
 	    vtkErrorMacro("SaveScreenshot: Invalid scene or parameter set node!");
 	    return;
@@ -212,6 +212,7 @@ void vtkSlicerRegistrationQualityLogic::saveScreenshot(const char *description) 
 	screenShotNode = screenShotNodeNew.GetPointer();
 	
 	screenShotNode->SetName(outSS.c_str());
+	std::cerr << "Description: "<< description << std::endl;
 	if (description) screenShotNode->SetSnapshotDescription(description);
 	screenShotNode->SetScreenShotType(4);
 	
@@ -259,8 +260,110 @@ void vtkSlicerRegistrationQualityLogic::saveScreenshot(const char *description) 
 	this->RegistrationQualityNode->DisableModifiedEventOff();
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::saveOutputFile() {
-	this->Modified();
+void vtkSlicerRegistrationQualityLogic::SaveOutputFile() {
+	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
+	    vtkErrorMacro("saveOutputFile: Invalid scene or parameter set node!");
+	    return;	    
+	}
+	
+	double statisticValues[4];
+	std::string directory = this->RegistrationQualityNode->GetOutputDirectory();
+	char fileName[512];
+	sprintf(fileName, "%s/OutputFile.html", directory.c_str() );
+	
+	std::ofstream outfile;
+	outfile.open(fileName, std::ios_base::out | std::ios_base::trunc);
+	
+	if ( !outfile ){
+		vtkErrorMacro("SaveOutputFile: Output file '" << fileName << "' cannot be opened!");
+		return;
+	}
+	
+	outfile << "<!DOCTYPE html>" << std::endl << "<html>" << std::endl 
+	<< "<head>" << std::endl << "<title>Registration Quality</title>" << std::endl 
+	<< "<meta charset=\"UTF-8\">" << std::endl << "</head>"	<< "<body>" << std::endl;
+	
+	outfile << "<h1>Registration Quality Output File</h1>" << std::endl;
+	
+	// --- Image Checks ---
+	outfile << "<h2>Image Checks</h2>" << std::endl;
+	//Set table
+	outfile << "<table style=\"width:80%\">" << std::endl
+	<< "<tr>" << std::endl
+	<< "<td> </td> <td> Mean </td> <td> STD </td> <td> Max </td> <td> Min </td>" << std::endl
+	<< "</tr>" << std::endl;
+	
+	//Absolute Difference
+	this->RegistrationQualityNode->GetAbsoluteDiffStatistics(statisticValues);
+	outfile << "<tr>" << std::endl
+	<< "<td>" << "Absolute Difference" << "</td>";
+	for(int i=0;i<4;i++) {	
+		outfile << "<td>" << statisticValues[i] << "</td>";
+	}
+	outfile << std::endl<< "</tr>" << std::endl;
+	
+	//TODO: Inverse Absolute Difference
+	
+	//TODO: Fiducials
+	
+	outfile << "</table>" << std::endl;
+		
+	// --- Vector checks ---	
+	outfile << "<h2>Vector Checks</h2>" << std::endl;	
+	//Set table
+	outfile << "<table style=\"width:80%\">" << std::endl
+	<< "<tr>" << std::endl
+	<< "<td> </td> <td> Mean </td> <td> STD </td> <td> Max </td> <td> Min </td>" << std::endl
+	<< "</tr>" << std::endl;
+	
+	//Jacobian
+	this->RegistrationQualityNode->GetJacobianStatistics(statisticValues);
+	outfile << "<tr>" << std::endl
+	<< "<td>" << "Jacobian" << "</td>";
+	for(int i=0;i<4;i++) {	
+		outfile << "<td>" << statisticValues[i] << "</td>";
+	}
+	outfile << std::endl<< "</tr>" << std::endl;
+	
+	//TODO: Inverse Jacobian
+	
+	//Inverse Consistency
+	this->RegistrationQualityNode->GetInverseConsistStatistics(statisticValues);
+	outfile << "<tr>" << std::endl
+	<< "<td>" << "Inverse Consistency" << "</td>";
+	for(int i=0;i<4;i++) {	
+		outfile << "<td>" << statisticValues[i] << "</td>";
+	}
+	outfile << std::endl<< "</tr>" << std::endl;
+
+	outfile << "</table>" << std::endl;
+
+	// --- Images ---
+	outfile << "<h2>Images</h2>" << std::endl;	
+	int screenShotNumber = this->RegistrationQualityNode->GetNumberOfScreenshots();
+	if (screenShotNumber > 1){	
+		for(int i = 1; i < screenShotNumber; i++) {
+			std::ostringstream screenShotName;
+			screenShotName << "Screenshot_" << i;
+			
+				
+			//Find the associated node for description
+			vtkSmartPointer<vtkCollection> collection = vtkSmartPointer<vtkCollection>::Take(
+						this->GetMRMLScene()->GetNodesByName(screenShotName.str().c_str()));
+			if (collection->GetNumberOfItems() == 1) {	
+				vtkMRMLAnnotationSnapshotNode* snapshot = vtkMRMLAnnotationSnapshotNode::SafeDownCast(
+						collection->GetItemAsObject(0));
+				outfile << "<h3>" << snapshot->GetSnapshotDescription() << "</h3>" << std::endl;
+			}
+			
+			outfile << "<img src=\"" << directory << "/" << screenShotName.str() << ".png"
+				<<"\" alt=\"Screenshot "<< i << "\" width=\"80%\"> " << std::endl;
+		}
+	}
+	outfile  << "</body>" << std::endl << "</html>" << std::endl;
+	
+	outfile << std::endl;
+	outfile.close();
 }
 //---------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::AbsoluteDifference(int state) {
