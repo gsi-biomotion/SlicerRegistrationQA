@@ -6,6 +6,9 @@
 
 #include "qSlicerRegistrationQualityModuleExport.h"
 
+#include <vtkMRMLVectorVolumeNode.h>
+#include <vtkMRMLGridTransformNode.h>
+
 class qSlicerRegistrationQualityModuleWidgetPrivate;
 class vtkMRMLNode;
 
@@ -38,6 +41,8 @@ protected slots:
 	void warpedVolumeChanged(vtkMRMLNode*);
 	void outputDirectoyChanged();
 	void ROIChanged(vtkMRMLNode*);
+	void fiducialChanged(vtkMRMLNode*);
+	void invFiducialChanged(vtkMRMLNode*);
 
 	void movieBoxRedStateChanged(int state);
 	void movieBoxYellowStateChanged(int state);
@@ -48,9 +53,10 @@ protected slots:
 
 	void saveScreenshotClicked();
 	void saveOutputFileClicked();
-	
-	void absoluteDiffClicked(bool state);
+
 	// Image Checks
+	void absoluteDiffClicked(bool state);
+	void fiducialCalculate(bool reference);
 	void falseColorClicked(bool state);
 	void checkerboardClicked(bool state);
 	void movieToggle();

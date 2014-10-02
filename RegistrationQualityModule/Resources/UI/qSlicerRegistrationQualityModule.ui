@@ -339,6 +339,62 @@
 											</property>
 										</widget>
 									</item>
+									<item row="5" column="0">
+										<widget class="QLabel" name="FiducialLabel">
+											<property name="toolTip">
+												<string>Input Fiducial of reference phase.</string>
+											</property>
+											<property name="text">
+												<string>Ref. phase fiducial:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="5" column="1">
+										<widget class="qMRMLNodeComboBox" name="FiducialInputComboBox" native="true">
+											<property name="nodeTypes" stdset="0">
+												<stringlist>
+													<string>vtkMRMLMarkupsFiducialNode</string>
+												</stringlist>
+											</property>
+											<property name="noneEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="editEnabled" stdset="0">
+												<bool>true</bool>
+											</property>
+											<property name="renameEnabled" stdset="0">
+												<bool>true</bool>
+											</property>
+										</widget>
+									</item>
+									<item row="6" column="0">
+										<widget class="QLabel" name="InvFiducialLabel">
+											<property name="toolTip">
+												<string>Input Fiducial of moving phase.</string>
+											</property>
+											<property name="text">
+												<string>Mov. phase fiducial:</string>
+											</property>
+										</widget>
+									</item>
+									<item row="6" column="1">
+										<widget class="qMRMLNodeComboBox" name="InvFiducialInputComboBox" native="true">
+											<property name="nodeTypes" stdset="0">
+												<stringlist>
+													<string>vtkMRMLMarkupsFiducialNode</string>
+												</stringlist>
+											</property>
+											<property name="noneEnabled">
+												<bool>true</bool>
+											</property>
+											<property name="editEnabled" stdset="0">
+												<bool>true</bool>
+											</property>
+											<property name="renameEnabled" stdset="0">
+												<bool>true</bool>
+											</property>
+										</widget>
+									</item>
 								</layout>
 							</widget>
 						</item>
@@ -644,6 +700,182 @@
 											<property name="Enabled" stdset="0">
 												<bool>false</bool>
 											</property>
+										</widget>
+									</item>
+									<item row="4" column="0" colspan="3">
+										<widget class="QGroupBox" name="FiducialsGroupBox">
+											<property name="sizePolicy">
+												<sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+													<horstretch>0</horstretch>
+													<verstretch>0</verstretch>
+												</sizepolicy>
+											</property>
+											<property name="title">
+												<string>Fiducals distance</string>
+											</property>
+											<layout class="QGridLayout" name="fiducialsGridLayout">
+												<item row="0" column="1">
+													<widget class="QLabel" name="FiducalsReferenceLabel">
+														<property name="enabled">
+															<bool>true</bool>
+														</property>
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="text">
+															<string>Reference:</string>
+														</property>
+													</widget>
+												</item>
+												<item row="0" column="2">
+													<widget class="QLabel" name="InvFiducalsReferenceLabel">
+														<property name="enabled">
+															<bool>true</bool>
+														</property>
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="text">
+															<string>Inverse:</string>
+														</property>
+													</widget>
+												</item>
+												<item row="1" column="0">
+													<widget class="QLabel" name="FiducialsMeanValueLabel">
+														<property name="enabled">
+															<bool>true</bool>
+														</property>
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="text">
+															<string>Mean Value (mm):</string>
+														</property>
+													</widget>
+												</item>
+												<item row="1" column="1">
+													<widget class="QDoubleSpinBox" name="FiducialsMeanSpinBox">
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="accessibleName">
+															<string></string>
+														</property>
+														<property name="readOnly">
+															<bool>true</bool>
+														</property>
+														<property name="disabled" stdset="0">
+															<bool>false</bool>
+														</property>
+														<property name="maximum">
+															<double>100.000000000000000</double>
+														</property>
+														<property name="minimum">
+															<double>-100.000000000000000</double>
+														</property>
+													</widget>
+												</item>
+												<item row="1" column="2">
+													<widget class="QDoubleSpinBox" name="InvFiducialsMeanSpinBox">
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="accessibleName">
+															<string></string>
+														</property>
+														<property name="readOnly">
+															<bool>true</bool>
+														</property>
+														<property name="disabled" stdset="0">
+															<bool>false</bool>
+														</property>
+														<property name="maximum">
+															<double>100.000000000000000</double>
+														</property>
+														<property name="minimum">
+															<double>-100.000000000000000</double>
+														</property>
+													</widget>
+												</item>
+												<item row="2" column="0">
+													<widget class="QLabel" name="FiducialsMaxLabel">
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="text">
+															<string>Maximum difference (mm):</string>
+														</property>
+													</widget>
+												</item>
+												<item row="2" column="1">
+													<widget class="QDoubleSpinBox" name="FiducialsMaxSpinBox">
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="accessibleName">
+															<string></string>
+														</property>
+														<property name="readOnly">
+															<bool>true</bool>
+														</property>
+														<property name="disabled" stdset="0">
+															<bool>false</bool>
+														</property>
+														<property name="maximum">
+															<double>100.000000000000000</double>
+														</property>
+														<property name="minimum">
+															<double>-100.000000000000000</double>
+														</property>
+													</widget>
+												</item>
+												<item row="2" column="2">
+													<widget class="QDoubleSpinBox" name="InvFiducialsMaxSpinBox">
+														<property name="sizePolicy">
+															<sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+																<horstretch>0</horstretch>
+																<verstretch>0</verstretch>
+															</sizepolicy>
+														</property>
+														<property name="accessibleName">
+															<string></string>
+														</property>
+														<property name="readOnly">
+															<bool>true</bool>
+														</property>
+														<property name="disabled" stdset="0">
+															<bool>false</bool>
+														</property>
+														<property name="maximum">
+															<double>100.000000000000000</double>
+														</property>
+														<property name="minimum">
+															<double>-100.000000000000000</double>
+														</property>
+													</widget>
+												</item>
+											</layout>
 										</widget>
 									</item>
 								</layout>
@@ -1214,6 +1446,38 @@
 			<sender>qSlicerRegistrationQualityModule</sender>
 			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
 			<receiver>ROIInputComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>130</x>
+					<y>6</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>152</x>
+					<y>172</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>FiducialInputComboBox</receiver>
+			<slot>setMRMLScene(vtkMRMLScene*)</slot>
+			<hints>
+				<hint type="sourcelabel">
+					<x>130</x>
+					<y>6</y>
+				</hint>
+				<hint type="destinationlabel">
+					<x>152</x>
+					<y>172</y>
+				</hint>
+			</hints>
+		</connection>
+		<connection>
+			<sender>qSlicerRegistrationQualityModule</sender>
+			<signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+			<receiver>InvFiducialInputComboBox</receiver>
 			<slot>setMRMLScene(vtkMRMLScene*)</slot>
 			<hints>
 				<hint type="sourcelabel">

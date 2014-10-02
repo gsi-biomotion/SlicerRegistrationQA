@@ -24,9 +24,12 @@
 #include <vtkMRMLScene.h>
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLVectorVolumeNode.h>
+#include <vtkMRMLVectorVolumeDisplayNode.h>
 #include <vtkMRMLLinearTransformNode.h>
 #include <vtkMRMLBSplineTransformNode.h>
 #include <vtkMRMLGridTransformNode.h>
+#include <vtkMRMLTransformDisplayNode.h>
+#include <vtkMRMLTransformNode.h>
 #include <vtkMRMLSliceNode.h>
 #include <vtkMRMLSelectionNode.h>
 
@@ -167,6 +170,11 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 		} else {
 			this->vectorVolumeChanged(d->InputFieldComboBox->currentNode());
 		}
+		if (pNode->GetInvVectorVolumeNodeID()) {
+			d->InputInvFieldComboBox->setCurrentNode(pNode->GetInvVectorVolumeNodeID());
+		} else {
+			this->invVectorVolumeChanged(d->InputInvFieldComboBox->currentNode());
+		}
 
 		if (pNode->GetReferenceVolumeNodeID()) {
 			d->InputReferenceComboBox->setCurrentNode(pNode->GetReferenceVolumeNodeID());
@@ -185,6 +193,18 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 		} else {
 			this->ROIChanged(d->ROIInputComboBox->currentNode());
 		}
+		
+		if (pNode->GetFiducialNodeID()) {
+			d->FiducialInputComboBox->setCurrentNode(pNode->GetFiducialNodeID());
+		} else {
+			this->fiducialChanged(d->FiducialInputComboBox->currentNode());
+		}
+		
+		if (pNode->GetInvFiducialNodeID()) {
+			d->InvFiducialInputComboBox->setCurrentNode(pNode->GetInvFiducialNodeID());
+		} else {
+			this->invFiducialChanged(d->InvFiducialInputComboBox->currentNode());
+		}
 
 // 		if (pNode->GetCheckerboardNodeID()) {
 // 			d->OutputCheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
@@ -201,6 +221,11 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 // 		pNode->SetFlickerOpacity(0);
 		d->absoluteDiffMeanSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[0]);
 		d->absoluteDiffSTDSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[1]);
+		
+		d->FiducialsMeanSpinBox->setValue(pNode->GetFiducialsStatistics()[0]);
+		d->FiducialsMaxSpinBox->setValue(pNode->GetFiducialsStatistics()[2]);
+		d->InvFiducialsMeanSpinBox->setValue(pNode->GetInvFiducialsStatistics()[0]);
+		d->InvFiducialsMaxSpinBox->setValue(pNode->GetInvFiducialsStatistics()[2]);
 
 		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
 		d->jacobianMeanSpinBox->setValue(pNode->GetJacobianStatistics()[0]);
@@ -209,7 +234,6 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 
 		d->inverseConsistMeanSpinBox->setValue(pNode->GetInverseConsistStatistics()[0]);
 		d->inverseConsistSTDSpinBox->setValue(pNode->GetInverseConsistStatistics()[1]);
-
 
 		//Update Visualization Parameters
 		d->CheckerboardPattern->setValue(pNode->GetCheckerboardPattern());
@@ -235,8 +259,46 @@ void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* no
 	d->InverseConsistCheckBox->setEnabled(true);
 
 	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
+	if (node->IsA("vtkMRMLTransformNode")){
+	  pNode->SetAndObserveTransformNodeID(node->GetID());
+	  
+	  //Convert transform to vector
+	  vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
+				    this->mrmlScene()->GetNodeByID(
+					  node->GetID()));
+	  if (transform) {
+	    vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
+	    if (vectorVolume){
+	      pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
+	    }
+	  }
+	  else{
+	    std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
+	  }  
+	}
+	else if (node->IsA("vtkMRMLVectorVolumeNode")){
+	  pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
+
+	  //Convert transform to vector
+	  vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
+					  this->mrmlScene()->GetNodeByID(
+						node->GetID()));
+	  if (vectorVolume) {
+	    vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
+	    if( transform ){
+	      pNode->SetAndObserveTransformNodeID(transform->GetID());
+	    }
+	  }
+	  else{
+	    std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
+	  }
+	}
 	pNode->DisableModifiedEventOff();
+	
+	// Calculate fiducial distance if possible
+	if ( pNode->GetFiducialNodeID() != NULL && pNode->GetInvFiducialNodeID() != NULL ){
+		this->fiducialCalculate(true);
+	}
 
 // 	double maxNorm = 0;
 
@@ -297,8 +359,45 @@ void qSlicerRegistrationQualityModuleWidget::invVectorVolumeChanged(vtkMRMLNode*
 
 
 	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveInvVectorVolumeNodeID(node->GetID());
+	if (node->IsA("vtkMRMLTransformNode")){
+	  pNode->SetAndObserveInvTransformNodeID(node->GetID());
+	  	  
+	  //Convert transform to vector
+	  vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
+				    this->mrmlScene()->GetNodeByID(
+					  node->GetID()));
+	  if (transform) {
+	    vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
+	    if (vectorVolume){
+	      pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
+	    }
+	  }
+	  else{
+	    std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
+	  }	  
+	}
+	else if (node->IsA("vtkMRMLVectorVolumeNode")){
+	  pNode->SetAndObserveInvVectorVolumeNodeID(node->GetID());
+	  
+	  //Convert transform to vector
+	  vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
+					  this->mrmlScene()->GetNodeByID(
+						node->GetID()));
+	  if (vectorVolume) {
+	    vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
+	    if( transform ){
+	      pNode->SetAndObserveInvTransformNodeID(transform->GetID());
+	    }
+	  }
+	  else{
+	    std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
+	  }
+	}
 	pNode->DisableModifiedEventOff();
+	// Calculate fiducial distance if possible
+	if ( pNode->GetFiducialNodeID() != NULL && pNode->GetInvFiducialNodeID() != NULL ){
+		this->fiducialCalculate(false);
+	}
 
 }
 //-----------------------------------------------------------------------------
@@ -441,6 +540,49 @@ void qSlicerRegistrationQualityModuleWidget::ROIChanged(vtkMRMLNode* node) {
 	pNode->DisableModifiedEventOff();
 }
 
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::fiducialChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	//TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		return;
+	}
+
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveFiducialNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
+	// Calculate fiducial distance if possible
+	if ( pNode->GetTransformNodeID() != NULL && pNode->GetInvFiducialNodeID() != NULL ){
+		this->fiducialCalculate(true);
+	}
+	if ( pNode->GetInvTransformNodeID() != NULL && pNode->GetInvFiducialNodeID() != NULL ){
+		this->fiducialCalculate(false);
+	}
+}
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::invFiducialChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	//TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		return;
+	}
+
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveInvFiducialNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
+	// Calculate fiducial distance if possible
+	if ( pNode->GetTransformNodeID() != NULL && pNode->GetFiducialNodeID() != NULL ){
+		this->fiducialCalculate(true);
+	}
+	if ( pNode->GetInvTransformNodeID() != NULL && pNode->GetFiducialNodeID() != NULL ){
+		this->fiducialCalculate(false);
+	}
+}
+
 void qSlicerRegistrationQualityModuleWidget::setup() {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 	d->setupUi(this);
@@ -454,6 +596,8 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
 	connect(d->ROIInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(ROIChanged(vtkMRMLNode*)));
+	connect(d->FiducialInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(fiducialChanged(vtkMRMLNode*)));
+	connect(d->InvFiducialInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(invFiducialChanged(vtkMRMLNode*)));
 //	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
 //	connect(d->AbsoluteDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(absoluteDiffVolumeChanged(vtkMRMLNode*)));
 
@@ -533,8 +677,11 @@ void qSlicerRegistrationQualityModuleWidget::saveOutputFileClicked() {
 	}
 	QApplication::restoreOverrideCursor();
 }
+// Image Checks
 //-----------------------------------------------------------------------------
-// Squared Difference
+
+//-----------------------------------------------------------------------------
+// Absolute Difference
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
@@ -542,7 +689,7 @@ void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->AbsoluteDifference(state);
+		d->logic()->CalculateDIRQAFrom(1,state);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
@@ -554,6 +701,7 @@ void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 	d->StillErrorLabel->setText("");
 	d->FalseColorCheckBox->setChecked(false);
 	d->CheckerboardCheckBox->setChecked(false);
+	
 	d->JacobianCheckBox->setChecked(false);
 	d->InverseConsistCheckBox->setChecked(false);
 
@@ -569,7 +717,43 @@ void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 
 }
 //-----------------------------------------------------------------------------
-// Image Checks
+// Fiducials distance
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::fiducialCalculate(bool reference) {
+	Q_D(const qSlicerRegistrationQualityModuleWidget);
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	
+	//Check if we want to calculate reference or inverse distance
+	int number;
+	if (reference) number = 4;
+	else number = 5;
+
+	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+	try {
+		d->logic()->CalculateDIRQAFrom(number,true);
+	} catch (std::runtime_error e) {
+		d->StillErrorLabel->setText(e.what());
+		d->StillErrorLabel->setVisible(true);
+		cerr << e.what() << endl;
+		QApplication::restoreOverrideCursor();
+		return;
+	}
+	d->StillErrorLabel->setText("");
+	
+	if ( reference ) {
+		d->FiducialsMeanSpinBox->setValue(pNode->GetFiducialsStatistics()[0]);
+		d->FiducialsMaxSpinBox->setValue(pNode->GetFiducialsStatistics()[2]);
+	} 
+	else{
+		d->InvFiducialsMeanSpinBox->setValue(pNode->GetInvFiducialsStatistics()[0]);
+		d->InvFiducialsMaxSpinBox->setValue(pNode->GetInvFiducialsStatistics()[2]);
+	}
+	
+	QApplication::restoreOverrideCursor();
+
+}
+//-----------------------------------------------------------------------------
+// False Color
 //-----------------------------------------------------------------------------
 
 void qSlicerRegistrationQualityModuleWidget::falseColorClicked(bool state) {
@@ -590,7 +774,9 @@ void qSlicerRegistrationQualityModuleWidget::falseColorClicked(bool state) {
 	d->AbsoluteDiffCheckBox->setChecked(false);
 	d->JacobianCheckBox->setChecked(false);
 }
-
+//-----------------------------------------------------------------------------
+// Checkerboard
+//-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::checkerboardClicked(bool state){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 // 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
@@ -711,7 +897,7 @@ void qSlicerRegistrationQualityModuleWidget::jacobianClicked(bool state){
 
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->Jacobian(state);
+		d->logic()->CalculateDIRQAFrom(2,state);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
@@ -724,6 +910,7 @@ void qSlicerRegistrationQualityModuleWidget::jacobianClicked(bool state){
 	d->FalseColorCheckBox->setChecked(false);
 	d->CheckerboardCheckBox->setChecked(false);
 	d->AbsoluteDiffCheckBox->setChecked(false);
+	
 	d->InverseConsistCheckBox->setChecked(false);
 
 	if (state){
@@ -743,7 +930,7 @@ void qSlicerRegistrationQualityModuleWidget::inverseConsistClicked(bool state){
 
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->InverseConsist(state);
+		d->logic()->CalculateDIRQAFrom(3,state);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
@@ -756,6 +943,7 @@ void qSlicerRegistrationQualityModuleWidget::inverseConsistClicked(bool state){
 	d->FalseColorCheckBox->setChecked(false);
 	d->CheckerboardCheckBox->setChecked(false);
 	d->AbsoluteDiffCheckBox->setChecked(false);
+	
 	d->JacobianCheckBox->setChecked(false);
 
 	if (state){

@@ -30,6 +30,14 @@ public:
 	vtkSetStringMacro(InvVectorVolumeNodeID);
 	vtkGetStringMacro(InvVectorVolumeNodeID);
 	void SetAndObserveInvVectorVolumeNodeID(const char* id);
+	
+	vtkSetStringMacro(TransformNodeID);
+	vtkGetStringMacro(TransformNodeID);
+	void SetAndObserveTransformNodeID(const char* id);
+
+	vtkSetStringMacro(InvTransformNodeID);
+	vtkGetStringMacro(InvTransformNodeID);
+	void SetAndObserveInvTransformNodeID(const char* id);
 
 	vtkSetStringMacro(ReferenceVolumeNodeID);
 	vtkGetStringMacro(ReferenceVolumeNodeID);
@@ -46,6 +54,14 @@ public:
 	vtkSetStringMacro(ROINodeID);
 	vtkGetStringMacro (ROINodeID);
 	void SetAndObserveROINodeID(const char* id);
+	
+	vtkSetStringMacro(FiducialNodeID);
+	vtkGetStringMacro (FiducialNodeID);
+	void SetAndObserveFiducialNodeID(const char* id);
+	
+	vtkSetStringMacro(InvFiducialNodeID);
+	vtkGetStringMacro (InvFiducialNodeID);
+	void SetAndObserveInvFiducialNodeID(const char* id);
 
 	vtkGetMacro(NumberOfScreenshots, int);
 	vtkSetMacro(NumberOfScreenshots, int);
@@ -106,6 +122,12 @@ public:
 
 	vtkSetVector4Macro(AbsoluteDiffStatistics, double);
 	vtkGetVector4Macro(AbsoluteDiffStatistics, double);
+	
+	vtkSetVector4Macro(FiducialsStatistics, double);
+	vtkGetVector4Macro(FiducialsStatistics, double);
+	
+	vtkSetVector4Macro(InvFiducialsStatistics, double);
+	vtkGetVector4Macro(InvFiducialsStatistics, double);
 
 
 	// Jacobian parameters:
@@ -134,10 +156,14 @@ protected:
 
 	char* VectorVolumeNodeID;
 	char* InvVectorVolumeNodeID;
+	char* TransformNodeID;
+	char* InvTransformNodeID;
 	char* ReferenceVolumeNodeID;
 	char* WarpedVolumeNodeID;
 	char* OutputDirectory;
 	char *ROINodeID;
+	char *FiducialNodeID;
+	char *InvFiducialNodeID;
 
 	int NumberOfScreenshots;
 	
@@ -155,7 +181,9 @@ protected:
 	char* AbsoluteDiffVolumeNodeID;
 	double AbsoluteDiffStatistics[4];
 
-
+	double FiducialsStatistics[4];
+	double InvFiducialsStatistics[4];
+	
 	char* JacobianVolumeNodeID;
 	double JacobianStatistics[4];
 
