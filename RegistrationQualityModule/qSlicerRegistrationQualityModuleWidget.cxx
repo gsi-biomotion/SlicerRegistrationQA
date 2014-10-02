@@ -496,13 +496,9 @@ void qSlicerRegistrationQualityModuleWidget::saveScreenshotClicked() {
 	QString text = QInputDialog::getText(NULL, tr("QInputDialog::getText()"),
                                           tr("Screenshot description:"), QLineEdit::Normal,
                                         tr("Image of jacobian."), &ok);
-	const char *description = NULL;
-	if ( ok && !text.isEmpty() ) {
-		description = text.toUtf8().constData(); 
-	}
 	
 	try {
-		d->logic()->saveScreenshot(description);
+		d->logic()->SaveScreenshot(text.toLatin1().constData());
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
@@ -526,7 +522,7 @@ void qSlicerRegistrationQualityModuleWidget::saveOutputFileClicked() {
 	
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->saveOutputFile();
+		d->logic()->SaveOutputFile();
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
