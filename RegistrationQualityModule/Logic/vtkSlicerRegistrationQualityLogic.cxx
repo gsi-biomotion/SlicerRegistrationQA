@@ -408,7 +408,7 @@ void vtkSlicerRegistrationQualityLogic::SaveOutputFile() {
 				outfile << "<h3>" << snapshot->GetSnapshotDescription() << "</h3>" << std::endl;
 			}
 			
-			outfile << "<img src=\"" << directory << "/" << screenShotName.str() << ".png"
+			outfile << "<img src=\"" << screenShotName.str() << ".png"
 				<<"\" alt=\"Screenshot "<< i << "\" width=\"80%\"> " << std::endl;
 		}
 	}
