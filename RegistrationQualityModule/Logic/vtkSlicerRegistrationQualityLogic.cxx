@@ -511,7 +511,7 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
     jacobianVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,3);
     jacobianVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
     jacobianVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
-    jacobianVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
+    jacobianVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeColdToHot");
     
     this->SetForegroundImage(referenceVolume,jacobianVolume,0.5);
     return;    

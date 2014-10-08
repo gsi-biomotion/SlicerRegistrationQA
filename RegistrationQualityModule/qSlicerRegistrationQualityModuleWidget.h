@@ -66,6 +66,9 @@ protected slots:
 	// Vector checks
 	void jacobianClicked(bool state);
 	void inverseConsistClicked(bool state);
+	
+	// Slot for changing 2D scalar bar visibility
+	void setScalarBar2DVisibility(bool,int);
 	// Parameters
 	void setCheckerboardPattern(double);
 

@@ -20,6 +20,9 @@
 #include "vtkSlicerRegistrationQualityLogic.h"
 #include "vtkMRMLRegistrationQualityNode.h"
 
+// SlicerRT Isodose includes for legend
+#include "vtkSlicerRTScalarBarActor.h"
+
 // MMRL includes
 #include <vtkMRMLScene.h>
 #include <vtkMRMLVolumeNode.h>
@@ -32,6 +35,11 @@
 #include <vtkMRMLTransformNode.h>
 #include <vtkMRMLSliceNode.h>
 #include <vtkMRMLSelectionNode.h>
+#include <vtkMRMLColorTableNode.h>
+
+// qMRMLWidget includes
+#include "qMRMLSliceWidget.h"
+#include "qMRMLSliceView.h"
 
 // MRMLLogic includes
 #include <vtkMRMLApplicationLogic.h>
@@ -43,6 +51,11 @@
 #include <vtkDataArray.h>
 #include <vtkGeneralTransform.h>
 #include <vtkSmartPointer.h>
+#include <vtkScalarBarWidget.h>
+#include <vtkLookupTable.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
+#include <vtkColorTransferFunction.h>
 
 //C include
 #include <time.h>
@@ -56,7 +69,17 @@ protected:
 	qSlicerRegistrationQualityModuleWidget* const q_ptr;
 public:
 	qSlicerRegistrationQualityModuleWidgetPrivate(qSlicerRegistrationQualityModuleWidget& object);
+	~qSlicerRegistrationQualityModuleWidgetPrivate();
 	vtkSlicerRegistrationQualityLogic* logic() const;
+	void updateScalarBarsFromSelectedColorTable();
+	
+	vtkScalarBarWidget* ScalarBarWidget2DRed;
+	vtkScalarBarWidget* ScalarBarWidget2DYellow;
+	vtkScalarBarWidget* ScalarBarWidget2DGreen;
+	
+	vtkSlicerRTScalarBarActor* ScalarBarActor2DRed;
+	vtkSlicerRTScalarBarActor* ScalarBarActor2DYellow;
+	vtkSlicerRTScalarBarActor* ScalarBarActor2DGreen;
 };
 
 //-----------------------------------------------------------------------------
@@ -64,14 +87,119 @@ public:
 //-----------------------------------------------------------------------------
 qSlicerRegistrationQualityModuleWidgetPrivate::qSlicerRegistrationQualityModuleWidgetPrivate(
 	qSlicerRegistrationQualityModuleWidget& object) : q_ptr(&object) {
-}
+	
+	this->ScalarBarWidget2DRed = vtkScalarBarWidget::New();
+	this->ScalarBarActor2DRed = vtkSlicerRTScalarBarActor::New();
+	this->ScalarBarWidget2DRed->SetScalarBarActor(this->ScalarBarActor2DRed);
+	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetOrientationToVertical();
+	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetNumberOfLabels(6);
+	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetMaximumNumberOfColors(6);
+	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetTitle("Dose(%)");
+	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetLabelFormat(" %s");
+  
+	// it's a 2d actor, position it in screen space by percentages
+	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetPosition(0.1, 0.1);
+	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetWidth(0.1);
+	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetHeight(0.8);
 
+	this->ScalarBarWidget2DYellow = vtkScalarBarWidget::New();
+	this->ScalarBarActor2DYellow = vtkSlicerRTScalarBarActor::New();
+	this->ScalarBarWidget2DYellow->SetScalarBarActor(this->ScalarBarActor2DYellow);
+	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetOrientationToVertical();
+	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetNumberOfLabels(6);
+	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetMaximumNumberOfColors(6);
+	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetTitle("Dose(%)");
+	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetLabelFormat(" %s");
+
+	// it's a 2d actor, position it in screen space by percentages
+	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetPosition(0.1, 0.1);
+	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetWidth(0.1);
+	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetHeight(0.8);
+
+	this->ScalarBarWidget2DGreen = vtkScalarBarWidget::New();
+	this->ScalarBarActor2DGreen = vtkSlicerRTScalarBarActor::New();
+	this->ScalarBarWidget2DGreen->SetScalarBarActor(this->ScalarBarActor2DGreen);
+	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetOrientationToVertical();
+	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetNumberOfLabels(6);
+	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetMaximumNumberOfColors(6);
+	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetTitle("Dose(%)");
+	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetLabelFormat(" %s");
+
+	// it's a 2d actor, position it in screen space by percentages
+	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetPosition(0.1, 0.1);
+	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetWidth(0.1);
+	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetHeight(0.8);
+}
+//-----------------------------------------------------------------------------
+qSlicerRegistrationQualityModuleWidgetPrivate::~qSlicerRegistrationQualityModuleWidgetPrivate()
+{
+  if (this->ScalarBarWidget2DRed)
+  {
+    this->ScalarBarWidget2DRed->Delete();
+    this->ScalarBarWidget2DRed = 0;
+  }
+  if (this->ScalarBarActor2DRed)
+  {
+    this->ScalarBarActor2DRed->Delete();
+    this->ScalarBarActor2DRed = 0;
+  }
+  if (this->ScalarBarWidget2DYellow)
+  {
+    this->ScalarBarWidget2DYellow->Delete();
+    this->ScalarBarWidget2DYellow = 0;
+  }
+  if (this->ScalarBarActor2DYellow)
+  {
+    this->ScalarBarActor2DYellow->Delete();
+    this->ScalarBarActor2DYellow = 0;
+  }
+  if (this->ScalarBarWidget2DGreen)
+  {
+    this->ScalarBarWidget2DGreen->Delete();
+    this->ScalarBarWidget2DGreen = 0;
+  }
+  if (this->ScalarBarActor2DGreen)
+  {
+    this->ScalarBarActor2DGreen->Delete();
+    this->ScalarBarActor2DGreen = 0;
+  }
+}
+//-----------------------------------------------------------------------------
 vtkSlicerRegistrationQualityLogic* qSlicerRegistrationQualityModuleWidgetPrivate::logic() const {
 	Q_Q( const qSlicerRegistrationQualityModuleWidget );
 	return vtkSlicerRegistrationQualityLogic::SafeDownCast( q->logic() );
 }
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidgetPrivate::updateScalarBarsFromSelectedColorTable(){
+	Q_Q(qSlicerRegistrationQualityModuleWidget);
+	
+	
+	vtkMRMLColorTableNode* selectedColorNode = vtkMRMLColorTableNode::SafeDownCast(q->mrmlScene()
+					  ->GetNodeByID("vtkMRMLColorTableNodeRainbow"));;
+	if (!selectedColorNode){
+		qDebug() << "qSlicerRegistrationQualityModuleWidgetPrivate::updateScalarBarsFromSelectedColorTable: No color table node is selected";
+		return;
+	}
 
+	// 3D scalar bar
+	int numberOfColors = selectedColorNode->GetNumberOfColors();
+	// 2D scalar bar
+	this->ScalarBarActor2DRed->SetLookupTable(selectedColorNode->GetLookupTable());
+	this->ScalarBarActor2DYellow->SetLookupTable(selectedColorNode->GetLookupTable());
+	this->ScalarBarActor2DGreen->SetLookupTable(selectedColorNode->GetLookupTable());
 
+	for (int colorIndex=0; colorIndex<numberOfColors; ++colorIndex){
+		#if (VTK_MAJOR_VERSION <= 5)
+		this->ScalarBarActor2DRed->SetColorName(colorIndex, selectedColorNode->GetColorName(colorIndex));
+		this->ScalarBarActor2DYellow->SetColorName(colorIndex, selectedColorNode->GetColorName(colorIndex));
+		this->ScalarBarActor2DGreen->SetColorName(colorIndex, selectedColorNode->GetColorName(colorIndex));
+		#else
+		this->ScalarBarActor2DRed->GetLookupTable()->SetAnnotation(colorIndex, vtkStdString(selectedColorNode->GetColorName(colorIndex)));
+		this->ScalarBarActor2DYellow->GetLookupTable()->SetAnnotation(colorIndex, vtkStdString(selectedColorNode->GetColorName(colorIndex)));
+		this->ScalarBarActor2DGreen->GetLookupTable()->SetAnnotation(colorIndex, vtkStdString(selectedColorNode->GetColorName(colorIndex)));
+		#endif
+	}
+}
 //-----------------------------------------------------------------------------
 // qSlicerRegistrationQualityModuleWidget methods
 //-----------------------------------------------------------------------------
@@ -238,6 +366,8 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 		//Update Visualization Parameters
 		d->CheckerboardPattern->setValue(pNode->GetCheckerboardPattern());
 	}
+	
+	d->updateScalarBarsFromSelectedColorTable();
 }
 
 //-----------------------------------------------------------------------------
@@ -619,6 +749,25 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
+	
+	qSlicerApplication * app = qSlicerApplication::application();
+	if (app && app->layoutManager()){
+
+		QStringList sliceViewerNames = app->layoutManager()->sliceViewNames();
+		qMRMLSliceWidget* sliceViewerWidgetRed = app->layoutManager()->sliceWidget(sliceViewerNames[0]);
+		const qMRMLSliceView* sliceViewRed = sliceViewerWidgetRed->sliceView();
+		d->ScalarBarWidget2DRed->SetInteractor(sliceViewerWidgetRed->interactorStyle()->GetInteractor());
+		qMRMLSliceWidget* sliceViewerWidgetYellow = app->layoutManager()->sliceWidget(sliceViewerNames[1]);
+		const qMRMLSliceView* sliceViewYellow = sliceViewerWidgetYellow->sliceView();
+		d->ScalarBarWidget2DYellow->SetInteractor(sliceViewerWidgetYellow->interactorStyle()->GetInteractor());
+		qMRMLSliceWidget* sliceViewerWidgetGreen = app->layoutManager()->sliceWidget(sliceViewerNames[2]);
+		const qMRMLSliceView* sliceViewGreen = sliceViewerWidgetGreen->sliceView();
+		d->ScalarBarWidget2DGreen->SetInteractor(sliceViewerWidgetGreen->interactorStyle()->GetInteractor());
+
+		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewRed, SLOT(scheduleRender()));
+		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewYellow, SLOT(scheduleRender()));
+		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewGreen, SLOT(scheduleRender()));
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -713,6 +862,9 @@ void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 	  d->absoluteDiffMeanSpinBox->setValue(0);
 	  d->absoluteDiffSTDSpinBox->setValue(0);
 	  }
+	//Create legend:
+	this->setScalarBar2DVisibility(true,1);
+	
 	QApplication::restoreOverrideCursor();
 
 }
@@ -957,7 +1109,70 @@ void qSlicerRegistrationQualityModuleWidget::inverseConsistClicked(bool state){
 	QApplication::restoreOverrideCursor();
 }
 
+//------------------------------------------------------------------------------
+// number = 1 AbsoluteDifference, 2. Jacobian, 3. InverseConsistency, 4. Fiducial Distance, 5. Inverse Fiducial distance
+void qSlicerRegistrationQualityModuleWidget::setScalarBar2DVisibility(bool visible, int number)
+{
+  Q_D(qSlicerRegistrationQualityModuleWidget);
 
+  if (!this->mrmlScene())
+  {
+    qCritical() << "qSlicerRegistrationQualityModuleWidget::setScalarBar2DVisibility: Invalid scene!";
+    return;
+  }
+
+  if (d->ScalarBarWidget2DRed == 0 || d->ScalarBarWidget2DYellow == 0 || d->ScalarBarWidget2DGreen == 0)
+  {
+    return;
+  }
+  if (visible)
+  {
+#if (VTK_MAJOR_VERSION <= 5)
+    d->ScalarBarActor2DRed->UseColorNameAsLabelOn();
+    d->ScalarBarActor2DYellow->UseColorNameAsLabelOn();
+    d->ScalarBarActor2DGreen->UseColorNameAsLabelOn();
+#else
+    d->ScalarBarActor2DRed->UseAnnotationAsLabelOn();
+    d->ScalarBarActor2DYellow->UseAnnotationAsLabelOn();
+    d->ScalarBarActor2DGreen->UseAnnotationAsLabelOn();
+#endif
+  }
+  
+  if (number < 1 || number > 3) {
+	return;
+  }
+  
+  vtkMRMLColorTableNode* selectedColorNode;
+  if (number == 1) selectedColorNode = vtkMRMLColorTableNode::SafeDownCast(this->mrmlScene()
+					  ->GetNodeByID("vtkMRMLColorTableNodeRainbow"));
+  else if (number == 2) selectedColorNode = vtkMRMLColorTableNode::SafeDownCast(this->mrmlScene()
+					  ->GetNodeByID("vtkMRMLColorTableNodeColdToHot"));
+  else if (number == 3) selectedColorNode = vtkMRMLColorTableNode::SafeDownCast(this->mrmlScene()
+					  ->GetNodeByID("vtkMRMLColorTableNodeGreen"));
+  if (!selectedColorNode)
+  {
+    qCritical() << "qSlicerRegistrationQualityModuleWidget::setScalarBar2DVisibility: Invalid color table node!";
+    return;
+  }
+  int numberOfColors = selectedColorNode->GetNumberOfColors();
+  for (int i=0; i<numberOfColors; i++)
+  {
+#if (VTK_MAJOR_VERSION <= 5)
+    d->ScalarBarActor2DRed->SetColorName(i, selectedColorNode->GetColorName(i));
+    d->ScalarBarActor2DYellow->SetColorName(i, selectedColorNode->GetColorName(i));
+    d->ScalarBarActor2DGreen->SetColorName(i, selectedColorNode->GetColorName(i));
+#else
+    d->ScalarBarActor2DRed->GetLookupTable()->SetAnnotation(i, vtkStdString(selectedColorNode->GetColorName(i)));
+    d->ScalarBarActor2DYellow->GetLookupTable()->SetAnnotation(i, vtkStdString(selectedColorNode->GetColorName(i)));
+    d->ScalarBarActor2DGreen->GetLookupTable()->SetAnnotation(i, vtkStdString(selectedColorNode->GetColorName(i)));
+#endif
+  }
+
+  d->ScalarBarWidget2DRed->SetEnabled(visible);
+  d->ScalarBarWidget2DYellow->SetEnabled(visible);
+  d->ScalarBarWidget2DGreen->SetEnabled(visible);
+}
+//------------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(double checkboardPattern) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 
