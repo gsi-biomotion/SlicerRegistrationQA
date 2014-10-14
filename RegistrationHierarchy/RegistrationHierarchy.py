@@ -336,8 +336,8 @@ class RegistrationHierarchyLogic:
       return
 
     warpedOn = True
-    cbtOn = True
-    mhaOn = False
+    cbtOn = False
+    mhaOn = True
     patientName = regHierarchy.GetAttribute("PatientName")
     
     refPhaseNode = self.getReferencePhaseFromHierarchy(regHierarchy)
@@ -577,101 +577,103 @@ class RegistrationHierarchyLogic:
     #Inverse Consistency
     
     #Check if it's already computed
-    #invConsistNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVCONSIST)
-    #if not invConsistNode:
-      #if maxInvVectorNode and maxVectorNode:
-	#invConsistNode = DIRQALogic.InverseConsist(maxVectorNode,maxInvVectorNode,roiNode)
-	#if invConsistNode:
-	  #invConsistHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVCONSIST)
-	  #invConsistHierarchy.SetAssociatedNodeID(invConsistNode.GetID())
+    invConsistNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVCONSIST)
+    if not invConsistNode:
+      if maxInvVectorNode and maxVectorNode:
+	invConsistNode = DIRQALogic.InverseConsist(maxVectorNode,maxInvVectorNode,roiNode)
+	if invConsistNode:
+	  invConsistHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVCONSIST)
+	  invConsistHierarchy.SetAssociatedNodeID(invConsistNode.GetID())
 	  
-	  ##Statistics
-	  #statisticsArray = [0,0,0,0]
-	  #DIRQALogic.CalculateStatistics(invConsistNode,statisticsArray)
-	  #self.writeStatistics(invConsistHierarchy,statisticsArray)
-	#else:
-	  #print "Can't compute Inverse Consistency."
-      #else:
-	#print "Can't load vector field."
+	  #Statistics
+	  statisticsArray = [0,0,0,0]
+	  DIRQALogic.CalculateStatistics(invConsistNode,statisticsArray)
+	  self.writeStatistics(invConsistHierarchy,statisticsArray)
+	else:
+	  print "Can't compute Inverse Consistency."
+      else:
+	print "Can't load vector field."
     
     
     #AbsoluteDifference
     
     #Check if it's already computed
-    #absDiffNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_ABSDIFF)
-    #if not absDiffNode:
-      #warpNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_WARP)
-      #if warpNode:
-        #absDiffNodeWarp = DIRQALogic.AbsoluteDifference(refPhaseNode,warpNode,roiNode)
-      #phaseNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_CT)
-      #if phaseNode:
-	#absDiffNodePhase = DIRQALogic.AbsoluteDifference(refPhaseNode,phaseNode,roiNode)
-      #if absDiffNodeWarp and absDiffNodePhase:
-	##TODO: Use ITK filters
-	##arrayWarp = slicer.util.array(absDiffNodeWarp.GetID())
-	##arrayPhase = slicer.util.array(absDiffNodePhase.GetID())
+    absDiffNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_ABSDIFF)
+    if not absDiffNode:
+      warpNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_WARP)
+      if warpNode:
+        absDiffNodeWarp = DIRQALogic.AbsoluteDifference(refPhaseNode,warpNode,roiNode)
+      phaseNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_CT)
+      if phaseNode:
+	absDiffNodePhase = DIRQALogic.AbsoluteDifference(refPhaseNode,phaseNode,roiNode)
+      if absDiffNodeWarp and absDiffNodePhase:
+	#TODO: Use ITK filters
+	#arrayWarp = slicer.util.array(absDiffNodeWarp.GetID())
+	#arrayPhase = slicer.util.array(absDiffNodePhase.GetID())
 	
-	###Find relative change of Warped image
-	##arrayWarp[:] = arrayPhase[:] - arrayWarp[:]
-	##maxArray = arrayWarp.max()
-	##minArray = arrayWarp.min()
-	##normFactor = 100 / ( maxArray - minArray)
-	##arrayWarp[:] = (arrayWarp[:] - minArray) * normFactor
-	##absDiffNodeWarp.GetImageData().Modified()
+	##Find relative change of Warped image
+	#arrayWarp[:] = arrayPhase[:] - arrayWarp[:]
+	#maxArray = arrayWarp.max()
+	#minArray = arrayWarp.min()
+	#normFactor = 100 / ( maxArray - minArray)
+	#arrayWarp[:] = (arrayWarp[:] - minArray) * normFactor
+	#absDiffNodeWarp.GetImageData().Modified()
 	
-	#absDiffHierarchy = self.createChild(maxPhaseHierarchy,NAME_ABSDIFF)
-	#absDiffHierarchy.SetAssociatedNodeID(absDiffNodeWarp.GetID())
+	absDiffHierarchy = self.createChild(maxPhaseHierarchy,NAME_ABSDIFF)
+	absDiffHierarchy.SetAssociatedNodeID(absDiffNodeWarp.GetID())
 	
-	##Statistics
-	#statisticsArrayWarp = [0,0,0,0]
-	#statisticsArrayPhase = [0,0,0,0]
-	#DIRQALogic.CalculateStatistics(absDiffNodeWarp,statisticsArrayWarp)
-	#DIRQALogic.CalculateStatistics(absDiffNodePhase, statisticsArrayPhase)
-	##Compare mean and STD with phase hierarchy
-	#for i in range(0,2):
-	  #statisticsArrayWarp[i] = 1 - (statisticsArrayWarp[i]/statisticsArrayPhase[i])
-	#self.writeStatistics(absDiffHierarchy,statisticsArrayWarp)
-      #else:
-	#print "Can't compute Absolute Difference."
+	#Statistics
+	statisticsArrayWarp = [0,0,0,0]
+	statisticsArrayPhase = [0,0,0,0]
+	DIRQALogic.CalculateStatistics(absDiffNodeWarp,statisticsArrayWarp)
+	DIRQALogic.CalculateStatistics(absDiffNodePhase, statisticsArrayPhase)
+	#Compare mean and STD with phase hierarchy
+	for i in range(0,2):
+	  if not statisticsArrayPhase[i] == 0:
+	    statisticsArrayWarp[i] = 1 - (statisticsArrayWarp[i]/statisticsArrayPhase[i])
+	self.writeStatistics(absDiffHierarchy,statisticsArrayWarp)
+      else:
+	print "Can't compute Absolute Difference."
 
     #InvAbsoluteDifference
     
     #Check if it's already computed
-    #invAbsDiffNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVABSDIFF)
-    #if not absDiffNode:
-      #invWarpNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVWARP)
-      #if warpNode:
-        #if not phaseNode:
-	  #phaseNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_CT)
-	#if phaseNode:
-          #invAbsDiffNodeWarp = DIRQALogic.AbsoluteDifference(phaseNode,invWarpNode,roiNode)
-      #if invAbsDiffNodeWarp:
-	##TODO: Use ITK filters
-	##arrayWarp = slicer.util.array(absDiffNodeWarp.GetID())
-	##arrayPhase = slicer.util.array(absDiffNodePhase.GetID())
+    invAbsDiffNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVABSDIFF)
+    if not absDiffNode:
+      invWarpNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVWARP)
+      if warpNode:
+        if not phaseNode:
+	  phaseNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_CT)
+	if phaseNode:
+          invAbsDiffNodeWarp = DIRQALogic.AbsoluteDifference(phaseNode,invWarpNode,roiNode)
+      if invAbsDiffNodeWarp:
+	#TODO: Use ITK filters
+	#arrayWarp = slicer.util.array(absDiffNodeWarp.GetID())
+	#arrayPhase = slicer.util.array(absDiffNodePhase.GetID())
 	
-	###Find relative change of Warped image
-	##arrayWarp[:] = arrayPhase[:] - arrayWarp[:]
-	##maxArray = arrayWarp.max()
-	##minArray = arrayWarp.min()
-	##normFactor = 100 / ( maxArray - minArray)
-	##arrayWarp[:] = (arrayWarp[:] - minArray) * normFactor
-	##absDiffNodeWarp.GetImageData().Modified()
+	##Find relative change of Warped image
+	#arrayWarp[:] = arrayPhase[:] - arrayWarp[:]
+	#maxArray = arrayWarp.max()
+	#minArray = arrayWarp.min()
+	#normFactor = 100 / ( maxArray - minArray)
+	#arrayWarp[:] = (arrayWarp[:] - minArray) * normFactor
+	#absDiffNodeWarp.GetImageData().Modified()
 	
-	#invAbsDiffHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVABSDIFF)
-	#invAbsDiffHierarchy.SetAssociatedNodeID(invAbsDiffNodeWarp.GetID())
+	invAbsDiffHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVABSDIFF)
+	invAbsDiffHierarchy.SetAssociatedNodeID(invAbsDiffNodeWarp.GetID())
 	
-	##Statistics
-	#statisticsArrayInvWarp = [0,0,0,0]
-	#DIRQALogic.CalculateStatistics(invAbsDiffNodeWarp,statisticsArrayInvWarp)
-	##Compare mean and STD with phase hierarchy
-	#if statisticsArrayPhase:
-	  #for i in range(0,2):
-	    #statisticsArrayInvWarp[i] = 1 - (statisticsArrayInvWarp[i]/statisticsArrayPhase[i])
+	#Statistics
+	statisticsArrayInvWarp = [0,0,0,0]
+	DIRQALogic.CalculateStatistics(invAbsDiffNodeWarp,statisticsArrayInvWarp)
+	#Compare mean and STD with phase hierarchy
+	if statisticsArrayPhase:
+	  for i in range(0,2):
+	    if not statisticsArrayPhase[i] == 0:
+	      statisticsArrayInvWarp[i] = 1 - (statisticsArrayInvWarp[i]/statisticsArrayPhase[i])
 		  
-	#self.writeStatistics(invAbsDiffHierarchy,statisticsArrayInvWarp)
-      #else:
-	#print "Can't compute Inverse Absolute Difference."
+	self.writeStatistics(invAbsDiffHierarchy,statisticsArrayInvWarp)
+      else:
+	print "Can't compute Inverse Absolute Difference."
     
     #Jacobian
     
@@ -1140,7 +1142,7 @@ class registrationParameters():
       else:
 	parameters["plmslc_output_vf_f"] = self.vf_F_name
       
-      parameters["enable_stage_0"] = True
+      parameters["enable_stage_0"] = False
       
       parameters["stage_1_resolution"] = '4,4,2'
       parameters["stage_1_grid_size"] = '50'
@@ -1149,7 +1151,7 @@ class registrationParameters():
       parameters["plmslc_output_warped_1"] = ''
       
       parameters["enable_stage_2"] = True
-      parameters["stage_2_resolution"] = '1,1,1'
+      parameters["stage_2_resolution"] = '2,2,1'
       parameters["stage_2_grid_size"] = '15'
       parameters["stage_1_regularization"] = '0.005'
       parameters["stage_2_its"] = '100'

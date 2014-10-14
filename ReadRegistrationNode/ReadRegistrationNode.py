@@ -297,8 +297,8 @@ class ReadRegistrationNodeWidget:
       print "Input Patient Name!"
       return 
     
-    #self.pathCT.text = '/u/kanderle/AIXd/Data/FC/' + patientName + '/'
-    self.pathCT.text = '/u/motion/Data/PatientData/HIT/' + patientName + '/25062014/'
+    self.pathCT.text = '/u/kanderle/AIXd/Data/FC/' + patientName + '/'
+    #self.pathCT.text = '/u/motion/Data/PatientData/HIT/' + patientName + '/25062014/'
     #self.pathCT.text = '/u/motion/Data/PatientData2/PIGS/' + patientName + '/'
 
   
@@ -407,10 +407,10 @@ class ReadRegistrationNodeLogic:
     
     ##ctDirectoryNative = patientDirectory + '4DCT_1/NRRD/'
     ##ctDirectoryContrast = patientDirectory + '4DCT_2/NRRD/'
-    #ctDirectoryNative = patientDirectory + 'CTX/'
+    ctDirectoryNative = patientDirectory + 'CTX/'
     #ctDirectoryContrast = '/u/motion/AIXd/Data/PatientData/FC/' + patientName +'/4D/Phases/Plan/'
-    ctDirectoryNative = patientDirectory + '4DCT_1/CTX/'
-    ctDirectoryContrast = patientDirectory  + '4DCT_2/CTX/'
+    #ctDirectoryNative = patientDirectory + '4DCT_1/CTX/'
+    #ctDirectoryContrast = patientDirectory  + '4DCT_2/CTX/'
     
     
     if fromContrast:
@@ -456,7 +456,8 @@ class ReadRegistrationNodeLogic:
       if not registrationNodeNative4D:
         #First create registration node
         #vectorDirectory = patientDirectory + '4DCT_1/Registration/4D/'
-        vectorDirectory = patientDirectory + '/Registration/4D/'
+        #vectorDirectory = patientDirectory + '/Registration/4D/'
+        vectorDirectory = '/u/kanderle/MHA/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Create Registration node
@@ -628,7 +629,7 @@ class ReadRegistrationNodeLogic:
         #continue
       
       #index = fileName.find('.ctx')
-      index = fileName.find('.ctx')
+      index = fileName.find('.nrrd')
       if not index > -1:
 	continue
       #Try to find out, which phase do we have
