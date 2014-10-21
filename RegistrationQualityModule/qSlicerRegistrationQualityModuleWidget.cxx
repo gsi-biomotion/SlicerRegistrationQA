@@ -750,24 +750,24 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
 	
-	qSlicerApplication * app = qSlicerApplication::application();
-	if (app && app->layoutManager()){
-
-		QStringList sliceViewerNames = app->layoutManager()->sliceViewNames();
-		qMRMLSliceWidget* sliceViewerWidgetRed = app->layoutManager()->sliceWidget(sliceViewerNames[0]);
-		const qMRMLSliceView* sliceViewRed = sliceViewerWidgetRed->sliceView();
-		d->ScalarBarWidget2DRed->SetInteractor(sliceViewerWidgetRed->interactorStyle()->GetInteractor());
-		qMRMLSliceWidget* sliceViewerWidgetYellow = app->layoutManager()->sliceWidget(sliceViewerNames[1]);
-		const qMRMLSliceView* sliceViewYellow = sliceViewerWidgetYellow->sliceView();
-		d->ScalarBarWidget2DYellow->SetInteractor(sliceViewerWidgetYellow->interactorStyle()->GetInteractor());
-		qMRMLSliceWidget* sliceViewerWidgetGreen = app->layoutManager()->sliceWidget(sliceViewerNames[2]);
-		const qMRMLSliceView* sliceViewGreen = sliceViewerWidgetGreen->sliceView();
-		d->ScalarBarWidget2DGreen->SetInteractor(sliceViewerWidgetGreen->interactorStyle()->GetInteractor());
-
-		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewRed, SLOT(scheduleRender()));
-		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewYellow, SLOT(scheduleRender()));
-		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewGreen, SLOT(scheduleRender()));
-	}
+// 	qSlicerApplication * app = qSlicerApplication::application();
+// 	if (app && app->layoutManager()){
+// 
+// 		QStringList sliceViewerNames = app->layoutManager()->sliceViewNames();
+// 		qMRMLSliceWidget* sliceViewerWidgetRed = app->layoutManager()->sliceWidget(sliceViewerNames[0]);
+// 		const qMRMLSliceView* sliceViewRed = sliceViewerWidgetRed->sliceView();
+// 		d->ScalarBarWidget2DRed->SetInteractor(sliceViewerWidgetRed->interactorStyle()->GetInteractor());
+// 		qMRMLSliceWidget* sliceViewerWidgetYellow = app->layoutManager()->sliceWidget(sliceViewerNames[1]);
+// 		const qMRMLSliceView* sliceViewYellow = sliceViewerWidgetYellow->sliceView();
+// 		d->ScalarBarWidget2DYellow->SetInteractor(sliceViewerWidgetYellow->interactorStyle()->GetInteractor());
+// 		qMRMLSliceWidget* sliceViewerWidgetGreen = app->layoutManager()->sliceWidget(sliceViewerNames[2]);
+// 		const qMRMLSliceView* sliceViewGreen = sliceViewerWidgetGreen->sliceView();
+// 		d->ScalarBarWidget2DGreen->SetInteractor(sliceViewerWidgetGreen->interactorStyle()->GetInteractor());
+// 
+// 		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewRed, SLOT(scheduleRender()));
+// 		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewYellow, SLOT(scheduleRender()));
+// 		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewGreen, SLOT(scheduleRender()));
+// 	}
 }
 
 //-----------------------------------------------------------------------------
