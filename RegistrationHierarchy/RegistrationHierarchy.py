@@ -16,6 +16,7 @@ NAME_INVVECTOR = 'InvVector' #Vector from reference phase to phase
 NAME_ABSDIFF = 'AbsoluteDifference'
 NAME_INVABSDIFF = 'InvAbsoluteDifference'
 NAME_JACOBIAN = 'Jacobian'
+NAME_INVJACOBIAN = 'InvJacobian'
 NAME_INVCONSIST = 'InverseConsistency'
 NAME_REFPHASE = 'ReferenceHierarchyNode'
 NAME_ROIFILEPATH = 'RoiFilePath'
@@ -268,7 +269,9 @@ class RegistrationHierarchyWidget:
 	  
 	  #Look for statistics:
 	  stringList = []
-	  if dirqaName == NAME_ABSDIFF or dirqaName == NAME_INVABSDIFF or dirqaName == NAME_JACOBIAN or dirqaName == NAME_INVCONSIST:
+	  if (dirqaName == NAME_ABSDIFF or dirqaName == NAME_INVABSDIFF or 
+	  dirqaName == NAME_JACOBIAN or dirqaName == NAME_INVJACOBIAN or
+	  dirqaName == NAME_INVCONSIST):
 	    stringList = ["Mean","STD","Max","Min"]
 		  
 	  if dirqaName == NAME_VECTOR or dirqaName == NAME_INVVECTOR:
@@ -336,8 +339,8 @@ class RegistrationHierarchyLogic:
       return
 
     warpedOn = True
-    cbtOn = False
-    mhaOn = True
+    cbtOn = True
+    mhaOn = False
     patientName = regHierarchy.GetAttribute("PatientName")
     
     refPhaseNode = self.getReferencePhaseFromHierarchy(regHierarchy)
@@ -458,6 +461,8 @@ class RegistrationHierarchyLogic:
       sys.stderr.write('Cannot find registrationquality module')
       return
       
+    removeOn = True
+    
     if not regHierarchy:
       print "No registration Hierarchy"
       return
@@ -583,7 +588,8 @@ class RegistrationHierarchyLogic:
 	invConsistNode = DIRQALogic.InverseConsist(maxVectorNode,maxInvVectorNode,roiNode)
 	if invConsistNode:
 	  invConsistHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVCONSIST)
-	  invConsistHierarchy.SetAssociatedNodeID(invConsistNode.GetID())
+	  if not removeOn:
+	    invConsistHierarchy.SetAssociatedNodeID(invConsistNode.GetID())
 	  
 	  #Statistics
 	  statisticsArray = [0,0,0,0]
@@ -593,7 +599,8 @@ class RegistrationHierarchyLogic:
 	  print "Can't compute Inverse Consistency."
       else:
 	print "Can't load vector field."
-    
+    if invConsistNode and removeOn:
+      slicer.mrmlScene.RemoveNode(invConsistNode)
     
     #AbsoluteDifference
     
@@ -620,7 +627,8 @@ class RegistrationHierarchyLogic:
 	#absDiffNodeWarp.GetImageData().Modified()
 	
 	absDiffHierarchy = self.createChild(maxPhaseHierarchy,NAME_ABSDIFF)
-	absDiffHierarchy.SetAssociatedNodeID(absDiffNodeWarp.GetID())
+	if not removeOn:
+	  absDiffHierarchy.SetAssociatedNodeID(absDiffNodeWarp.GetID())
 	
 	#Statistics
 	statisticsArrayWarp = [0,0,0,0]
@@ -635,6 +643,10 @@ class RegistrationHierarchyLogic:
       else:
 	print "Can't compute Absolute Difference."
 
+    if absDiffNodeWarp and removeOn:
+      slicer.mrmlScene.RemoveNode(absDiffNodeWarp)
+    if absDiffNodePhase and removeOn:
+      slicer.mrmlScene.RemoveNode(absDiffNodePhase)
     #InvAbsoluteDifference
     
     #Check if it's already computed
@@ -660,7 +672,8 @@ class RegistrationHierarchyLogic:
 	#absDiffNodeWarp.GetImageData().Modified()
 	
 	invAbsDiffHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVABSDIFF)
-	invAbsDiffHierarchy.SetAssociatedNodeID(invAbsDiffNodeWarp.GetID())
+	if not removeOn:
+	  invAbsDiffHierarchy.SetAssociatedNodeID(invAbsDiffNodeWarp.GetID())
 	
 	#Statistics
 	statisticsArrayInvWarp = [0,0,0,0]
@@ -675,28 +688,64 @@ class RegistrationHierarchyLogic:
       else:
 	print "Can't compute Inverse Absolute Difference."
     
+    if invAbsDiffNodeWarp and removeOn:
+      slicer.mrmlScene.RemoveNode(invAbsDiffNodeWarp)
+    
     #Jacobian
     
     #Check for maxVectorNode
-    if not maxVectorNode:
-      print "Could not load maxVectorNode"
-      return
+    if maxVectorNode:
+      #Check if it's already computed
+      jacobianNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_JACOBIAN)
+      if not jacobianNode:
+        jacobianNode = DIRQALogic.Jacobian(maxVectorNode,roiNode)
+        if jacobianNode:
+	  jacobianHierarchy = self.createChild(maxPhaseHierarchy,NAME_JACOBIAN)
+	  if not removeOn:
+	    jacobianHierarchy.SetAssociatedNodeID(jacobianNode.GetID())
+	
+	  #Statistics
+	  statisticsArray = [0,0,0,0]
+	  DIRQALogic.CalculateStatistics(jacobianNode,statisticsArray)
+	  self.writeStatistics(jacobianHierarchy,statisticsArray)
+        else:
+	  print "Can't compute Jacobian."
+    else:
+      print "Can't load maxVectorNode."
+    if jacobianNode and removeOn:
+      slicer.mrmlScene.RemoveNode(jacobianNode)
+    
+    #InvJacobian
+    
+    #Check for maxVectorNode
+    if maxInvVectorNode:
+      #Check if it's already computed
+      invJacobianNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_INVJACOBIAN)
+      if not invJacobianNode:
+        invJacobianNode = DIRQALogic.Jacobian(maxInvVectorNode,roiNode)
+        if invJacobianNode:
+	  invJacobianHierarchy = self.createChild(maxPhaseHierarchy,NAME_INVJACOBIAN)
+	  if not removeOn:
+	    invJacobianHierarchy.SetAssociatedNodeID(invJacobianNode.GetID())
+	
+	  #Statistics
+	  statisticsArray = [0,0,0,0]
+	  DIRQALogic.CalculateStatistics(invJacobianNode,statisticsArray)
+	  self.writeStatistics(invJacobianHierarchy,statisticsArray)
+        else:
+	  print "Can't compute Jacobian."
+    else:
+      print "Can't load maxInvVectorNode."
+    if invJacobianNode and removeOn:
+      slicer.mrmlScene.RemoveNode(invJacobianNode)
+    
+    #Remove vector fields
+    #if maxVectorNode and removeOn:
+      #slicer.mrmlScene.RemoveNode(maxVectorNode)
+    
+    #if maxVectorNode and removeOn:
+      #slicer.mrmlScene.RemoveNode(maxInvVectorNode)
       
-    #Check if it's already computed
-    jacobianNode = self.getVolumeFromChild(maxPhaseHierarchy,NAME_JACOBIAN)
-    if not jacobianNode:
-      jacobianNode = DIRQALogic.Jacobian(maxVectorNode,roiNode)
-      if jacobianNode:
-	jacobianHierarchy = self.createChild(maxPhaseHierarchy,NAME_JACOBIAN)
-	jacobianHierarchy.SetAssociatedNodeID(jacobianNode.GetID())
-	
-	#Statistics
-	statisticsArray = [0,0,0,0]
-	DIRQALogic.CalculateStatistics(jacobianNode,statisticsArray)
-	self.writeStatistics(jacobianHierarchy,statisticsArray)
-      else:
-	print "Can't compute Jacobian."
-	
     print "Finished Dirqa!"
     return
 	
@@ -752,7 +801,9 @@ class RegistrationHierarchyLogic:
 	  dirqaName = dirqaNode.GetNameWithoutPostfix()
 	  #Look for statistics:
 	  stringList = []
-	  if dirqaName == NAME_ABSDIFF or dirqaName == NAME_INVABSDIFF or dirqaName == NAME_JACOBIAN or dirqaName == NAME_INVCONSIST:
+	  if (dirqaName == NAME_ABSDIFF or dirqaName == NAME_INVABSDIFF or 
+	  dirqaName == NAME_JACOBIAN or dirqaName == NAME_INVJACOBIAN or
+	  dirqaName == NAME_INVCONSIST):
 	    stringList = ["Mean","STD","Max","Min"]
 		  
 	  if dirqaName == NAME_VECTOR or dirqaName == NAME_INVVECTOR:
@@ -925,15 +976,137 @@ class RegistrationHierarchyLogic:
     print "Saving " + node.GetName()
     #Special Case
     if cbtOn:
+      #-----Convert transform node into vector node
+      if node.IsA('vtkMRMLGridTransformNode'):
+	print "Converting Transform Node to Vector Field"
+	trans = node.GetTransformFromParent()#.GetConcatenatedTransform(0)
+	#trans.Inverse()
+	#trans.Update()
+	im = trans.GetDisplacementGrid()
+	if im is None:
+	  print "Can't get image data. " + str(im)
+	  return
+	  
+	vectorNode = slicer.vtkMRMLVectorVolumeNode()
+	slicer.mrmlScene.AddNode( vectorNode )
+	vectorNode.SetAndObserveImageData( im )
+	vectorNode.SetName( node.GetName() )
+	vectorNode.SetSpacing( im.GetSpacing() )
+	
+	#vectorNode.SetOrigin( im.GetOrigin() )
+	
+	#Get Right Direction For Vector Volume
+	#matrix = vtk.vtkMatrix4x4()
+	matrix = trans.GetGridDirectionMatrix()
+        #matrix.DeepCopy((-1,0,0,0,0,-1,0,0,0,0,1,0,0,0,0,1))
+        vectorNode.SetIJKToRASDirectionMatrix(matrix)
+
+        if not resample == []:
+	  newVectorNode = self.resampleVectorVolume(vectorNode,resample)
+	  slicer.mrmlScene.RemoveNode(vectorNode)
+	  vectorNode = newVectorNode
+
+      #----- Save vector node ----
+      spacing = vectorNode.GetSpacing()
+      #Changes values due to TRiP demands
+      vectorArray = slicer.util.array(vectorNode.GetID())
+      for i in range(0,3):
+        vectorArray[:,:,:,i] = vectorArray[:,:,:,i] / spacing[i]
+      vectorNode.GetImageData().Modified()
       
-      import SaveTRiP
-      saveTripLogic = SaveTRiP.SaveTRiPLogic()
-      saveTripLogic.writeTRiPdata(directory,extension='.cbt',nodeID = node.GetID() , aix = True, resample = resample)
-      return True
+      scalarNode = slicer.vtkMRMLScalarVolumeNode()
+      slicer.mrmlScene.AddNode( scalarNode )
+      
+      storageNode = scalarNode.CreateDefaultStorageNode()
+      storageNode.SetUseCompression(0)
+      slicer.mrmlScene.AddNode( storageNode )
+      scalarNode.SetAndObserveStorageNodeID(  storageNode.GetID() )
+
+      scalarNode.SetOrigin(vectorNode.GetOrigin())
+      scalarNode.SetSpacing(spacing)
+
+      ijkToRAS = vtk.vtkMatrix4x4()
+      vectorNode.GetIJKToRASMatrix(ijkToRAS)
+      scalarNode.SetIJKToRASMatrix(ijkToRAS)
+
+      extract = vtk.vtkImageExtractComponents()
+      extract.SetInput(vectorNode.GetImageData())
+
+      names = [vectorNode.GetName() + "_x",vectorNode.GetName() + "_y",vectorNode.GetName() + "_z"]
+      
+      for i in range(0,3):
+        print "Saving vector field " + names[i]
+        scalarNode.SetName(names[i])
+        extract.SetComponents(i)
+        extract.Update()
+        scalarNode.SetAndObserveImageData( extract.GetOutput() )
+        filePath = directory + "/" + scalarNode.GetName() + ".nhdr"
+        if not slicer.util.saveNode(scalarNode,filePath):
+	  print "Cannot save " + filePath
+        
+      #-----Remove nodes to clear memory
+      #slicer.mrmlScene.RemoveNode(vectorNode)
+      slicer.mrmlScene.RemoveNode(scalarNode)
+      
+      return
     
     if slicer.util.saveNode(node,filePath):
       childNode.SetAttribute("FilePath",filePath)
       return True
+
+  
+  
+  def resampleVectorVolume(self,vectorVolume,resample):
+      if not vectorVolume or not vectorVolume.IsA('vtkMRMLVectorVolumeNode'):
+        print "No vector volume for resampling."
+        return
+      
+      if resample == []:
+	print "No resample values."
+	return
+	
+      if not len(resample) == 3:
+        print "Too many values for resampling."
+        return
+      
+      oldVectorVolume = vectorVolume
+      
+      #Create new vector volume
+      newVectorVolume = slicer.vtkMRMLVectorVolumeNode()
+      newVectorVolume.SetName(oldVectorVolume.GetName())
+      slicer.mrmlScene.AddNode(newVectorVolume)
+      
+      newStorageNode = newVectorVolume.CreateDefaultStorageNode()
+      newVectorVolume.SetAndObserveStorageNodeID(newStorageNode.GetID())
+      
+      #Create strings for resampling
+      spacing = ''
+      size = ''
+      for i in range(0,len(resample)):
+        spacing += str(oldVectorVolume.GetSpacing()[i]*resample[i])
+        #extent = oldVectorVolume.GetImageData().GetExtent[2*i+1]
+        extent = oldVectorVolume.GetImageData().GetExtent()[2*i+1]+1
+        size += str(extent/resample[i])
+        if i < 2:
+	  spacing += ','
+	  size += ','
+
+      print "Resampling " + oldVectorVolume.GetName() + " to new pixel size " + size 
+      
+      #Set parameters
+      parameters = {} 
+      parameters["inputVolume"] = oldVectorVolume.GetID()
+      parameters["outputVolume"] = newVectorVolume.GetID()
+      parameters["referenceVolume"] = ''
+      parameters["outputImageSpacing"] = spacing
+      parameters["outputImageSize"] = size
+      
+      #Do resampling
+      resampleScalarVolume = slicer.modules.resamplescalarvectordwivolume
+      clNode = slicer.cli.run(resampleScalarVolume, None, parameters, wait_for_completion=True)
+      
+      #Remove old vector node and set new:
+      return newVectorVolume
 
 class RegistrationHierarchyTest(unittest.TestCase):
   """

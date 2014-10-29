@@ -417,9 +417,9 @@ class ReadRegistrationNodeLogic:
       print "Making registration from contrast."
       registrationNodeFromContrast = subjectNode.GetChildWithName(subjectNode,'Registration Node From Contrast')
       if not registrationNodeFromContrast:
-        #vectorDirectory = patientDirectory + 'Registration/Plan/'
+        vectorDirectory = patientDirectory + 'Registration/Plan/'
         #vectorDirectory = patientDirectory + '4DCT_1/Registration/FromContrast/'
-        vectorDirectory = '/u/kanderle/MHA/'
+        #vectorDirectory = '/u/kanderle/MHA/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Next, create Registration Node for registration from Contrast
@@ -456,8 +456,8 @@ class ReadRegistrationNodeLogic:
       if not registrationNodeNative4D:
         #First create registration node
         #vectorDirectory = patientDirectory + '4DCT_1/Registration/4D/'
-        #vectorDirectory = patientDirectory + '/Registration/4D/'
-        vectorDirectory = '/u/kanderle/MHA/'
+        vectorDirectory = patientDirectory + 'Registration/'
+        #vectorDirectory = '/u/kanderle/MHA/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Create Registration node
@@ -493,8 +493,8 @@ class ReadRegistrationNodeLogic:
       registrationNodeContrast4D = subjectNode.GetChildWithName(subjectNode,'Registration Node Contrast 4D')
       if not registrationNodeContrast4D:
         #First create registration node
-        #vectorDirectory = patientDirectory + '4DCT_2/Registration/4D/'
-        vectorDirectory = patientDirectory + 'contrast/Registration/4D/'
+        vectorDirectory = patientDirectory + 'Registration/4D/'
+        #vectorDirectory = patientDirectory + 'contrast/Registration/4D/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Create Registration node
@@ -634,6 +634,11 @@ class ReadRegistrationNodeLogic:
 	continue
       #Try to find out, which phase do we have
       phase = fileName[index-2:index]
+      try:
+	int(phase)
+      except AttributeError:
+	print "No phase: " + phase
+	continue
 	#phase = 0
 	
       #Create New phase in subject hierarchy
@@ -683,12 +688,12 @@ class ReadRegistrationNodeLogic:
   def checkVectorDirectory(self, vectorDirectory, phaseNode, phase):
     if os.path.exists(vectorDirectory):
       for file in os.listdir(vectorDirectory):
-	index = file.find('_vf.mha')
+	index = file.find('_x.nrrd')
 	if index > -1:
 	  #Find out warpedimage or invWarpedImage
 	  if file[index-2:index] == phase:
 	    warpNode = self.createChild(phaseNode,NAME_VECTOR)
-	  elif file[index-8:index-6] == phase:
+	  elif file[index-5:index-3] == phase:
 	    warpNode = self.createChild(phaseNode,NAME_INVVECTOR)
 	  else:
 	    continue
