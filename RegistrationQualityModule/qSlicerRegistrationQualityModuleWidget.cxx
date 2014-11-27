@@ -1,7 +1,9 @@
 // SlicerQt includes
 #include "qSlicerRegistrationQualityModuleWidget.h"
 #include "ui_qSlicerRegistrationQualityModule.h"
-#include <qSlicerApplication.h>
+#include "qSlicerApplication.h"
+#include "qSlicerLayoutManager.h"
+
 
 // Qt includes
 #include <QProgressDialog>
@@ -40,6 +42,7 @@
 // qMRMLWidget includes
 #include "qMRMLSliceWidget.h"
 #include "qMRMLSliceView.h"
+
 
 // MRMLLogic includes
 #include <vtkMRMLApplicationLogic.h>
@@ -93,8 +96,8 @@ qSlicerRegistrationQualityModuleWidgetPrivate::qSlicerRegistrationQualityModuleW
 	this->ScalarBarWidget2DRed->SetScalarBarActor(this->ScalarBarActor2DRed);
 	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetOrientationToVertical();
 	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetNumberOfLabels(6);
-	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetMaximumNumberOfColors(6);
-	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetTitle("Dose(%)");
+	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetMaximumNumberOfColors(256);
+	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetTitle("Legend:");
 	this->ScalarBarWidget2DRed->GetScalarBarActor()->SetLabelFormat(" %s");
   
 	// it's a 2d actor, position it in screen space by percentages
@@ -107,8 +110,8 @@ qSlicerRegistrationQualityModuleWidgetPrivate::qSlicerRegistrationQualityModuleW
 	this->ScalarBarWidget2DYellow->SetScalarBarActor(this->ScalarBarActor2DYellow);
 	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetOrientationToVertical();
 	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetNumberOfLabels(6);
-	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetMaximumNumberOfColors(6);
-	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetTitle("Dose(%)");
+	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetMaximumNumberOfColors(256);
+	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetTitle("Legend:");
 	this->ScalarBarWidget2DYellow->GetScalarBarActor()->SetLabelFormat(" %s");
 
 	// it's a 2d actor, position it in screen space by percentages
@@ -121,8 +124,8 @@ qSlicerRegistrationQualityModuleWidgetPrivate::qSlicerRegistrationQualityModuleW
 	this->ScalarBarWidget2DGreen->SetScalarBarActor(this->ScalarBarActor2DGreen);
 	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetOrientationToVertical();
 	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetNumberOfLabels(6);
-	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetMaximumNumberOfColors(6);
-	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetTitle("Dose(%)");
+	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetMaximumNumberOfColors(256);
+	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetTitle("Legend:");
 	this->ScalarBarWidget2DGreen->GetScalarBarActor()->SetLabelFormat(" %s");
 
 	// it's a 2d actor, position it in screen space by percentages
@@ -173,21 +176,24 @@ vtkSlicerRegistrationQualityLogic* qSlicerRegistrationQualityModuleWidgetPrivate
 void qSlicerRegistrationQualityModuleWidgetPrivate::updateScalarBarsFromSelectedColorTable(){
 	Q_Q(qSlicerRegistrationQualityModuleWidget);
 	
-	
-	vtkMRMLColorTableNode* selectedColorNode = vtkMRMLColorTableNode::SafeDownCast(q->mrmlScene()
-					  ->GetNodeByID("vtkMRMLColorTableNodeRainbow"));;
+	vtkMRMLRegistrationQualityNode* paramNode = this->logic()->GetRegistrationQualityNode();
+	if (!q->mrmlScene() || !paramNode){
+		return;
+	}
+	vtkMRMLColorTableNode* selectedColorNode = paramNode->GetColorTableNode();
 	if (!selectedColorNode){
 		qDebug() << "qSlicerRegistrationQualityModuleWidgetPrivate::updateScalarBarsFromSelectedColorTable: No color table node is selected";
 		return;
 	}
 
-	// 3D scalar bar
 	int numberOfColors = selectedColorNode->GetNumberOfColors();
 	// 2D scalar bar
 	this->ScalarBarActor2DRed->SetLookupTable(selectedColorNode->GetLookupTable());
 	this->ScalarBarActor2DYellow->SetLookupTable(selectedColorNode->GetLookupTable());
 	this->ScalarBarActor2DGreen->SetLookupTable(selectedColorNode->GetLookupTable());
 
+// 	for (int i=0; i<7; ++i){
+// 		int colorIndex = i*255/6;
 	for (int colorIndex=0; colorIndex<numberOfColors; ++colorIndex){
 		#if (VTK_MAJOR_VERSION <= 5)
 		this->ScalarBarActor2DRed->SetColorName(colorIndex, selectedColorNode->GetColorName(colorIndex));
@@ -281,6 +287,18 @@ void qSlicerRegistrationQualityModuleWidget::setRegistrationQualityParametersNod
 
 	d->logic()->SetAndObserveRegistrationQualityNode(pNode);
 
+	
+	if (pNode){
+		// Set default color table ID if none specified yet
+		if (!pNode->GetColorTableNode()){
+			vtkMRMLColorTableNode* selectedColorNode = vtkMRMLColorTableNode::SafeDownCast(this->mrmlScene()
+					  ->GetNodeByID("vtkMRMLColorTableNodeRainbow"));
+			if (selectedColorNode){
+				pNode->SetAndObserveColorTableNode(selectedColorNode);
+			}
+		}
+
+	}
 	this->updateWidgetFromMRML();
 }
 
@@ -750,24 +768,27 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
 	
-// 	qSlicerApplication * app = qSlicerApplication::application();
-// 	if (app && app->layoutManager()){
-// 
-// 		QStringList sliceViewerNames = app->layoutManager()->sliceViewNames();
-// 		qMRMLSliceWidget* sliceViewerWidgetRed = app->layoutManager()->sliceWidget(sliceViewerNames[0]);
-// 		const qMRMLSliceView* sliceViewRed = sliceViewerWidgetRed->sliceView();
-// 		d->ScalarBarWidget2DRed->SetInteractor(sliceViewerWidgetRed->interactorStyle()->GetInteractor());
-// 		qMRMLSliceWidget* sliceViewerWidgetYellow = app->layoutManager()->sliceWidget(sliceViewerNames[1]);
-// 		const qMRMLSliceView* sliceViewYellow = sliceViewerWidgetYellow->sliceView();
-// 		d->ScalarBarWidget2DYellow->SetInteractor(sliceViewerWidgetYellow->interactorStyle()->GetInteractor());
-// 		qMRMLSliceWidget* sliceViewerWidgetGreen = app->layoutManager()->sliceWidget(sliceViewerNames[2]);
-// 		const qMRMLSliceView* sliceViewGreen = sliceViewerWidgetGreen->sliceView();
-// 		d->ScalarBarWidget2DGreen->SetInteractor(sliceViewerWidgetGreen->interactorStyle()->GetInteractor());
-// 
-// 		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewRed, SLOT(scheduleRender()));
-// 		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewYellow, SLOT(scheduleRender()));
-// 		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewGreen, SLOT(scheduleRender()));
-// 	}
+	connect( d->checkBox_ScalarBar2D, SIGNAL(toggled(bool)), this, SLOT( setScalarBar2DVisibility(bool) ) );
+	
+	qSlicerApplication * app = qSlicerApplication::application();
+	if (app && app->layoutManager()){
+
+		QStringList sliceViewerNames = app->layoutManager()->sliceViewNames();
+		qMRMLSliceWidget* sliceViewerWidgetRed = app->layoutManager()->sliceWidget(sliceViewerNames[0]);
+		const qMRMLSliceView* sliceViewRed = sliceViewerWidgetRed->sliceView();
+		d->ScalarBarWidget2DRed->SetInteractor(sliceViewerWidgetRed->interactorStyle()->GetInteractor());
+		qMRMLSliceWidget* sliceViewerWidgetYellow = app->layoutManager()->sliceWidget(sliceViewerNames[1]);
+		const qMRMLSliceView* sliceViewYellow = sliceViewerWidgetYellow->sliceView();
+		d->ScalarBarWidget2DYellow->SetInteractor(sliceViewerWidgetYellow->interactorStyle()->GetInteractor());
+		qMRMLSliceWidget* sliceViewerWidgetGreen = app->layoutManager()->sliceWidget(sliceViewerNames[2]);
+		const qMRMLSliceView* sliceViewGreen = sliceViewerWidgetGreen->sliceView();
+		d->ScalarBarWidget2DGreen->SetInteractor(sliceViewerWidgetGreen->interactorStyle()->GetInteractor());
+
+
+		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewRed, SLOT(scheduleRender()));
+		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewYellow, SLOT(scheduleRender()));
+		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewGreen, SLOT(scheduleRender()));
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -863,7 +884,7 @@ void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 	  d->absoluteDiffSTDSpinBox->setValue(0);
 	  }
 	//Create legend:
-	this->setScalarBar2DVisibility(true,1);
+	this->updateWidgetFromMRML();
 	
 	QApplication::restoreOverrideCursor();
 
@@ -1073,6 +1094,8 @@ void qSlicerRegistrationQualityModuleWidget::jacobianClicked(bool state){
 	  d->jacobianMeanSpinBox->setValue(0);
 	  d->jacobianSTDSpinBox->setValue(0);
 	}
+	this->updateWidgetFromMRML();
+// 	d->updateScalarBarsFromSelectedColorTable()
 	QApplication::restoreOverrideCursor();
 }
 //-----------------------------------------------------------------------------
@@ -1106,12 +1129,26 @@ void qSlicerRegistrationQualityModuleWidget::inverseConsistClicked(bool state){
 	  d->inverseConsistMeanSpinBox->setValue(0);
 	  d->inverseConsistSTDSpinBox->setValue(0);
 	}
+	this->updateWidgetFromMRML();
 	QApplication::restoreOverrideCursor();
 }
 
 //------------------------------------------------------------------------------
-// number = 1 AbsoluteDifference, 2. Jacobian, 3. InverseConsistency, 4. Fiducial Distance, 5. Inverse Fiducial distance
-void qSlicerRegistrationQualityModuleWidget::setScalarBar2DVisibility(bool visible, int number)
+void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(double checkboardPattern) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene()) {
+		return;
+	}
+
+	pNode->DisableModifiedEventOn();
+	pNode->SetCheckerboardPattern(checkboardPattern);
+	pNode->DisableModifiedEventOff();
+}
+
+//------------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::setScalarBar2DVisibility(bool visible)
 {
   Q_D(qSlicerRegistrationQualityModuleWidget);
 
@@ -1137,18 +1174,7 @@ void qSlicerRegistrationQualityModuleWidget::setScalarBar2DVisibility(bool visib
     d->ScalarBarActor2DGreen->UseAnnotationAsLabelOn();
 #endif
   }
-  
-  if (number < 1 || number > 3) {
-	return;
-  }
-  
-  vtkMRMLColorTableNode* selectedColorNode;
-  if (number == 1) selectedColorNode = vtkMRMLColorTableNode::SafeDownCast(this->mrmlScene()
-					  ->GetNodeByID("vtkMRMLColorTableNodeRainbow"));
-  else if (number == 2) selectedColorNode = vtkMRMLColorTableNode::SafeDownCast(this->mrmlScene()
-					  ->GetNodeByID("vtkMRMLColorTableNodeColdToHot"));
-  else if (number == 3) selectedColorNode = vtkMRMLColorTableNode::SafeDownCast(this->mrmlScene()
-					  ->GetNodeByID("vtkMRMLColorTableNodeGreen"));
+  vtkMRMLColorTableNode* selectedColorNode = d->logic()->GetRegistrationQualityNode()->GetColorTableNode();
   if (!selectedColorNode)
   {
     qCritical() << "qSlicerRegistrationQualityModuleWidget::setScalarBar2DVisibility: Invalid color table node!";
@@ -1171,17 +1197,4 @@ void qSlicerRegistrationQualityModuleWidget::setScalarBar2DVisibility(bool visib
   d->ScalarBarWidget2DRed->SetEnabled(visible);
   d->ScalarBarWidget2DYellow->SetEnabled(visible);
   d->ScalarBarWidget2DGreen->SetEnabled(visible);
-}
-//------------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(double checkboardPattern) {
-	Q_D(qSlicerRegistrationQualityModuleWidget);
-
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	if (!pNode || !this->mrmlScene()) {
-		return;
-	}
-
-	pNode->DisableModifiedEventOn();
-	pNode->SetCheckerboardPattern(checkboardPattern);
-	pNode->DisableModifiedEventOff();
 }

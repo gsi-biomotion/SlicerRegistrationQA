@@ -50,7 +50,7 @@ protected slots:
 
 // 	void checkerboardVolumeChanged(vtkMRMLNode*);
 // 	void absoluteDiffVolumeChanged(vtkMRMLNode*);
-
+	
 	void saveScreenshotClicked();
 	void saveOutputFileClicked();
 
@@ -67,14 +67,15 @@ protected slots:
 	void jacobianClicked(bool state);
 	void inverseConsistClicked(bool state);
 	
-	// Slot for changing 2D scalar bar visibility
-	void setScalarBar2DVisibility(bool,int);
 	// Parameters
 	void setCheckerboardPattern(double);
+	
+	void setScalarBar2DVisibility(bool);
 
 protected:
 	QScopedPointer<qSlicerRegistrationQualityModuleWidgetPrivate> d_ptr;
 	QTimer *flickerTimer;
+	QString *lookupTableName;
 
 	virtual void setup();
 	void onEnter();

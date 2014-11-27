@@ -6,6 +6,7 @@
 #include <vtkMRMLNode.h>
 
 #include "vtkSlicerRegistrationQualityModuleLogicExport.h"
+class vtkMRMLColorTableNode;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkMRMLRegistrationQualityNode :
@@ -63,6 +64,11 @@ public:
 	vtkGetStringMacro (InvFiducialNodeID);
 	void SetAndObserveInvFiducialNodeID(const char* id);
 
+	/// Get color table node
+	vtkMRMLColorTableNode* GetColorTableNode();
+	/// Set and observe color table node
+	void SetAndObserveColorTableNode(vtkMRMLColorTableNode* node);
+	
 	vtkGetMacro(NumberOfScreenshots, int);
 	vtkSetMacro(NumberOfScreenshots, int);
 	// Movie parameters

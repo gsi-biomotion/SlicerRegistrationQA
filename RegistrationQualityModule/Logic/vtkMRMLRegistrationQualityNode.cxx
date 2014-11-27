@@ -8,7 +8,10 @@
 #include <vtkMRMLScene.h>
 #include <vtkMRMLVectorVolumeNode.h>
 #include <vtkMRMLModelNode.h>
+#include <vtkMRMLColorTableNode.h>
 
+//----------------------------------------------------------------------------
+static const char* COLOR_TABLE_REFERENCE_ROLE = "colorTableRef";
 //----------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLRegistrationQualityNode);
 
@@ -367,6 +370,17 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveInvFiducialNodeID(const char* 
 	if (id) {
 		this->Scene->AddReferencedNodeID(this->InvFiducialNodeID, this);
 	}
+}
+//----------------------------------------------------------------------------
+vtkMRMLColorTableNode* vtkMRMLRegistrationQualityNode::GetColorTableNode()
+{
+  return vtkMRMLColorTableNode::SafeDownCast( this->GetNodeReference(COLOR_TABLE_REFERENCE_ROLE) );
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveColorTableNode(vtkMRMLColorTableNode* node)
+{
+  this->SetNodeReferenceID(COLOR_TABLE_REFERENCE_ROLE, (node ? node->GetID() : NULL));
 }
 //----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::SetAndObserveCheckerboardVolumeNodeID(const char* id) {

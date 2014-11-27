@@ -1220,6 +1220,22 @@
 								</layout>
 							</widget>
 						</item>
+						<item>
+							<widget class="QCheckBox" name="checkBox_ScalarBar2D">
+								<property name="sizePolicy">
+									<sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+										<horstretch>50</horstretch>
+										<verstretch>0</verstretch>
+									</sizepolicy>
+								</property>
+								<property name="text">
+									<string>Legend:</string>
+								</property>
+								<property name="Enabled" stdset="0">
+									<bool>false</bool>
+								</property>
+							</widget>
+						</item>
 					</layout>
 				</widget>
 			</item>

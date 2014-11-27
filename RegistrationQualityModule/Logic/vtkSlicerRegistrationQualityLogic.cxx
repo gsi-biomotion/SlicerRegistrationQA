@@ -432,10 +432,12 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
   }
 	
   if (number > 5 || number < 1){
-    vtkErrorMacro("CalculateDIRQAFrom: Invalid number must be between 1 and 4!");
+    vtkErrorMacro("CalculateDIRQAFrom: Invalid number must be between 1 and 5!");
     return;
   }
   
+  // Color table node id:
+  char colorTableNodeID[64];
   // All logic need reference Volume and ROI (if exists)
   vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
@@ -447,6 +449,7 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
   
   if (number == 1){
     vtkMRMLScalarVolumeNode *absoluteDiffVolume = NULL;
+    sprintf(colorTableNodeID, "vtkMRMLColorTableNodeRainbow");
     //Check, if it already exist
     if (this->RegistrationQualityNode->GetAbsoluteDiffVolumeNodeID()){
      absoluteDiffVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
@@ -476,12 +479,13 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
     absoluteDiffVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,3e3);
     absoluteDiffVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
     absoluteDiffVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
-    absoluteDiffVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
+    absoluteDiffVolume->GetDisplayNode()->SetAndObserveColorNodeID(colorTableNodeID);
+    std::cerr << colorTableNodeID << std::endl;
     this->SetForegroundImage(referenceVolume,absoluteDiffVolume,0.5);
-    return;
   }
   else if(number == 2){
     vtkMRMLScalarVolumeNode *jacobianVolume = NULL;
+    sprintf(colorTableNodeID, "vtkMRMLColorTableNodeFileColdToHotRainbow.txt");
     if (this->RegistrationQualityNode->GetJacobianVolumeNodeID()){
       jacobianVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 		this->GetMRMLScene()->GetNodeByID(
@@ -511,13 +515,14 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
     jacobianVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,3);
     jacobianVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
     jacobianVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
-    jacobianVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeColdToHot");
+    jacobianVolume->GetDisplayNode()->SetAndObserveColorNodeID(colorTableNodeID);
+    std::cerr << colorTableNodeID << std::endl;
     
-    this->SetForegroundImage(referenceVolume,jacobianVolume,0.5);
-    return;    
+    this->SetForegroundImage(referenceVolume,jacobianVolume,0.5);   
   }
   else if(number == 3){
-    vtkMRMLScalarVolumeNode *inverseConsistVolume = NULL; 
+    vtkMRMLScalarVolumeNode *inverseConsistVolume = NULL;
+    sprintf(colorTableNodeID, "vtkMRMLColorTableNodeGreen");
     if (this->RegistrationQualityNode->GetInverseConsistVolumeNodeID()){
       inverseConsistVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 		this->GetMRMLScene()->GetNodeByID(
@@ -544,14 +549,13 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
     }
     double window=10;
     int level=5;
-    inverseConsistVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen");
+    inverseConsistVolume->GetDisplayNode()->SetAndObserveColorNodeID(colorTableNodeID);
     inverseConsistVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
       
     inverseConsistVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,10);
     inverseConsistVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
     inverseConsistVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
     this->SetForegroundImage(referenceVolume,inverseConsistVolume,0.5);
-    return;
   }
   else if( number == 4 || number ==5 ){
 	 double statisticValues[4]; // 1. Mean 2. STD 3. Max 4. Min
@@ -583,7 +587,15 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
         else if (number == 5) this->RegistrationQualityNode->SetInvFiducialsStatistics( statisticValues );
         this->RegistrationQualityNode->DisableModifiedEventOff();     
         return;
-  } 
+  }
+  std::cerr << colorTableNodeID << std::endl;
+  vtkMRMLColorTableNode* colorNode = vtkMRMLColorTableNode::SafeDownCast(this->GetMRMLScene()
+					  ->GetNodeByID(colorTableNodeID));
+  if (colorNode){
+	this->RegistrationQualityNode->DisableModifiedEventOn();
+	this->RegistrationQualityNode->SetAndObserveColorTableNode(colorNode);
+	this->RegistrationQualityNode->DisableModifiedEventOff();
+  }
 }
 //---------------------------------------------------------------------------
 vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::AbsoluteDifference(vtkMRMLScalarVolumeNode* referenceVolume, vtkMRMLScalarVolumeNode* warpedVolume,vtkMRMLAnnotationROINode *inputROI  ) {
