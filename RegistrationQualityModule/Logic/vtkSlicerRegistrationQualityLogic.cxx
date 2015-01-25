@@ -811,7 +811,7 @@ void vtkSlicerRegistrationQualityLogic::SetDefaultDisplay(vtkMRMLScalarVolumeNod
 void vtkSlicerRegistrationQualityLogic
 ::CalculateStatistics(vtkMRMLScalarVolumeNode *inputVolume, double statisticValues[4] ) {
 	vtkNew<vtkImageAccumulate> StatImage;
-	StatImage->SetInput(inputVolume->GetImageData());
+	StatImage->SetInputData(inputVolume->GetImageData());
 	StatImage->Update();
 	statisticValues[0]= StatImage->GetMean()[0];
 	statisticValues[1]= StatImage->GetStandardDeviation()[0];
