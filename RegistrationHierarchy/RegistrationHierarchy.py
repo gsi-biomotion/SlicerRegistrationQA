@@ -339,8 +339,8 @@ class RegistrationHierarchyLogic:
       return
 
     warpedOn = True
-    cbtOn = True
-    mhaOn = False
+    cbtOn = False
+    mhaOn = True
     patientName = regHierarchy.GetAttribute("PatientName")
     
     refPhaseNode = self.getReferencePhaseFromHierarchy(regHierarchy)
@@ -817,6 +817,7 @@ class RegistrationHierarchyLogic:
 	      output_str += stringList[i] + ': ' + dirqaNode.GetAttribute(stringList[i]) + " "
 	      output_str += " \n"
     directoryPath = regHierarchy.GetAttribute("DIR" + NAME_DIRQA)
+    print output_str
     if not directoryPath:
       print "Can't get Dirqa directory."
       return
@@ -965,8 +966,9 @@ class RegistrationHierarchyLogic:
       print "Not enough input parameters."
       return False
       
-    childNode = self.createChild(hierarchyNode,string)
-    childNode.SetAttribute("FilePath",filePath)
+    if 0:
+      childNode = self.createChild(hierarchyNode,string)
+      childNode.SetAttribute("FilePath",filePath)
     
     directory = os.path.dirname(os.path.realpath(filePath))
     if not os.path.exists(directory):
@@ -1045,13 +1047,13 @@ class RegistrationHierarchyLogic:
 	  print "Cannot save " + filePath
         
       #-----Remove nodes to clear memory
-      #slicer.mrmlScene.RemoveNode(vectorNode)
+      slicer.mrmlScene.RemoveNode(vectorNode)
       slicer.mrmlScene.RemoveNode(scalarNode)
       
-      return
+      return True
     
     if slicer.util.saveNode(node,filePath):
-      childNode.SetAttribute("FilePath",filePath)
+      #childNode.SetAttribute("FilePath",filePath)
       return True
 
   

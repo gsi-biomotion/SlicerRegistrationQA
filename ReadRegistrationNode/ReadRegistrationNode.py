@@ -408,6 +408,7 @@ class ReadRegistrationNodeLogic:
     ##ctDirectoryNative = patientDirectory + '4DCT_1/NRRD/'
     ##ctDirectoryContrast = patientDirectory + '4DCT_2/NRRD/'
     ctDirectoryNative = patientDirectory + 'CTX/'
+    ctDirectoryContrast = ctDirectoryNative
     #ctDirectoryContrast = '/u/motion/AIXd/Data/PatientData/FC/' + patientName +'/4D/Phases/Plan/'
     #ctDirectoryNative = patientDirectory + '4DCT_1/CTX/'
     #ctDirectoryContrast = patientDirectory  + '4DCT_2/CTX/'
@@ -417,9 +418,9 @@ class ReadRegistrationNodeLogic:
       print "Making registration from contrast."
       registrationNodeFromContrast = subjectNode.GetChildWithName(subjectNode,'Registration Node From Contrast')
       if not registrationNodeFromContrast:
-        vectorDirectory = patientDirectory + 'Registration/Plan/'
+        #vectorDirectory = patientDirectory + 'Registration/Plan/'
         #vectorDirectory = patientDirectory + '4DCT_1/Registration/FromContrast/'
-        #vectorDirectory = '/u/kanderle/MHA/'
+        vectorDirectory = '/u/kanderle/MHA/Plan/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Next, create Registration Node for registration from Contrast
@@ -456,8 +457,8 @@ class ReadRegistrationNodeLogic:
       if not registrationNodeNative4D:
         #First create registration node
         #vectorDirectory = patientDirectory + '4DCT_1/Registration/4D/'
-        vectorDirectory = patientDirectory + 'Registration/'
-        #vectorDirectory = '/u/kanderle/MHA/'
+        #vectorDirectory = patientDirectory + 'Registration/4D/'
+        vectorDirectory = '/u/kanderle/MHA/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Create Registration node
@@ -594,12 +595,12 @@ class ReadRegistrationNodeLogic:
       #Look for 00 files
       #TODO: Change to .mha
       for fileName in os.listdir(ctDirectoryNative):
-	if fileName.find('_00.nrrd') > -1:
+	if fileName.find('_00.nhdr') > -1:
 	  ctNode = self.createChild(phaseNode0,NAME_CT)
 	  ctNode.SetAttribute('FilePath',ctDirectoryNative+fileName)
 	  
       for fileName in os.listdir(ctDirectoryContrast):
-	if fileName.find('_00.nrrd') > -1:
+	if fileName.find('.nrrd') > -1:
 	  ctNode = self.createChild(phaseNode1,NAME_CT)
 	  ctNode.SetAttribute('FilePath',ctDirectoryContrast+fileName)
 	  
@@ -629,7 +630,7 @@ class ReadRegistrationNodeLogic:
         #continue
       
       #index = fileName.find('.ctx')
-      index = fileName.find('.nrrd')
+      index = fileName.find('.nhdr')
       if not index > -1:
 	continue
       #Try to find out, which phase do we have
@@ -676,11 +677,13 @@ class ReadRegistrationNodeLogic:
         index = file.find('_warped.nrrd')
 	if index > -1:
 	  #Find out warpedimage or invWarpedImage
+	  print file
 	  if file[index-2:index] == phase:
 	    warpNode = self.createChild(phaseNode,NAME_WARP)
-	  elif file[index-8:index-6] == phase:
+	  elif file[index-5:index-3] == phase:
 	    warpNode = self.createChild(phaseNode,NAME_INVWARP)
 	  else:
+	    print "Cannot find phase number. Index: " + str(index)
 	    continue
 	  if warpNode:
 	    warpNode.SetAttribute('FilePath',warpDirectory+file)
