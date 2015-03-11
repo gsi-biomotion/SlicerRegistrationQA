@@ -1192,7 +1192,7 @@ vtkMRMLGridTransformNode* vtkSlicerRegistrationQualityLogic::CreateTransformFrom
 	vectorVolume->GetIJKToRASDirectionMatrix(gridDirectionMatrix_RAS.GetPointer());
         transformFromParent->SetGridDirectionMatrix(gridDirectionMatrix_RAS.GetPointer());
 	
-	gridImage_Ras->Update();
+// 	gridImage_Ras->Update();
 // 	this->InvertXandY( gridImage_Ras.GetPointer() );
 
 // 	int dims[3];
@@ -1329,7 +1329,7 @@ vtkMRMLVectorVolumeNode* vtkSlicerRegistrationQualityLogic::CreateVectorFromTran
 	
 	imageData->DeepCopy( gridImage_Ras.GetPointer() );
 	
-	imageData->Update();
+// 	imageData->Update();
 	
 	this->InvertXandY( imageData.GetPointer() );
 
@@ -1451,7 +1451,7 @@ void vtkSlicerRegistrationQualityLogic::SetDefaultDisplay() {
 //---Calculate Statistic of image-----------------------------------
 void vtkSlicerRegistrationQualityLogic::CalculateStatistics(vtkMRMLScalarVolumeNode *inputVolume, double statisticValues[4] ) {
 	vtkNew<vtkImageAccumulate> StatImage;
-	StatImage->SetInput(inputVolume->GetImageData());
+	StatImage->SetInputData(inputVolume->GetImageData());
 	StatImage->Update();
 	statisticValues[0]= StatImage->GetMean()[0];
 	statisticValues[1]= StatImage->GetStandardDeviation()[0];
