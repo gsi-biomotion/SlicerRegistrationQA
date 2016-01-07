@@ -39,7 +39,7 @@ NAME_DIRQA = 'DIRQA'
 
 class ReadRegistrationNode:
   def __init__(self, parent):
-    parent.title = "Read Registration Node" # TODO make this more human readable by adding spaces
+    parent.title = "Read Registration Node KA" # TODO make this more human readable by adding spaces
     parent.categories = ["RegistrationQuality"]
     parent.dependencies = []
     parent.contributors = ["Kristjan Anderle (GSI)"] # replace with "Firstname Lastname (Org)"
@@ -423,7 +423,7 @@ class ReadRegistrationNodeLogic:
     ##ctDirectoryNative = patientDirectory + '4DCT_1/NRRD/'
     ##ctDirectoryContrast = patientDirectory + '4DCT_2/NRRD/'
     ctDirectoryNative = patientDirectory + 'CTX1/'
-    ctDirectoryContrast = patientDirectory + 'CTX2/'
+    ctDirectoryContrast = patientDirectory + 'CTXM/'
     #ctDirectoryContrast = '/u/motion/AIXd/Data/PatientData/FC/' + patientName +'/4D/Phases/Plan/'
     #ctDirectoryNative = patientDirectory + '4DCT_1/CTX/'
     #ctDirectoryContrast = patientDirectory  + '4DCT_2/CTX/'
@@ -468,7 +468,7 @@ class ReadRegistrationNodeLogic:
       print "Making registration from contrast2."
       registrationNodeFromContrast2 = subjectNode.GetChildWithName(subjectNode,'Registration Node From Contrast2')
       if not registrationNodeFromContrast2:
-        vectorDirectory = patientDirectory + 'Registration/Plan2/'
+        vectorDirectory = patientDirectory + 'Registration/PlanM/'
         #vectorDirectory = patientDirectory + '4DCT_1/Registration/FromContrast/'
         #vectorDirectory = '/u/kanderle/MHA/Plan/'
         warpDirectory = vectorDirectory
@@ -542,7 +542,7 @@ class ReadRegistrationNodeLogic:
       registrationNodeContrast4D = subjectNode.GetChildWithName(subjectNode,'Registration Node Contrast 4D')
       if not registrationNodeContrast4D:
         #First create registration node
-        vectorDirectory = patientDirectory + 'Registration/4D2/'
+        vectorDirectory = patientDirectory + 'Registration/4DM/'
         #vectorDirectory = patientDirectory + 'contrast/Registration/4D/'
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
