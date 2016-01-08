@@ -3,15 +3,6 @@ import os
 import unittest
 from __main__ import vtk, qt, ctk, slicer
 
-from vtkSlicerSubjectHierarchyModuleMRML import vtkMRMLSubjectHierarchyNode
-from vtkSlicerSubjectHierarchyModuleLogic import vtkSlicerSubjectHierarchyModuleLogic
-try:
-  vtkMRMLSubjectHierarchyNode
-  vtkSlicerSubjectHierarchyModuleLogic
-except AttributeError:
-  import sys
-  sys.stderr.write('Unable to create SubjectHierarchy nodes: SubjectHierarchy module not found!')
-
 
 #
 # ReadRegistrationNode
@@ -410,7 +401,7 @@ class ReadRegistrationNodeLogic:
     #Create Patient Node
     subjectNode = slicer.util.getNode(patientName)
     if not subjectNode or subjectNode.IsA('vtkMRMLSubjectHierarchyNode') == 0:
-      subjectNode = vtkMRMLSubjectHierarchyNode()
+      subjectNode = slicer.vtkMRMLSubjectHierarchyNode()
       subjectNode.SetName(patientName)
       subjectNode.SetLevel('Subject')
       slicer.mrmlScene.AddNode(subjectNode)
@@ -440,7 +431,7 @@ class ReadRegistrationNodeLogic:
         dirqaDirectory = vectorDirectory
         #Next, create Registration Node for registration from Contrast
         #Create Registration node
-        registrationNodeFromContrast = vtkMRMLSubjectHierarchyNode()
+        registrationNodeFromContrast = slicer.vtkMRMLSubjectHierarchyNode()
         registrationNodeFromContrast.SetName('Registration Node From Contrast')
         registrationNodeFromContrast.SetLevel('Study')
         registrationNodeFromContrast.SetParentNodeID(subjectNode.GetID())
@@ -475,7 +466,7 @@ class ReadRegistrationNodeLogic:
         dirqaDirectory = vectorDirectory
         #Next, create Registration Node for registration from Contrast
         #Create Registration node
-        registrationNodeFromContrast2 = vtkMRMLSubjectHierarchyNode()
+        registrationNodeFromContrast2 = slicer.vtkMRMLSubjectHierarchyNode()
         registrationNodeFromContrast2.SetName('Registration Node From Contrast2')
         registrationNodeFromContrast2.SetLevel('Study')
         registrationNodeFromContrast2.SetParentNodeID(subjectNode.GetID())
@@ -510,7 +501,7 @@ class ReadRegistrationNodeLogic:
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Create Registration node
-        registrationNodeNative4D = vtkMRMLSubjectHierarchyNode()
+        registrationNodeNative4D = slicer.vtkMRMLSubjectHierarchyNode()
         registrationNodeNative4D.SetName('Registration Node Native 4D')
         registrationNodeNative4D.SetLevel('Study')
         registrationNodeNative4D.SetParentNodeID(subjectNode.GetID())
@@ -547,7 +538,7 @@ class ReadRegistrationNodeLogic:
         warpDirectory = vectorDirectory
         dirqaDirectory = vectorDirectory
         #Create Registration node
-        registrationNodeContrast4D = vtkMRMLSubjectHierarchyNode()
+        registrationNodeContrast4D = slicer.vtkMRMLSubjectHierarchyNode()
         registrationNodeContrast4D.SetName('Registration Node Contrast 4D')
         registrationNodeContrast4D.SetLevel('Study')
         registrationNodeContrast4D.SetParentNodeID(subjectNode.GetID())
@@ -586,13 +577,13 @@ class ReadRegistrationNodeLogic:
     dirqaDirectory = vectorDirectory
     
     #Create Patient Node
-    subjectNode = vtkMRMLSubjectHierarchyNode()
+    subjectNode = slicer.vtkMRMLSubjectHierarchyNode()
     subjectNode.SetName(patientName)
     subjectNode.SetLevel('Subject')
     subjectNode.SetAttribute('Directory',ctDirectory)
     slicer.mrmlScene.AddNode(subjectNode)
     #Create Registration node
-    registrationNode = vtkMRMLSubjectHierarchyNode()
+    registrationNode = slicer.vtkMRMLSubjectHierarchyNode()
     registrationNode.SetName('Registration Node')
     registrationNode.SetLevel('Study')
     registrationNode.SetParentNodeID(subjectNode.GetID())
@@ -620,7 +611,7 @@ class ReadRegistrationNodeLogic:
       warpDirectory = registrationNode.GetAttribute("DIR" + NAME_WARP )
       vectorDirectory = registrationNode.GetAttribute("DIR" + NAME_VECTOR )
       #Create two phases - contrast (00) and native (01)
-      phaseNode0 = vtkMRMLSubjectHierarchyNode()
+      phaseNode0 = slicer.vtkMRMLSubjectHierarchyNode()
       phaseNode0.SetParentNodeID(registrationNode.GetID())
       phaseNode0.SetName('4DRef')
       phaseNode0.SetLevel('Series')
@@ -628,7 +619,7 @@ class ReadRegistrationNodeLogic:
       phaseNode0.SetAttribute('PhaseNumber',"00")
       slicer.mrmlScene.AddNode(phaseNode0)
       
-      phaseNode1 = vtkMRMLSubjectHierarchyNode()
+      phaseNode1 = slicer.vtkMRMLSubjectHierarchyNode()
       phaseNode1.SetParentNodeID(registrationNode.GetID())
       phaseNode1.SetName('Plan')
       phaseNode1.SetLevel('Series')
@@ -692,7 +683,7 @@ class ReadRegistrationNodeLogic:
 	#phase = 0
 	
       #Create New phase in subject hierarchy
-      phaseNode = vtkMRMLSubjectHierarchyNode()
+      phaseNode = slicer.vtkMRMLSubjectHierarchyNode()
       phaseNode.SetParentNodeID(registrationNode.GetID())
       phaseNode.SetName('Phase_'+phase)
       phaseNode.SetLevel('Series')
@@ -765,7 +756,7 @@ class ReadRegistrationNodeLogic:
       
 
   def createChild(self,hierarchyNode,string):
-    newHierarchy = slicer.vtkMRMLSubjectHierarchyNode()
+    newHierarchy = slicer.slicer.vtkMRMLSubjectHierarchyNode()
     newHierarchy.SetParentNodeID(hierarchyNode.GetID())
     newHierarchy.SetName(string)
     newHierarchy.SetLevel('Subseries')
