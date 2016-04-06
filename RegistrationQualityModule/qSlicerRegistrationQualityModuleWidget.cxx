@@ -408,38 +408,42 @@ void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* no
 
 	pNode->DisableModifiedEventOn();
 	if (node->IsA("vtkMRMLTransformNode")){
-	  pNode->SetAndObserveTransformNodeID(node->GetID());
-	  
-	  //Convert transform to vector
-	  vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
-				    this->mrmlScene()->GetNodeByID(
-					  node->GetID()));
-	  if (transform) {
-	    vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
-	    if (vectorVolume){
-	      pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
-	    }
-	  }
-	  else{
-	    std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
-	  }  
-	}
+             pNode->SetAndObserveTransformNodeID(node->GetID());
+             
+             //Convert transform to vector
+             if ( !pNode->GetVectorVolumeNodeID()){
+                vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
+                                          this->mrmlScene()->GetNodeByID(
+                                                node->GetID()));
+                if (transform) {
+                  vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
+                  if (vectorVolume){
+                    pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
+                  }
+                }
+                else{
+                  std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
+                }  
+             }
+        }
 	else if (node->IsA("vtkMRMLVectorVolumeNode")){
 	  pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
 
 	  //Convert transform to vector
-	  vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
-					  this->mrmlScene()->GetNodeByID(
-						node->GetID()));
-	  if (vectorVolume) {
-	    vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
-	    if( transform ){
-	      pNode->SetAndObserveTransformNodeID(transform->GetID());
-	    }
-	  }
-	  else{
-	    std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
-	  }
+          if ( !pNode->GetTransformNodeID() ){
+             vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
+                                             this->mrmlScene()->GetNodeByID(
+                                                   node->GetID()));
+             if (vectorVolume) {
+               vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
+               if( transform ){
+                 pNode->SetAndObserveTransformNodeID(transform->GetID());
+               }
+             }
+             else{
+               std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
+             }
+          }
 	}
 	pNode->DisableModifiedEventOff();
 	
@@ -511,35 +515,39 @@ void qSlicerRegistrationQualityModuleWidget::invVectorVolumeChanged(vtkMRMLNode*
 	  pNode->SetAndObserveInvTransformNodeID(node->GetID());
 	  	  
 	  //Convert transform to vector
-	  vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
-				    this->mrmlScene()->GetNodeByID(
-					  node->GetID()));
-	  if (transform) {
-	    vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
-	    if (vectorVolume){
-	      pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
-	    }
-	  }
-	  else{
-	    std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
-	  }	  
+          if ( !pNode->GetVectorVolumeNodeID()){
+             vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
+                                       this->mrmlScene()->GetNodeByID(
+                                             node->GetID()));
+             if (transform) {
+               vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
+               if (vectorVolume){
+                 pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
+               }
+             }
+             else{
+               std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
+             }
+          }  
 	}
 	else if (node->IsA("vtkMRMLVectorVolumeNode")){
 	  pNode->SetAndObserveInvVectorVolumeNodeID(node->GetID());
 	  
 	  //Convert transform to vector
-	  vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
-					  this->mrmlScene()->GetNodeByID(
-						node->GetID()));
-	  if (vectorVolume) {
-	    vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
-	    if( transform ){
-	      pNode->SetAndObserveInvTransformNodeID(transform->GetID());
-	    }
-	  }
-	  else{
-	    std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
-	  }
+          if ( ! pNode->GetInvTransformNodeID() ) {
+             vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
+                                             this->mrmlScene()->GetNodeByID(
+                                                   node->GetID()));
+             if (vectorVolume) {
+               vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
+               if( transform ){
+                 pNode->SetAndObserveInvTransformNodeID(transform->GetID());
+               }
+             }
+             else{
+               std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
+             }
+          }
 	}
 	pNode->DisableModifiedEventOff();
 	// Calculate fiducial distance if possible

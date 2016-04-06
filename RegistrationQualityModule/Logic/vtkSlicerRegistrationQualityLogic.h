@@ -25,6 +25,7 @@
 class vtkMRMLRegistrationQualityNode;
 // class vtkMRMLVectorVolumeNode;
 class vtkSlicerVolumesLogic;
+// class vtkSlicerTransformLogic;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkSlicerRegistrationQualityLogic :

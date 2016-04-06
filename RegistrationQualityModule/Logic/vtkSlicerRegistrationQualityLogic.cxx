@@ -31,6 +31,7 @@
 #include <vtkMRMLSliceNode.h>
 #include <vtkMRMLSliceCompositeNode.h>
 #include "vtkSlicerVolumesLogic.h"
+#include "vtkSlicerTransformLogic.h"
 #include "vtkSlicerAnnotationModuleLogic.h"
 #include "vtkMRMLViewNode.h"
 #include "vtkSlicerCLIModuleLogic.h"
@@ -72,9 +73,6 @@
 #include <cassert>
 #include <math.h>
 
-#include <tinyxml.h>
-#include <DIRQAImage.h>
-
 class vtkSlicerRegistrationQualityLogic::vtkInternal {
 public:
 	vtkInternal();
@@ -84,6 +82,7 @@ public:
 //----------------------------------------------------------------------------
 vtkSlicerRegistrationQualityLogic::vtkInternal::vtkInternal() {
 	this->VolumesLogic = 0;
+//         this->TransformLogic = 0;
 }
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerRegistrationQualityLogic);
@@ -110,7 +109,6 @@ vtkSlicerVolumesLogic* vtkSlicerRegistrationQualityLogic::GetVolumesLogic() {
 	return this->Internal->VolumesLogic;
 }
 //----------------------------------------------------------------------------
-
 void vtkSlicerRegistrationQualityLogic::PrintSelf(ostream& os, vtkIndent indent) {
 	this->Superclass::PrintSelf(os, indent);
 }
@@ -690,6 +688,8 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 	double maxDistance = 0;
 	double minDistance = 0;
 	double distanceDiff;
+        double distanceBefore;
+        double distanceAfter;
 	
 	if (fiducialNumber < 1 ||  movingFiducials->GetNumberOfFiducials() < 1 ){
 		vtkErrorMacro("CalculateFiducialsDistance: Need more then 1 fiducial!");
@@ -717,6 +717,13 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 	//Apply Transform to movingFiducials
 	warpedFiducials->Copy(movingFiducials);
 	warpedFiducials->SetAndObserveTransformNodeID( transform->GetID() );
+        
+        //Harden Transform
+        vtkSlicerTransformLogic* transformModuleLogic = vtkSlicerTransformLogic::New();
+        if (! transformModuleLogic->hardenTransform(warpedFiducials)){
+           vtkErrorMacro("CalculateFiducialsDistance: Can't harden transform!");
+           throw std::runtime_error("Internal Error, see command line!");
+        }
 	
 	//Rename copied fiducials
 	std::string outSS;
@@ -740,20 +747,16 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 		movingFiducials->GetNthFiducialWorldCoordinates(i,movingPosition);
 		warpedFiducials->GetNthFiducialWorldCoordinates(i,warpedPosition);
 		distanceDiff = 0;
+                distanceBefore = 0;
+                distanceAfter = 0;
 		for (int j=0; j<3; j++) {
 			//Calculate absolute difference in mm
-			if (absoluteDifference) 	distanceDiff += fabs(referencePosition[j] - movingPosition[j]) - fabs(referencePosition[j] - warpedPosition[j]);
-			else {
-				//Calculate relative difference before and after transformation
-				if ( referencePosition[j] !=  movingPosition[j] ) {
-	// 				distanceDiff += 1 - fabs(( referencePosition[j] - warpedPosition[j] ) / ( referencePosition[j] - movingPosition[j] ));
-				}
-				else {
-					if ( referencePosition[j] ==  warpedPosition[j]) distanceDiff = 0;
-					else distanceDiff = -1;
-				}
-			}
-		}
+			distanceBefore += fabs(referencePosition[j] - movingPosition[j]);
+                        distanceAfter += fabs(referencePosition[j] - warpedPosition[j]);
+                }
+			if (absoluteDifference) 	distanceDiff = distanceBefore - distanceAfter;
+			
+		
 		if ( i == 0  ){
 				maxDistance = distanceDiff;
 				minDistance = distanceDiff;
@@ -764,7 +767,9 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 		}
 
 		sumDistance += distanceDiff;
-		std::cerr << "Fiducial: " << i <<"/" << fiducialNumber << "," << " with distance: " << distanceDiff <<   std::endl;
+// 		std::cerr << "Fiducial: " << i <<"/" << fiducialNumber << "," << " with distance: " << distanceDiff <<   std::endl;
+                std::cerr << "Fiducial: " << i <<"/" << fiducialNumber << "" << " before: " << distanceBefore << " after: " << distanceAfter <<  std::endl;
+       
 	}
 	statisticValues[0] = sumDistance / (  fiducialNumber);
 	statisticValues[1] = 0;
@@ -786,38 +791,6 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 		this->SetDefaultDisplay();
 		return;
 	}
-
-// 	DIRQAImage di(IMAGE, "/home/brandtts/DIRQAtest.nrrd",
-// 				  "0In", "no comment",0,-1);
-// 	cout << "di=" << di << "|" << endl;
-
-	TiXmlDocument doc("/home/brandtts/steeringfile.xml");
-	if(doc.LoadFile()) {
-		dump(&doc);
-	} else {
-		cout << "Fehler beim laden" << endl;
-	}
-
-// 	const TiXmlNode* IterateChildren( const char * value, const TiXmlNode* previous ) const;
-// 	TiXmlNode* IterateChildren( const char * _value, const TiXmlNode* previous ) {
-// 		return const_cast< TiXmlNode* >( (const_cast< const TiXmlNode* >(this))->IterateChildren( _value, previous ) );
-// 	}
-
-	TiXmlNode *child=doc.FirstChild();
-	while(child!=0 && child->Type()!=TiXmlNode::TINYXML_ELEMENT) child=child->NextSibling();
-
-	child=child->FirstChild(/*"image"*/);
-// 	while(child!=0) {
-		cout << "--dump---------" << endl;
-		dump(child);
-		cout << "--constructor--" << endl;
-		DIRQAImage di(*child);
-		cout << "--di-----------" << endl;
-		cout << "|" << di << "|" << endl;
-		di.load(Internal->VolumesLogic);
-
-// 		child=child->NextSibling();
-// 	}
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(

@@ -26,6 +26,7 @@
 // RegistrationQuality Logic includes
 #include <vtkSlicerRegistrationQualityLogic.h>
 #include <vtkSlicerVolumesLogic.h>
+#include <vtkSlicerTransformLogic.h>
 // #include <vtkSlicerDoseVolumeHistogramLogic.h>
 
 // RegistrationQuality includes
@@ -113,6 +114,8 @@ void qSlicerRegistrationQualityModule::setup() {
 	{
 	qWarning() << "Volumes module is not found";
 	}
+	
+// 	
 	
 // 	 vtkSlicerRegistrationQualityLogic* registrationQualityLogic =
 //     vtkSlicerRegistrationQualityLogic::SafeDownCast(this->logic());

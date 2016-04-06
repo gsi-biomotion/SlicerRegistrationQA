@@ -13,15 +13,7 @@ set(${KIT}_SRCS
   vtkSlicer${MODULE_NAME}Logic.h
   vtkMRMLRegistrationQualityNode.cxx
   vtkMRMLRegistrationQualityNode.h
-<<<<<<< HEAD
-  
-=======
-  vtkMRMLRegistrationQualityInputNode.cxx
-  vtkMRMLRegistrationQualityInputNode.h
-  DIRQAImage.cxx
-  DIRQAImage.h
->>>>>>> AbsDiffFast
-  )
+)
 
 set(${KIT}_TARGET_LIBRARIES
   ${ITK_LIBRARIES}
