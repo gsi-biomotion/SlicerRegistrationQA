@@ -65,11 +65,14 @@ int DoIt( int argc, char * argv[], T )
 //   TransformType::OutputVectorType vector;
 // //   vector=initial->TransformVector( InputImageType );
 //   std::cout << initial->GetParameters() << std::endl;
-  
+
   typename ReaderType::Pointer reader = ReaderType::New();
+  itk::PluginFilterWatcher watchReader(reader, "Read Volume",
+                                        CLPProcessInformation);
   reader->SetFileName( inputVolume.c_str() );
   reader->Update();
   
+// std::cout << "2" << std::endl;
   itk::ImageRegion<3> region = reader->GetOutput()->GetLargestPossibleRegion();
   
   if( fixedImageROI.size() == 6 )
@@ -123,28 +126,31 @@ int DoIt( int argc, char * argv[], T )
 		  }
  
   typename RegionFilterType::Pointer regionFilter = RegionFilterType::New();
+  
     regionFilter->SetInput(reader->GetOutput() );
     regionFilter->SetRegionOfInterest(region);
-    regionFilter->Update();
+    regionFilter->ReleaseDataFlagOn();
+//     regionFilter->Update();
+//     itk::PluginFilterWatcher regionReader(regionFilter, "Setting region",
+//                                         CLPProcessInformation);
     
-    
+//     std::cout << "3" << std::endl;
   typename FilterType::Pointer filter = FilterType::New();
   filter->SetInput( regionFilter->GetOutput() );
   filter->Update();
   itk::PluginFilterWatcher watchFilter(filter, "Calculating Jacobian Displacment Field.",
                                        CLPProcessInformation);
-  
   if (enable_log)
   {
     typename LogType::Pointer logFilter = LogType::New();
     logFilter->SetInput( filter->GetOutput() );
     logFilter->Update();
-    itk::PluginFilterWatcher watchLogFilter(logFilter, "Calculating log of Jacobian Displacment Field.",
-					CLPProcessInformation);
+//     itk::PluginFilterWatcher watchLogFilter(logFilter, "Calculating log of Jacobian Displacment Field.",
+// 					CLPProcessInformation);
     typename WriterType::Pointer writer = WriterType::New();  
-    itk::PluginFilterWatcher watchWriter(writer,
-                                       "Write Volume",
-                                       CLPProcessInformation);
+//     itk::PluginFilterWatcher watchWriter(writer,
+//                                        "Write Volume",
+//                                        CLPProcessInformation);
     writer->SetFileName( outputVolume.c_str() );
     writer->SetInput( logFilter->GetOutput() );
     writer->SetUseCompression(1);

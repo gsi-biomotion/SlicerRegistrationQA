@@ -28,7 +28,8 @@ namespace
 	{
 		PARSE_ARGS;
 
-		typedef itk::Vector< double, 3 > InputPixelType;
+// 		typedef    T OutputPixelType;
+                typedef itk::Vector< double, 3 > InputPixelType;
 		//   typedef itk::Vector< float, 3 > OutputPixelType;
 		typedef float OutputPixelType;
 		typedef itk::Image<InputPixelType,  3> InputImageType;
@@ -41,12 +42,9 @@ namespace
 		typedef itk::RegionOfInterestImageFilter< InputImageType, InputImageType > RegionFilterType;
 
 		typename ReaderType::Pointer reader1 = ReaderType::New();
-		itk::PluginFilterWatcher watchReader1(reader1, "Read Volume 1",
-											  CLPProcessInformation);
+		itk::PluginFilterWatcher watchReader1(reader1, "Read Volume 1", CLPProcessInformation);
 		typename ReaderType::Pointer reader2 = ReaderType::New();
-		itk::PluginFilterWatcher watchReader2(reader2,
-											  "Read Volume 2",
-										CLPProcessInformation);
+		itk::PluginFilterWatcher watchReader2(reader2, "Read Volume 2",CLPProcessInformation);
 		reader1->SetFileName( inputVolume1.c_str() );
 		reader2->SetFileName( inputVolume2.c_str() );
 		reader2->ReleaseDataFlagOn();
@@ -180,9 +178,7 @@ namespace
 		//   std::cout << "Writer:" << std::endl;
 		typename WriterType::Pointer writer = WriterType::New();
 
-		itk::PluginFilterWatcher watchWriter(writer,
-											 "Write Volume",
-									   CLPProcessInformation);
+		itk::PluginFilterWatcher watchWriter(writer,"Write Volume",CLPProcessInformation);
 		writer->SetFileName( outputVolume.c_str() );
 		writer->SetInput( outputImage );
 		writer->SetUseCompression(1);
