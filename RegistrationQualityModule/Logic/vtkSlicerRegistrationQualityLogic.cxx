@@ -72,6 +72,9 @@
 #include <cassert>
 #include <math.h>
 
+#include <tinyxml.h>
+#include <DIRQAImage.h>
+
 class vtkSlicerRegistrationQualityLogic::vtkInternal {
 public:
 	vtkInternal();
@@ -770,6 +773,7 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 	return true;
 }
 
+
 //--- Image Checks -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
@@ -782,6 +786,38 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 		this->SetDefaultDisplay();
 		return;
 	}
+
+// 	DIRQAImage di(IMAGE, "/home/brandtts/DIRQAtest.nrrd",
+// 				  "0In", "no comment",0,-1);
+// 	cout << "di=" << di << "|" << endl;
+
+	TiXmlDocument doc("/home/brandtts/steeringfile.xml");
+	if(doc.LoadFile()) {
+		dump(&doc);
+	} else {
+		cout << "Fehler beim laden" << endl;
+	}
+
+// 	const TiXmlNode* IterateChildren( const char * value, const TiXmlNode* previous ) const;
+// 	TiXmlNode* IterateChildren( const char * _value, const TiXmlNode* previous ) {
+// 		return const_cast< TiXmlNode* >( (const_cast< const TiXmlNode* >(this))->IterateChildren( _value, previous ) );
+// 	}
+
+	TiXmlNode *child=doc.FirstChild();
+	while(child!=0 && child->Type()!=TiXmlNode::TINYXML_ELEMENT) child=child->NextSibling();
+
+	child=child->FirstChild(/*"image"*/);
+// 	while(child!=0) {
+		cout << "--dump---------" << endl;
+		dump(child);
+		cout << "--constructor--" << endl;
+		DIRQAImage di(*child);
+		cout << "--di-----------" << endl;
+		cout << "|" << di << "|" << endl;
+		di.load(Internal->VolumesLogic);
+
+// 		child=child->NextSibling();
+// 	}
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(

@@ -5,6 +5,7 @@ set(KIT ${PROJECT_NAME})
 set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_LOGIC_EXPORT")
 
 set(${KIT}_INCLUDE_DIRECTORIES
+  ../../tinyxml
   )
 
 set(${KIT}_SRCS
@@ -12,7 +13,14 @@ set(${KIT}_SRCS
   vtkSlicer${MODULE_NAME}Logic.h
   vtkMRMLRegistrationQualityNode.cxx
   vtkMRMLRegistrationQualityNode.h
+<<<<<<< HEAD
   
+=======
+  vtkMRMLRegistrationQualityInputNode.cxx
+  vtkMRMLRegistrationQualityInputNode.h
+  DIRQAImage.cxx
+  DIRQAImage.h
+>>>>>>> AbsDiffFast
   )
 
 set(${KIT}_TARGET_LIBRARIES
@@ -20,7 +28,13 @@ set(${KIT}_TARGET_LIBRARIES
   vtkSlicerMarkupsModuleMRML
   vtkSlicerVolumesModuleLogic
   vtkSlicerAnnotationsModuleMRML
+
   )
+
+# SET_SOURCE_FILES_PROPERTIES(
+# 	DIRQAImage.cxx
+# 	WRAP_EXCLUDE
+# )
 
 #-----------------------------------------------------------------------------
 SlicerMacroBuildModuleLogic(
