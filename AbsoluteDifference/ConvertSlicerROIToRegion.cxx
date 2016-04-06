@@ -24,46 +24,24 @@ convertPointsToRegion(const itk::Point<double, 3>& p1,
 {
   // convert two points to an ITK region
   itk::Index<3> ind1, ind2;
+  itk::Index<3> startind;
+  itk::Index<3> upperInd = img->GetLargestPossibleRegion().GetUpperIndex();
+  
   itk::Size<3>  size;
 
   img->TransformPhysicalPointToIndex(p1, ind1);
   img->TransformPhysicalPointToIndex(p2, ind2);
 
   // Find the absolute size of the bounding region
-  size[0] = std::abs(ind1[0] - ind2[0]);
-  size[1] = std::abs(ind1[1] - ind2[1]);
-  size[2] = std::abs(ind1[2] - ind2[2]);
+  for (int i=0;i<3;i++){
+        size[i] = std::abs(ind1[i] - ind2[i]);
 
-  itk::Index<3> startind;
-  startind[0] = std::min(ind1[0], ind2[0]);
-  startind[1] = std::min(ind1[1], ind2[1]);
-  startind[2] = std::min(ind1[2], ind2[2]);
+        startind[i] = std::min(ind1[i], ind2[i]);
+          
+        // Check if the boundries are ok
+        if (startind[i] < 0 ) startind[i] = 0;
+        if ( (startind[i] + size[i]) > upperInd[i] ) size[i] = (upperInd[i]-startind[i]) + 1;
+  }
 
   return itk::ImageRegion<3>(startind, size);
 }
-
-// itk::SlicerBoxSpatialObject<3>::Pointer
-// convertPointsToBoxSpatialObject(const itk::Point<double, 3>& p1,
-//                                 const itk::Point<double, 3>& p2)
-// {
-//   itk::SlicerBoxSpatialObject<3>::SizeType size;
-//   size[0] = std::fabs(p2[0] - p1[0]);
-//   size[1] = std::fabs(p2[1] - p1[1]);
-//   size[2] = std::fabs(p2[2] - p1[2]);
-// 
-//   itk::SlicerBoxSpatialObject<3>::Pointer box =
-//     itk::SlicerBoxSpatialObject<3>::New();
-// 
-//   box->SetSize(size);
-// 
-//   itk::SlicerBoxSpatialObject<3>::TransformType::OffsetType off;
-//   off[0] = std::min(p1[0], p2[0]);
-//   off[1] = std::min(p1[1], p2[1]);
-//   off[2] = std::min(p1[2], p2[2]);
-// 
-//   box->GetObjectToParentTransform()->SetOffset(off);
-//   box->ComputeObjectToWorldTransform();
-//   box->ComputeBoundingBox();
-// 
-//   return box;
-// }

@@ -11,22 +11,40 @@
 #include "qSlicerModuleFactoryManager.h"
 #include "qSlicerModuleManager.h"
 #include <vtkSlicerCLIModuleLogic.h>
+#include "qSlicerIO.h"
+#include "qSlicerCoreIOManager.h"
+#include "qMRMLLayoutManager.h"
+#include "qSlicerLayoutManager.h"
+
 
 // MRML includes
 #include <vtkMRMLVectorVolumeNode.h>
+#include <vtkMRMLVectorVolumeDisplayNode.h>
 #include <vtkMRMLModelDisplayNode.h>
 #include <vtkMRMLScalarVolumeDisplayNode.h>
 #include <vtkMRMLAnnotationROINode.h>
 #include <vtkMRMLModelNode.h>
 #include <vtkMRMLColorTableNode.h>
 #include <vtkMRMLTransformNode.h>
+#include <vtkMRMLGridTransformNode.h>
+#include <vtkMRMLTransformDisplayNode.h>
 #include <vtkMRMLSliceNode.h>
 #include <vtkMRMLSliceCompositeNode.h>
 #include "vtkSlicerVolumesLogic.h"
+#include "vtkSlicerAnnotationModuleLogic.h"
 #include "vtkMRMLViewNode.h"
 #include "vtkSlicerCLIModuleLogic.h"
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLSliceLogic.h>
+#include "vtkMRMLAnnotationSnapshotNode.h"
+#include "vtkMRMLAnnotationSnapshotStorageNode.h"
+#include "qMRMLUtils.h"
+#include "qMRMLScreenShotDialog.h"
+#include <vtkMRMLTransformDisplayNode.h>
+#include <vtkMRMLMarkupsFiducialNode.h>
+#include <vtkMRMLMarkupsFiducialStorageNode.h>
+#include <vtkMRMLMarkupsNode.h>
+#include <vtkMRMLMarkupsDisplayNode.h>
 
 // VTK includes
 #include <vtkNew.h>
@@ -37,12 +55,17 @@
 #include <vtkPolyData.h>
 #include <vtkVectorNorm.h>
 #include <vtkTransform.h>
+#include <vtkGridTransform.h>
 #include <vtkMatrix4x4.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkGeneralTransform.h>
 #include <vtkLookupTable.h>
 #include <vtkMath.h>
 #include <vtkImageAccumulate.h>
+#include <vtkOrientedGridTransform.h>
+
+// CTK includes
+#include <ctkVTKWidgetsUtils.h>
 
 // STD includes
 #include <iostream>
@@ -84,6 +107,7 @@ vtkSlicerVolumesLogic* vtkSlicerRegistrationQualityLogic::GetVolumesLogic() {
 	return this->Internal->VolumesLogic;
 }
 //----------------------------------------------------------------------------
+
 void vtkSlicerRegistrationQualityLogic::PrintSelf(ostream& os, vtkIndent indent) {
 	this->Superclass::PrintSelf(os, indent);
 }
@@ -165,8 +189,239 @@ void vtkSlicerRegistrationQualityLogic::OnMRMLSceneEndClose() {
 	this->Modified();
 }
 //---------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::SaveScreenshot(const char* description) {
+	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
+	    vtkErrorMacro("SaveScreenshot: Invalid scene or parameter set node!");
+	    return;
+	}
+	
+	if (!this->RegistrationQualityNode->GetOutputDirectory()) {
+		vtkErrorMacro("SaveScreenshot: No output Directory!");
+		return;
+	}
+	
+	int screenShotNumber = this->RegistrationQualityNode->GetNumberOfScreenshots();
+	std::ostringstream convert;
+	convert << screenShotNumber;
+	std::string outSS;
+	std::string Name("Screenshot_");
+	outSS = Name + convert.str();
+	
+	std::string directory = this->RegistrationQualityNode->GetOutputDirectory();
+
+	
+	//Add snapshot node
+	vtkMRMLAnnotationSnapshotNode* screenShotNode = NULL;
+	vtkNew<vtkMRMLAnnotationSnapshotNode> screenShotNodeNew;
+		
+	vtkNew<vtkMRMLAnnotationSnapshotStorageNode> screenShotStorageNode;
+	this->GetMRMLScene()->AddNode(screenShotStorageNode.GetPointer());
+	screenShotNodeNew->SetAndObserveStorageNodeID(screenShotStorageNode->GetID());
+	
+	this->GetMRMLScene()->AddNode(screenShotNodeNew.GetPointer());
+	screenShotNode = screenShotNodeNew.GetPointer();
+	
+	screenShotNode->SetName(outSS.c_str());
+	std::cerr << "Description: "<< description << std::endl;
+	if (description) screenShotNode->SetSnapshotDescription(description);
+	screenShotNode->SetScreenShotType(4);
+	
+	//Get Image Data - copied from qMRMLScreenShotDialog
+	qSlicerApplication* app = qSlicerApplication::application();
+	qSlicerLayoutManager* layoutManager = app->layoutManager();
+	
+
+	QWidget* widget = 0;
+	widget = layoutManager->viewport();
+	QImage screenShot = ctk::grabVTKWidget(layoutManager->viewport());
+	
+	// Rescale the image which gets saved
+// 	QImage rescaledScreenShot = screenShot.scaled(screenShot.size().width()
+//       * d->scaleFactorSpinBox->value(), screenShot.size().height()
+//       * d->scaleFactorSpinBox->value());
+//	 convert the screenshot from QPixmap to vtkImageData and store it with this class
+	vtkNew<vtkImageData> newImageData;
+	qMRMLUtils::qImageToVtkImageData(screenShot,
+                                         newImageData.GetPointer());
+					 
+	screenShotNode->SetScreenShot(newImageData.GetPointer());
+	
+	//Save screenshot	
+	qSlicerCoreIOManager* coreIOManager = qSlicerCoreApplication::application()->coreIOManager();
+	qSlicerIO::IOProperties fileParameters;
+	char fileName[512];
+	sprintf(fileName, "%s/%s.png", directory.c_str(), outSS.c_str());
+	
+	fileParameters["nodeID"] = screenShotNode->GetID();
+	fileParameters["fileName"] = fileName;
+	
+	
+	
+	if (coreIOManager->saveNodes("AnnotationFile", fileParameters)) {
+		std::cerr << "Saved Screenshot to: " << fileName << "" << std::endl;	
+	} else{
+		vtkErrorMacro("SaveScreenshot: Cannot save screenshot!");
+	}
+	
+	//Increase screen shot number
+	screenShotNumber += 1;
+	this->RegistrationQualityNode->DisableModifiedEventOn();
+	this->RegistrationQualityNode->SetNumberOfScreenshots(screenShotNumber);
+	this->RegistrationQualityNode->DisableModifiedEventOff();
+}
+//---------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::SaveOutputFile() {
+	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
+	    vtkErrorMacro("saveOutputFile: Invalid scene or parameter set node!");
+	    return;	    
+	}
+	
+	double statisticValues[4];
+	std::string color;
+	std::string directory = this->RegistrationQualityNode->GetOutputDirectory();
+	char fileName[512];
+	sprintf(fileName, "%s/OutputFile.html", directory.c_str() );
+	
+	std::ofstream outfile;
+	outfile.open(fileName, std::ios_base::out | std::ios_base::trunc);
+	
+	if ( !outfile ){
+		vtkErrorMacro("SaveOutputFile: Output file '" << fileName << "' cannot be opened!");
+		return;
+	}
+	
+	outfile << "<!DOCTYPE html>" << std::endl << "<html>" << std::endl 
+	<< "<head>" << std::endl << "<title>Registration Quality</title>" << std::endl 
+	<< "<meta charset=\"UTF-8\">" << std::endl << "</head>"	<< "<body>" << std::endl;
+	
+	outfile << "<h1>Registration Quality Output File</h1>" << std::endl;
+	
+	// --- Image Checks ---
+	outfile << "<h2>Image Checks</h2>" << std::endl;
+	//Set table
+	outfile << "<table style=\"width:60%\">" << std::endl
+	<< "<tr>" << std::endl
+	<< "<td> </td> <td> Mean </td> <td> STD </td> <td> Max </td> <td> Min </td>" << std::endl
+	<< "</tr>" << std::endl;
+	
+	//Absolute Difference
+	this->RegistrationQualityNode->GetAbsoluteDiffStatistics(statisticValues);
+	//Check values for color
+	if(statisticValues[0] < 100 && statisticValues[1] < 200) color = "green";
+	else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
+	else color = "red";
+	
+	outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
+	<< "<td>" << "Absolute Difference between reference and warped image in HU" << "</td>";
+	for(int i=0;i<4;i++) {	
+		outfile << "<td>" << statisticValues[i] << "</td>";
+	}
+	outfile << std::endl<< "</tr>" << std::endl;
+	
+	//TODO: Inverse Absolute Difference
+	
+	//Fiducials
+	this->RegistrationQualityNode->GetFiducialsStatistics(statisticValues);
+	//Check values for color
+	if(statisticValues[0] > 0 && statisticValues[1] > 0 && statisticValues[1] > 0) color = "green";
+	else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
+	else color = "red";
+	
+	outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
+	<< "<td>" << "Distance difference in fiducials after transformation in mm" << "</td>";
+	for(int i=0;i<4;i++) {	
+		outfile << "<td>" << statisticValues[i] << "</td>";
+	}
+	outfile << std::endl<< "</tr>" << std::endl;
+	
+	//Inverse Fiducials
+	this->RegistrationQualityNode->GetInvFiducialsStatistics(statisticValues);
+	//Check values for color
+	if(statisticValues[0] > 0 && statisticValues[1] > 0 && statisticValues[1] > 0) color = "green";
+	else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
+	else color = "red";
+	
+	outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
+	<< "<td>" << "Distance difference in fiducials after inverse transformation in mm" << "</td>";
+	for(int i=0;i<4;i++) {	
+		outfile << "<td>" << statisticValues[i] << "</td>";
+	}
+	outfile << std::endl<< "</tr>" << std::endl;
+	
+	outfile << "</table>" << std::endl;
+		
+	// --- Vector checks ---	
+	outfile << "<h2>Vector Checks</h2>" << std::endl;	
+	//Set table
+	outfile << "<table style=\"width:60%\">" << std::endl
+	<< "<tr>" << std::endl
+	<< "<td> </td> <td> Mean </td> <td> STD </td> <td> Max </td> <td> Min </td>" << std::endl
+	<< "</tr>" << std::endl;
+	
+	//Jacobian
+	this->RegistrationQualityNode->GetJacobianStatistics(statisticValues);
+	//Check values for color
+	if( abs(statisticValues[0]-1) < 0.02 && statisticValues[1] < 0.05 && statisticValues[2] < 5 && statisticValues[3] > 0) color = "green";
+	else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
+	else color = "red";
+	
+	outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
+	<< "<td>" << "Jacobian of vector field" << "</td>";
+	for(int i=0;i<4;i++) {	
+		outfile << "<td>" << statisticValues[i] << "</td>";
+	}
+	outfile << std::endl<< "</tr>" << std::endl;
+	
+	//TODO: Inverse Jacobian
+	
+	//Inverse Consistency
+	this->RegistrationQualityNode->GetInverseConsistStatistics(statisticValues);
+	//Check values for color
+	if( statisticValues[0] < 2 && statisticValues[1] < 2) color = "green";
+	else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
+	else color = "red";
+	
+	outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
+	<< "<td>" << "Inverse Consistency in mm" << "</td>";
+	for(int i=0;i<4;i++) {	
+		outfile << "<td>" << statisticValues[i] << "</td>";
+	}
+	outfile << std::endl<< "</tr>" << std::endl;
+
+	outfile << "</table>" << std::endl;
+
+	// --- Images ---
+	outfile << "<h2>Images</h2>" << std::endl;	
+	int screenShotNumber = this->RegistrationQualityNode->GetNumberOfScreenshots();
+	if (screenShotNumber > 1){	
+		for(int i = 1; i < screenShotNumber; i++) {
+			std::ostringstream screenShotName;
+			screenShotName << "Screenshot_" << i;
+			
+				
+			//Find the associated node for description
+			vtkSmartPointer<vtkCollection> collection = vtkSmartPointer<vtkCollection>::Take(
+						this->GetMRMLScene()->GetNodesByName(screenShotName.str().c_str()));
+			if (collection->GetNumberOfItems() == 1) {	
+				vtkMRMLAnnotationSnapshotNode* snapshot = vtkMRMLAnnotationSnapshotNode::SafeDownCast(
+						collection->GetItemAsObject(0));
+				outfile << "<h3>" << snapshot->GetSnapshotDescription() << "</h3>" << std::endl;
+			}
+			
+			outfile << "<img src=\"" << screenShotName.str() << ".png"
+				<<"\" alt=\"Screenshot "<< i << "\" width=\"80%\"> " << std::endl;
+		}
+	}
+	outfile  << "</body>" << std::endl << "</html>" << std::endl;
+	
+	outfile << std::endl;
+	outfile.close();
+	
+	std::cerr << "Output file save to: " << fileName << "" << std::endl;
+}
+//---------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state){
-  // 1. AbsoluteDifference, 2. Jacobian, 3. InverseConsistency
+  // 1. AbsoluteDifference, 2. Jacobian, 3. InverseConsistency, 4. Fiducial Distance, 5. Inverse Fiducial distance
   if(!state) {
     this->SetDefaultDisplay();
     return;
@@ -176,11 +431,13 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
 	    return;   
   }
 	
-  if (number > 3 || number < 1){
-    vtkErrorMacro("CalculateDIRQAFrom: Invalid number must be between 1 and 3!");
+  if (number > 5 || number < 1){
+    vtkErrorMacro("CalculateDIRQAFrom: Invalid number must be between 1 and 5!");
     return;
   }
   
+  // Color table node id:
+  char colorTableNodeID[64];
   // All logic need reference Volume and ROI (if exists)
   vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
@@ -192,6 +449,7 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
   
   if (number == 1){
     vtkMRMLScalarVolumeNode *absoluteDiffVolume = NULL;
+    sprintf(colorTableNodeID, "vtkMRMLColorTableNodeRainbow");
     //Check, if it already exist
     if (this->RegistrationQualityNode->GetAbsoluteDiffVolumeNodeID()){
      absoluteDiffVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
@@ -221,12 +479,13 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
     absoluteDiffVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,3e3);
     absoluteDiffVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
     absoluteDiffVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
-    absoluteDiffVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
+    absoluteDiffVolume->GetDisplayNode()->SetAndObserveColorNodeID(colorTableNodeID);
+    std::cerr << colorTableNodeID << std::endl;
     this->SetForegroundImage(referenceVolume,absoluteDiffVolume,0.5);
-    return;
   }
   else if(number == 2){
     vtkMRMLScalarVolumeNode *jacobianVolume = NULL;
+    sprintf(colorTableNodeID, "vtkMRMLColorTableNodeFileColdToHotRainbow.txt");
     if (this->RegistrationQualityNode->GetJacobianVolumeNodeID()){
       jacobianVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 		this->GetMRMLScene()->GetNodeByID(
@@ -256,13 +515,14 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
     jacobianVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,3);
     jacobianVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
     jacobianVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
-    jacobianVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeRainbow");
+    jacobianVolume->GetDisplayNode()->SetAndObserveColorNodeID(colorTableNodeID);
+    std::cerr << colorTableNodeID << std::endl;
     
-    this->SetForegroundImage(referenceVolume,jacobianVolume,0.5);
-    return;    
+    this->SetForegroundImage(referenceVolume,jacobianVolume,0.5);   
   }
   else if(number == 3){
-    vtkMRMLScalarVolumeNode *inverseConsistVolume = NULL; 
+    vtkMRMLScalarVolumeNode *inverseConsistVolume = NULL;
+    sprintf(colorTableNodeID, "vtkMRMLColorTableNodeGreen");
     if (this->RegistrationQualityNode->GetInverseConsistVolumeNodeID()){
       inverseConsistVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 		this->GetMRMLScene()->GetNodeByID(
@@ -289,15 +549,53 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
     }
     double window=10;
     int level=5;
-    inverseConsistVolume->GetDisplayNode()->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGreen");
+    inverseConsistVolume->GetDisplayNode()->SetAndObserveColorNodeID(colorTableNodeID);
     inverseConsistVolume->GetScalarVolumeDisplayNode()->AutoWindowLevelOff();
       
     inverseConsistVolume->GetScalarVolumeDisplayNode()->SetThreshold(0,10);
     inverseConsistVolume->GetScalarVolumeDisplayNode()->SetLevel(level);
     inverseConsistVolume->GetScalarVolumeDisplayNode()->SetWindow(window);
     this->SetForegroundImage(referenceVolume,inverseConsistVolume,0.5);
-    return;
-  } 
+  }
+  else if( number == 4 || number ==5 ){
+	 double statisticValues[4]; // 1. Mean 2. STD 3. Max 4. Min
+        vtkMRMLMarkupsFiducialNode *referenceFiducals = vtkMRMLMarkupsFiducialNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetFiducialNodeID()));
+        vtkMRMLMarkupsFiducialNode *movingFiducials = vtkMRMLMarkupsFiducialNode::SafeDownCast(
+			this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetInvFiducialNodeID()));
+        vtkMRMLTransformNode *transform;
+        if (number == 4){
+		transform = vtkMRMLTransformNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetTransformNodeID()));
+		if (!this->CalculateFiducialsDistance(referenceFiducals, movingFiducials, transform, statisticValues) ){
+			vtkErrorMacro("CalculateDIRQAFrom: Cannot calculate Fiducal distance!");
+			return;
+		}
+        }
+        else if (number == 5){
+		transform = vtkMRMLTransformNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(
+				this->RegistrationQualityNode->GetInvTransformNodeID()));
+		if (!this->CalculateFiducialsDistance(movingFiducials, referenceFiducals, transform, statisticValues) ){
+			vtkErrorMacro("CalculateDIRQAFrom: Cannot calculate inverse Fiducal distance!");
+			return;
+		}
+        }
+        this->RegistrationQualityNode->DisableModifiedEventOn();
+        if (number == 4) this->RegistrationQualityNode->SetFiducialsStatistics( statisticValues );
+        else if (number == 5) this->RegistrationQualityNode->SetInvFiducialsStatistics( statisticValues );
+        this->RegistrationQualityNode->DisableModifiedEventOff();     
+        return;
+  }
+  std::cerr << colorTableNodeID << std::endl;
+  vtkMRMLColorTableNode* colorNode = vtkMRMLColorTableNode::SafeDownCast(this->GetMRMLScene()
+					  ->GetNodeByID(colorTableNodeID));
+  if (colorNode){
+	this->RegistrationQualityNode->DisableModifiedEventOn();
+	this->RegistrationQualityNode->SetAndObserveColorTableNode(colorNode);
+	this->RegistrationQualityNode->DisableModifiedEventOff();
+  }
 }
 //---------------------------------------------------------------------------
 vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::AbsoluteDifference(vtkMRMLScalarVolumeNode* referenceVolume, vtkMRMLScalarVolumeNode* warpedVolume,vtkMRMLAnnotationROINode *inputROI  ) {
@@ -310,7 +608,6 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::AbsoluteDifference(v
 		vtkErrorMacro("AbsoluteDifference: Invalid reference or warped volume!");
 		return NULL;
 	}
-
 
 	if(!this->Internal->VolumesLogic){
 		std::cerr << "AbsoluteDifference: ERROR: failed to get hold of Volumes logic" << std::endl;
@@ -339,16 +636,6 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::AbsoluteDifference(v
 		  vtkErrorMacro("AbsoluteDifference: No output volume set!");
 		  return NULL;
 	}
-// 	  //Check dimensions of both volume, they must be the same.
-// 	  vtkSmartPointer<vtkImageData> imageDataRef = referenceVolume->GetImageData();
-// 	  vtkSmartPointer<vtkImageData> imageDataWarp = warpedVolume->GetImageData();
-// 	    int* dimsRef = imageDataRef->GetDimensions();
-// 	    int* dimsWarp = imageDataWarp->GetDimensions();
-// 	  // int dims[3]; // can't do this
-// 	  if (dimsRef[0] != dimsWarp[0] || dimsRef[1] != dimsWarp[1] || dimsRef[2] != dimsWarp[2] ) {
-// 	    vtkErrorMacro("AbsoluteDifference: Dimensions of Reference and Warped image don't match'!");
-// 	    return NULL;
-// 	  }
 
 	qSlicerCLIModule* checkerboardfilterCLI = dynamic_cast<qSlicerCLIModule*>(
 			  qSlicerCoreApplication::application()->moduleManager()->module("AbsoluteDifference"));
@@ -383,7 +670,105 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::AbsoluteDifference(v
 	
 	return outputVolume;
 }
+//---------------------------------------------------------------------------
+bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transform, double statisticValues[4], bool absoluteDifference/*=true*/) {
 
+	if (!this->GetMRMLScene() ) {
+	    vtkErrorMacro("CalculateFiducialsDistance: Invalid scene or parameter set node!");
+	    throw std::runtime_error("Internal Error, see command line!");
+	}
+	if (!referenceFiducals || !movingFiducials || !transform || !statisticValues ) {
+		vtkErrorMacro("CalculateFiducialsDistance: Invalid input parameters!");
+		throw std::runtime_error("Internal Error, see command line!");
+	}
+	
+	int fiducialNumber = referenceFiducals->GetNumberOfFiducials();
+	double sumDistance = 0;
+	double maxDistance = 0;
+	double minDistance = 0;
+	double distanceDiff;
+	
+	if (fiducialNumber < 1 ||  movingFiducials->GetNumberOfFiducials() < 1 ){
+		vtkErrorMacro("CalculateFiducialsDistance: Need more then 1 fiducial!");
+		throw std::runtime_error("Internal Error, see command line!");		
+	}
+	
+	if (fiducialNumber != movingFiducials->GetNumberOfFiducials() ){
+		vtkErrorMacro("CalculateFiducialsDistance: Wrong fiducial numbers!");
+		throw std::runtime_error("Internal Error, see command line!");		
+	}
+	
+	// Copy Moving fiducials so we can apply transformation
+	vtkMRMLMarkupsFiducialNode* warpedFiducials = NULL;
+	vtkMRMLScene *scene = this->GetMRMLScene();	  
+	vtkNew<vtkMRMLMarkupsFiducialNode> warpedFiducialsNew;
+	vtkNew<vtkMRMLMarkupsDisplayNode> wFDisplayNode;
+	vtkNew<vtkMRMLMarkupsFiducialStorageNode> wFStorageNode;
+	scene->AddNode(wFDisplayNode.GetPointer());
+	scene->AddNode(wFStorageNode.GetPointer());
+	warpedFiducialsNew->SetAndObserveDisplayNodeID(wFDisplayNode->GetID());
+	warpedFiducialsNew->SetAndObserveStorageNodeID(wFStorageNode->GetID());
+	scene->AddNode(warpedFiducialsNew.GetPointer());
+	warpedFiducials = warpedFiducialsNew.GetPointer();
+	
+	//Apply Transform to movingFiducials
+	warpedFiducials->Copy(movingFiducials);
+	warpedFiducials->SetAndObserveTransformNodeID( transform->GetID() );
+	
+	//Rename copied fiducials
+	std::string outSS;
+	std::string Name("-warped");
+
+	outSS = (movingFiducials->GetName() + Name);
+	outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
+	warpedFiducials->SetName( outSS.c_str() );
+	
+	//Loop through fiducials
+	for( int i=0; i<fiducialNumber; i++ ){
+		//Change name of warped fiducials
+		std::string outSS;
+		outSS = (movingFiducials->GetNthMarkupLabel(i) + Name);
+		outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
+		warpedFiducials->SetNthMarkupLabel( i, outSS.c_str() );
+		
+		//Get position
+		double referencePosition[4], movingPosition[4], warpedPosition[4];
+		referenceFiducals->GetNthFiducialWorldCoordinates(i,referencePosition);
+		movingFiducials->GetNthFiducialWorldCoordinates(i,movingPosition);
+		warpedFiducials->GetNthFiducialWorldCoordinates(i,warpedPosition);
+		distanceDiff = 0;
+		for (int j=0; j<3; j++) {
+			//Calculate absolute difference in mm
+			if (absoluteDifference) 	distanceDiff += fabs(referencePosition[j] - movingPosition[j]) - fabs(referencePosition[j] - warpedPosition[j]);
+			else {
+				//Calculate relative difference before and after transformation
+				if ( referencePosition[j] !=  movingPosition[j] ) {
+	// 				distanceDiff += 1 - fabs(( referencePosition[j] - warpedPosition[j] ) / ( referencePosition[j] - movingPosition[j] ));
+				}
+				else {
+					if ( referencePosition[j] ==  warpedPosition[j]) distanceDiff = 0;
+					else distanceDiff = -1;
+				}
+			}
+		}
+		if ( i == 0  ){
+				maxDistance = distanceDiff;
+				minDistance = distanceDiff;
+		}
+		else{
+			if ( distanceDiff > maxDistance) maxDistance = distanceDiff;
+			if ( distanceDiff < minDistance) minDistance = distanceDiff;
+		}
+
+		sumDistance += distanceDiff;
+		std::cerr << "Fiducial: " << i <<"/" << fiducialNumber << "," << " with distance: " << distanceDiff <<   std::endl;
+	}
+	statisticValues[0] = sumDistance / (  fiducialNumber);
+	statisticValues[1] = 0;
+	statisticValues[2] = maxDistance;
+	statisticValues[3] = minDistance;
+	return true;
+}
 
 //--- Image Checks -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
@@ -410,10 +795,6 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 		throw std::runtime_error("Reference or warped volume not set!");
 	}
 	
-	
-
-	
-
 	vtkMRMLScalarVolumeDisplayNode *referenceVolumeDisplayNode = referenceVolume->GetScalarVolumeDisplayNode();
 	vtkMRMLScalarVolumeDisplayNode *warpedVolumeDisplayNode = warpedVolume->GetScalarVolumeDisplayNode();
 
@@ -775,6 +1156,262 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::InverseConsist(vtkMR
 	  return NULL;
 	}
 	
+}
+//---Change Vector node to transform node-------------------------------------------------------------------------
+vtkMRMLGridTransformNode* vtkSlicerRegistrationQualityLogic::CreateTransformFromVector(vtkMRMLVectorVolumeNode* vectorVolume)
+{
+	if (!vectorVolume) {
+	  std::cerr << "CreateTransormFromVector: Volumes not set!" << std::endl;
+	  return NULL;
+	}
+		
+
+	// Logic partialy copied from: vtkMRMLTransformStorageNode.cxx
+	vtkNew<vtkImageData> gridImage_Ras;	
+	vtkSmartPointer<vtkImageData> imageData = vectorVolume->GetImageData();
+	if (!imageData) {
+	  std::cerr << "CreateTransormFromVector: No image data!" << std::endl;
+	  return NULL;
+	}
+	
+	gridImage_Ras->DeepCopy( imageData.GetPointer() );
+	
+	this->InvertXandY( gridImage_Ras.GetPointer() );
+
+	// Origin
+	gridImage_Ras->SetOrigin( vectorVolume->GetOrigin()[0], vectorVolume->GetOrigin()[1], vectorVolume->GetOrigin()[2] );
+
+	// Spacing
+	gridImage_Ras->SetSpacing( vectorVolume->GetSpacing()[0], vectorVolume->GetSpacing()[1], vectorVolume->GetSpacing()[2] );
+	
+	// Grid transform
+	vtkSmartPointer<vtkOrientedGridTransform> transformFromParent = vtkSmartPointer<vtkOrientedGridTransform>::New();
+	
+	//Direction
+	vtkNew<vtkMatrix4x4> gridDirectionMatrix_RAS;
+	vectorVolume->GetIJKToRASDirectionMatrix(gridDirectionMatrix_RAS.GetPointer());
+        transformFromParent->SetGridDirectionMatrix(gridDirectionMatrix_RAS.GetPointer());
+	
+// 	gridImage_Ras->Update();
+// 	this->InvertXandY( gridImage_Ras.GetPointer() );
+
+// 	int dims[3];
+// 	gridImage_Ras->GetDimensions(dims);
+// // 	double* displacementVectors_Ras = reinterpret_cast<double*>(gridImage_Ras->GetScalarPointer());
+// // 	int allPoints = gridImage_Ras->GetNumberOfScalarComponents() * dims[2] * dims[1] * dims[0];
+// // 	int n = 0;
+// // 
+// 	for(int k=0;k<dims[2];k++)
+// 	{
+// 		for(int j=0;j<dims[1];j++)
+// 		{
+// 			for(int i=0;i<dims[0];i++)
+// 			{
+// 			  double ScalarComponent;
+// 			  
+// 			  ScalarComponent = gridImage_Ras->GetScalarComponentAsDouble(i,j,k,0);
+// 			  gridImage_Ras->SetScalarComponentFromDouble(i,j,k,0,-ScalarComponent);
+// 			  
+// 			  ScalarComponent = gridImage_Ras->GetScalarComponentAsDouble(i,j,k,1);
+// 			  gridImage_Ras->SetScalarComponentFromDouble(i,j,k,1,-ScalarComponent);
+// 			}
+// 		}
+// 	}
+				
+// 	while ( n < allPoints)
+// 	{
+// 		if ( !displacementVectors_Ras[n]) {
+// 			std::cerr << "Point " << n << "/" << allPoints << std::endl;
+// 			n = allPoints;
+// 			break;
+// 		}
+// 		displacementVectors_Ras[n] = -displacementVectors_Ras[n];
+// 		n++;
+// 		if ( !displacementVectors_Ras[n] ) {
+// 			std::cerr << "Point " << n << "/" << allPoints << std::endl;
+// 			n = allPoints;
+// 			break;
+// 		}
+// 		displacementVectors_Ras[n] = -displacementVectors_Ras[n];	
+// 		n++;
+// 		n++;
+// 		
+// 	}
+	
+	#if (VTK_MAJOR_VERSION <= 5)
+	  transformFromParent->SetDisplacementGrid( gridImage_Ras.GetPointer() );
+	#else
+	  transformFromParent->SetDisplacementGridData( gridImage_Ras.GetPointer() );
+	#endif
+	// Set the interpolation to cubic to have smooth derivatives
+	transformFromParent->SetInterpolationModeToCubic();
+	transformFromParent->Update();
+	if (!transformFromParent) {
+	  std::cerr << "CreateTransormFromVector: No transform from parent!" << std::endl;
+	  return NULL;
+	}
+	// Setting transform
+	vtkNew<vtkMRMLGridTransformNode> transform;
+	transform->SetAndObserveTransformFromParent( transformFromParent );
+	
+	// Name
+	std::string name;
+	std::string additionName("-transform");
+	name = vectorVolume-> GetName() + additionName;
+	name = this->GetMRMLScene()->GenerateUniqueName( name );
+	transform->SetName( name.c_str() );
+	
+	this->GetMRMLScene()->AddNode(transform.GetPointer());
+	
+	
+	
+	return transform.GetPointer();
+	  
+}
+//---Change Vector node to transform node-------------------------------------------------------------------------
+vtkMRMLVectorVolumeNode* vtkSlicerRegistrationQualityLogic::CreateVectorFromTransform(vtkMRMLTransformNode* transform)
+{
+	if (!transform) {
+	  std::cerr << "CreateVectorFromTransform: No transform set!" << std::endl;
+	  return NULL;
+	}
+	//Create new Vector Volume from transform. Copied from Crop Volume Logic.
+	
+	if (!this->GetMRMLScene()) {
+		vtkErrorMacro("CreateVectorFromTransform: Invalid scene!");
+		return NULL;
+	}
+			  
+	vtkNew<vtkMRMLVectorVolumeNode> vectorVolume;
+// 	vtkNew<vtkMRMLVectorVolumeDisplayNode> vvDisplayNode;
+// 	scene->AddNode(vvDisplayNode.GetPointer());
+// 	vectorVolume->SetAndObserveDisplayNodeID(vvDisplayNode->GetID());
+// 	vectorVolume->SetAndObserveStorageNodeID(NULL);
+	
+	
+	//Create Grid transform	
+	vtkOrientedGridTransform* transformFromParent = vtkOrientedGridTransform::SafeDownCast(
+							transform->GetTransformFromParent());
+	
+	if (!transformFromParent) {
+	  std::cerr << "CreateVectorFromTransform: No transform from parent!" << std::endl;
+	  return NULL;
+	}
+	
+	
+	vtkNew<vtkImageData> imageData;
+	vtkSmartPointer<vtkImageData> gridImage_Ras = transformFromParent->GetDisplacementGrid();
+	
+	if (!gridImage_Ras) {
+	  std::cerr << "CreateVectorFromTransform: No image data!" << std::endl;
+	  return NULL;
+	}
+	  	
+	// Name
+	std::string name;
+	std::string additionName("-vF");
+	name = transform-> GetName() + additionName;
+	name = this->GetMRMLScene()->GenerateUniqueName( name );
+	vectorVolume->SetName( name.c_str() );
+	
+	//Spacing
+	vectorVolume->SetSpacing( gridImage_Ras->GetSpacing()[0], gridImage_Ras->GetSpacing()[1], gridImage_Ras->GetSpacing()[2] );
+	//Origin
+	vectorVolume->SetOrigin( gridImage_Ras->GetOrigin()[0], gridImage_Ras->GetOrigin()[1], gridImage_Ras->GetOrigin()[2] );
+	// Dimensions
+	int dims[3];
+	gridImage_Ras->GetDimensions(dims);
+	imageData->SetDimensions(dims);
+	
+	//Direction
+ 	vtkSmartPointer<vtkMatrix4x4> gridDirectionMatrix_RAS = transformFromParent->GetGridDirectionMatrix();
+	vectorVolume->SetIJKToRASDirectionMatrix(gridDirectionMatrix_RAS.GetPointer());
+	
+	imageData->DeepCopy( gridImage_Ras.GetPointer() );
+	
+// 	imageData->Update();
+	
+	this->InvertXandY( imageData.GetPointer() );
+
+	// Image Data
+	vectorVolume->SetAndObserveImageData( imageData.GetPointer() );
+	
+	this->GetMRMLScene()->AddNode(vectorVolume.GetPointer());
+	
+	return vectorVolume.GetPointer();
+}
+//--- Invert X and Y in image Data -----------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::InvertXandY(vtkImageData* imageData){
+	if (!imageData) {
+		      throw std::runtime_error("InvertXandY: No imageData.");
+		      return;
+	      }
+	      
+	// Find scalar type and cast the right pointer
+	// TODO: Add all types.
+	
+	int dims[3];
+	imageData->GetDimensions(dims);
+	int allPoints = imageData->GetNumberOfScalarComponents() * dims[2] * dims[1] * dims[0];
+	int n = 0;
+	
+	if ( imageData->GetScalarType() == VTK_DOUBLE ){
+	      double* imageDataVectors = reinterpret_cast<double*>(imageData->GetScalarPointer());
+	      while ( n < allPoints ){
+		      *(imageDataVectors++) *= -1;
+		      *(imageDataVectors++) *= -1;
+		      imageDataVectors++;
+		      n += 3;
+		      if ( !imageDataVectors ){
+			      std::cerr << "InvertXandY: End of pointer!" << n << std::endl;
+			      return;
+		      }
+	      }
+	}
+	else if ( imageData->GetScalarType() == VTK_FLOAT ){
+	      float* imageDataVectors = reinterpret_cast<float*>(imageData->GetScalarPointer());
+	      while ( n < allPoints ){
+		      *(imageDataVectors++) *= -1;
+		      *(imageDataVectors++) *= -1;
+		      imageDataVectors++;
+		      n += 3;
+		      if ( !imageDataVectors ){
+			      std::cerr << "InvertXandY: End of pointer!" << n << std::endl;
+			      return;
+		      }
+	      }
+	}
+	else if ( imageData->GetScalarType() == VTK_SHORT ){
+	      short* imageDataVectors = reinterpret_cast<short*>(imageData->GetScalarPointer());
+	       while ( n < allPoints ){
+		      *(imageDataVectors++) *= -1;
+		      *(imageDataVectors++) *= -1;
+		      imageDataVectors++;
+		      n += 3;
+		      if ( !imageDataVectors ){
+			      std::cerr << "InvertXandY: End of pointer!" << n << std::endl;
+			      return;
+		      }
+	      }
+	}
+	else if ( imageData->GetScalarType() == VTK_INT ){
+	      int* imageDataVectors = reinterpret_cast<int*>(imageData->GetScalarPointer());
+	       while ( n < allPoints ){
+		      *(imageDataVectors++) *= -1;
+		      *(imageDataVectors++) *= -1;
+		      imageDataVectors++;
+		      n += 3;
+		      if ( !imageDataVectors ){
+			      std::cerr << "InvertXandY: End of pointer!" << n << std::endl;
+			      return;
+		      }
+	      }
+	}
+	else{
+	      throw std::runtime_error("InvertXandY: Unknown image type." );
+	      return;
+	}
+	return;
 }
 //--- Default mode when checkbox is unchecked -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::SetDefaultDisplay() {

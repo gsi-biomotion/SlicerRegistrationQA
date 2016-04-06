@@ -8,7 +8,10 @@
 #include <vtkMRMLScene.h>
 #include <vtkMRMLVectorVolumeNode.h>
 #include <vtkMRMLModelNode.h>
+#include <vtkMRMLColorTableNode.h>
 
+//----------------------------------------------------------------------------
+static const char* COLOR_TABLE_REFERENCE_ROLE = "colorTableRef";
 //----------------------------------------------------------------------------
 vtkMRMLNodeNewMacro(vtkMRMLRegistrationQualityNode);
 
@@ -17,10 +20,14 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 
 	this->VectorVolumeNodeID = NULL;
 	this->InvVectorVolumeNodeID = NULL;
+	this->TransformNodeID = NULL;
+	this->InvTransformNodeID = NULL;
 	this->ReferenceVolumeNodeID = NULL;
 	this->WarpedVolumeNodeID = NULL;
-	this->OutputModelNodeID = NULL;
+	this->OutputDirectory = NULL;
 	this->ROINodeID = NULL;
+	this->FiducialNodeID = NULL;
+	this->InvFiducialNodeID = NULL;
 
 	//Checkerboard Parameters
 	this->CheckerboardPattern = 20;
@@ -31,12 +38,17 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->AbsoluteDiffVolumeNodeID = NULL;
 	AbsoluteDiffStatistics[0] = AbsoluteDiffStatistics[1] = AbsoluteDiffStatistics[2] = AbsoluteDiffStatistics[3] = 0;
 
+	FiducialsStatistics[0] = FiducialsStatistics[1] = FiducialsStatistics[2] = FiducialsStatistics[3] = 0;
+	InvFiducialsStatistics[0] = InvFiducialsStatistics[1] = InvFiducialsStatistics[2] = InvFiducialsStatistics[3] = 0;
+	
 	this->JacobianVolumeNodeID = NULL;
 	JacobianStatistics[0] = JacobianStatistics[1] = JacobianStatistics[2] = JacobianStatistics[3] = 0;
 
 	this->InverseConsistVolumeNodeID = NULL;
 	InverseConsistStatistics[0] = InverseConsistStatistics[1] = InverseConsistStatistics[2] = InverseConsistStatistics[3] = 0;
 
+	NumberOfScreenshots = 1;
+	
 	MovieBoxRedState = 0;
 	MovieBoxYellowState = 0;
 	MovieBoxGreenState = 0;
@@ -48,10 +60,14 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetVectorVolumeNodeID(NULL);
 	this->SetInvVectorVolumeNodeID(NULL);
+	this->SetTransformNodeID(NULL);
+	this->SetInvTransformNodeID(NULL);
 	this->SetReferenceVolumeNodeID(NULL);
 	this->SetWarpedVolumeNodeID(NULL);
-	this->SetOutputModelNodeID(NULL);
+	this->SetOutputDirectory(NULL);
 	this->SetROINodeID(NULL);
+	this->SetFiducialNodeID(NULL);
+	this->SetInvFiducialNodeID(NULL);
 	this->SetCheckerboardVolumeNodeID(NULL);
 	this->SetAbsoluteDiffVolumeNodeID(NULL);
 	this->SetJacobianVolumeNodeID(NULL);
@@ -76,6 +92,14 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 			this->SetInvVectorVolumeNodeID(attValue);
 			continue;
 		}
+		if (!strcmp(attName, "TransformNodeID")) {
+			this->SetTransformNodeID(attValue);
+			continue;
+		}
+		if (!strcmp(attName, "InvTransformNodeID")) {
+			this->SetInvTransformNodeID(attValue);
+			continue;
+		}
 		if (!strcmp(attName, "ReferenceVolumeNodeID")) {
 			this->SetReferenceVolumeNodeID(attValue);
 			continue;
@@ -84,12 +108,20 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 			this->SetWarpedVolumeNodeID(attValue);
 			continue;
 		}
-		if (!strcmp(attName, "OutputModelNodeID")) {
-			this->SetOutputModelNodeID(attValue);
+		if (!strcmp(attName, "OutputDirectory")) {
+			this->SetOutputDirectory(attValue);
 			continue;
 		}
 		if (!strcmp(attName, "ROINodeID")) {
 			this->SetROINodeID(attValue);
+			continue;
+		}
+		if (!strcmp(attName, "FiducialNodeID")) {
+			this->SetFiducialNodeID(attValue);
+			continue;
+		}
+		if (!strcmp(attName, "InvFiducialNodeID")) {
+			this->SetInvFiducialNodeID(attValue);
 			continue;
 		}
 		if (!strcmp(attName, "CheckerboardPattern")) {
@@ -142,14 +174,22 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 			<< (this->VectorVolumeNodeID ? this->VectorVolumeNodeID : "NULL") << "\"";
 	of << indent << " InvVectorVolumeNodeID=\""
 			<< (this->InvVectorVolumeNodeID ? this->InvVectorVolumeNodeID : "NULL") << "\"";
+	of << indent << " TransformNodeID=\""
+			<< (this->TransformNodeID ? this->TransformNodeID : "NULL") << "\"";
+	of << indent << " InvTransformNodeID=\""
+			<< (this->InvTransformNodeID ? this->InvTransformNodeID : "NULL") << "\"";
 	of << indent << " ReferenceVolumeNodeID=\""
 			<< (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\"";
 	of << indent << " WarpedVolumeNodeID=\""
 			<< (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\"";
-	of << indent << " OutputModelNodeID=\""
-			<< (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\"";
+	of << indent << " OutputDirectory=\""
+			<< (this->OutputDirectory ? this->OutputDirectory : "NULL") << "\"";
 	of << indent << " ROINodeID=\""
 			<< (this->ROINodeID ? this->ROINodeID : "NULL") << "\"";
+	of << indent << " FiducialNodeID=\""
+			<< (this->FiducialNodeID ? this->FiducialNodeID : "NULL") << "\"";
+	of << indent << " InvFiducialNodeID=\""
+			<< (this->InvFiducialNodeID ? this->InvFiducialNodeID : "NULL") << "\"";
 
 	of << indent << " CheckerboardPattern=\"" << this->CheckerboardPattern << "\"";
 // 	of << indent << " CheckerboardVolumeNodeID=\""
@@ -176,10 +216,14 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 
 	this->SetVectorVolumeNodeID(node->GetVectorVolumeNodeID());
 	this->SetInvVectorVolumeNodeID(node->GetInvVectorVolumeNodeID());
+	this->SetTransformNodeID(node->GetTransformNodeID());
+	this->SetInvTransformNodeID(node->GetInvTransformNodeID());
 	this->SetReferenceVolumeNodeID(node->GetReferenceVolumeNodeID());
 	this->SetWarpedVolumeNodeID(node->GetWarpedVolumeNodeID());
-	this->SetOutputModelNodeID(node->GetOutputModelNodeID());
+	this->SetOutputDirectory(node->GetOutputDirectory());
 	this->SetROINodeID(node->GetROINodeID());
+	this->SetFiducialNodeID(node->GetFiducialNodeID());
+	this->SetInvFiducialNodeID(node->GetInvFiducialNodeID());
 
 // 	this->SetCheckerboardVolumeNodeID(node->GetCheckerboardVolumeNodeID());
 	this->CheckerboardPattern=node->CheckerboardPattern;
@@ -203,9 +247,15 @@ void vtkMRMLRegistrationQualityNode::UpdateReferenceID(const char *oldID, const 
 	if (this->InvVectorVolumeNodeID && !strcmp(oldID, this->InvVectorVolumeNodeID)) {
 		this->SetAndObserveInvVectorVolumeNodeID(newID);
 	}
+	if (this->TransformNodeID && !strcmp(oldID, this->TransformNodeID)) {
+		this->SetAndObserveTransformNodeID(newID);
+	}
+	if (this->InvTransformNodeID && !strcmp(oldID, this->InvTransformNodeID)) {
+		this->SetAndObserveInvTransformNodeID(newID);
+	}
 
-	if (this->OutputModelNodeID && !strcmp(oldID, this->OutputModelNodeID)) {
-		this->SetAndObserveOutputModelNodeID(newID);
+	if (this->OutputDirectory && !strcmp(oldID, this->OutputDirectory)) {
+		this->SetAndObserveOutputDirectory(newID);
 	}
 }
 
@@ -231,7 +281,28 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveInvVectorVolumeNodeID(const ch
 		this->Scene->AddReferencedNodeID(this->InvVectorVolumeNodeID, this);
 	}
 }
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveTransformNodeID(const char* id) {
+	if (this->TransformNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->TransformNodeID, this);
+	}
+	this->SetTransformNodeID(id);
 
+	if (id) {
+		this->Scene->AddReferencedNodeID(this->TransformNodeID, this);
+	}
+}
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveInvTransformNodeID(const char* id) {
+	if (this->InvTransformNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->InvTransformNodeID, this);
+	}
+	this->SetInvTransformNodeID(id);
+
+	if (id) {
+		this->Scene->AddReferencedNodeID(this->InvTransformNodeID, this);
+	}
+}
 //----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::SetAndObserveReferenceVolumeNodeID(const char* id) {
 	if (this->ReferenceVolumeNodeID) {
@@ -257,14 +328,14 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveWarpedVolumeNodeID(const char*
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveOutputModelNodeID(const char* id) {
-	if (this->OutputModelNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->OutputModelNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveOutputDirectory(const char* id) {
+	if (this->OutputDirectory) {
+		this->Scene->RemoveReferencedNodeID(this->OutputDirectory, this);
 	}
-	this->SetOutputModelNodeID(id);
+	this->SetOutputDirectory(id);
 
 	if (id) {
-		this->Scene->AddReferencedNodeID(this->OutputModelNodeID, this);
+		this->Scene->AddReferencedNodeID(this->OutputDirectory, this);
 	}
 }
 //----------------------------------------------------------------------------
@@ -277,6 +348,39 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveROINodeID(const char* id) {
 	if (id) {
 		this->Scene->AddReferencedNodeID(this->ROINodeID, this);
 	}
+}
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveFiducialNodeID(const char* id) {
+	if (this->FiducialNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->FiducialNodeID, this);
+	}
+	this->SetFiducialNodeID(id);
+
+	if (id) {
+		this->Scene->AddReferencedNodeID(this->FiducialNodeID, this);
+	}
+}
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveInvFiducialNodeID(const char* id) {
+	if (this->InvFiducialNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->InvFiducialNodeID, this);
+	}
+	this->SetInvFiducialNodeID(id);
+
+	if (id) {
+		this->Scene->AddReferencedNodeID(this->InvFiducialNodeID, this);
+	}
+}
+//----------------------------------------------------------------------------
+vtkMRMLColorTableNode* vtkMRMLRegistrationQualityNode::GetColorTableNode()
+{
+  return vtkMRMLColorTableNode::SafeDownCast( this->GetNodeReference(COLOR_TABLE_REFERENCE_ROLE) );
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveColorTableNode(vtkMRMLColorTableNode* node)
+{
+  this->SetNodeReferenceID(COLOR_TABLE_REFERENCE_ROLE, (node ? node->GetID() : NULL));
 }
 //----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::SetAndObserveCheckerboardVolumeNodeID(const char* id) {
@@ -334,15 +438,23 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 			<< (this->VectorVolumeNodeID ? this->VectorVolumeNodeID : "NULL") << "\n";
 	os << indent << " InvVectorVolumeNodeID = "
 			<< (this->InvVectorVolumeNodeID ? this->InvVectorVolumeNodeID : "NULL") << "\n";
+	os << indent << " TransformNodeID = "
+			<< (this->TransformNodeID ? this->TransformNodeID : "NULL") << "\n";
+	os << indent << " InvTransformNodeID = "
+			<< (this->InvTransformNodeID ? this->InvTransformNodeID : "NULL") << "\n";
 	os << indent << " ReferenceNodeID = "
 			<< (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\n";
 	os << indent << " WarpedNodeID = "
 			<< (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\n";
 
-	os << indent << " OutputModelNodeID = "
-			<< (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\n";
+	os << indent << " OutputDirectory = "
+			<< (this->OutputDirectory ? this->OutputDirectory : "NULL") << "\n";
 	os << indent << " ROINodeID = "
 			<< (this->ROINodeID ? this->ROINodeID : "NULL") << "\n";
+	os << indent << " FiducialNodeID = "
+			<< (this->FiducialNodeID ? this->FiducialNodeID : "NULL") << "\n";
+	os << indent << " InvFiducialNodeID = "
+			<< (this->InvFiducialNodeID ? this->InvFiducialNodeID : "NULL") << "\n";
 // 	os << indent << " CheckerboardVolumeNodeID = "
 // 			<< (this->CheckerboardVolumeNodeID ? this->CheckerboardVolumeNodeID : "NULL") << "\n";
 	os << indent << " CheckerboardPattern = " << this->CheckerboardPattern << "\n";

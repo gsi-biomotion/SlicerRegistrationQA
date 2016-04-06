@@ -1,7 +1,0 @@
-4. Save scene at the end of registration.
-
-5. If you want to show CT in Hierarchy you need to add color node.
-
-6. Reference phases can be unneceserily loaded multiple times.
-
-7. Create .trf

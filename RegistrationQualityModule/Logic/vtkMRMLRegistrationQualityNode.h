@@ -6,6 +6,7 @@
 #include <vtkMRMLNode.h>
 
 #include "vtkSlicerRegistrationQualityModuleLogicExport.h"
+class vtkMRMLColorTableNode;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkMRMLRegistrationQualityNode :
@@ -30,6 +31,14 @@ public:
 	vtkSetStringMacro(InvVectorVolumeNodeID);
 	vtkGetStringMacro(InvVectorVolumeNodeID);
 	void SetAndObserveInvVectorVolumeNodeID(const char* id);
+	
+	vtkSetStringMacro(TransformNodeID);
+	vtkGetStringMacro(TransformNodeID);
+	void SetAndObserveTransformNodeID(const char* id);
+
+	vtkSetStringMacro(InvTransformNodeID);
+	vtkGetStringMacro(InvTransformNodeID);
+	void SetAndObserveInvTransformNodeID(const char* id);
 
 	vtkSetStringMacro(ReferenceVolumeNodeID);
 	vtkGetStringMacro(ReferenceVolumeNodeID);
@@ -39,14 +48,29 @@ public:
 	vtkGetStringMacro(WarpedVolumeNodeID);
 	void SetAndObserveWarpedVolumeNodeID(const char* id);
 
-	vtkSetStringMacro(OutputModelNodeID);
-	vtkGetStringMacro(OutputModelNodeID);
-	void SetAndObserveOutputModelNodeID(const char* id);
+	vtkSetStringMacro(OutputDirectory);
+	vtkGetStringMacro(OutputDirectory);
+	void SetAndObserveOutputDirectory(const char* id);
 	
 	vtkSetStringMacro(ROINodeID);
 	vtkGetStringMacro (ROINodeID);
 	void SetAndObserveROINodeID(const char* id);
+	
+	vtkSetStringMacro(FiducialNodeID);
+	vtkGetStringMacro (FiducialNodeID);
+	void SetAndObserveFiducialNodeID(const char* id);
+	
+	vtkSetStringMacro(InvFiducialNodeID);
+	vtkGetStringMacro (InvFiducialNodeID);
+	void SetAndObserveInvFiducialNodeID(const char* id);
 
+	/// Get color table node
+	vtkMRMLColorTableNode* GetColorTableNode();
+	/// Set and observe color table node
+	void SetAndObserveColorTableNode(vtkMRMLColorTableNode* node);
+	
+	vtkGetMacro(NumberOfScreenshots, int);
+	vtkSetMacro(NumberOfScreenshots, int);
 	// Movie parameters
 	vtkGetMacro(MovieBoxRedState, int);
 	vtkGetMacro(MovieBoxYellowState, int);
@@ -104,6 +128,12 @@ public:
 
 	vtkSetVector4Macro(AbsoluteDiffStatistics, double);
 	vtkGetVector4Macro(AbsoluteDiffStatistics, double);
+	
+	vtkSetVector4Macro(FiducialsStatistics, double);
+	vtkGetVector4Macro(FiducialsStatistics, double);
+	
+	vtkSetVector4Macro(InvFiducialsStatistics, double);
+	vtkGetVector4Macro(InvFiducialsStatistics, double);
 
 
 	// Jacobian parameters:
@@ -132,11 +162,17 @@ protected:
 
 	char* VectorVolumeNodeID;
 	char* InvVectorVolumeNodeID;
+	char* TransformNodeID;
+	char* InvTransformNodeID;
 	char* ReferenceVolumeNodeID;
 	char* WarpedVolumeNodeID;
-	char* OutputModelNodeID;
+	char* OutputDirectory;
 	char *ROINodeID;
+	char *FiducialNodeID;
+	char *InvFiducialNodeID;
 
+	int NumberOfScreenshots;
+	
 	int MovieBoxRedState;
 	int MovieBoxYellowState;
 	int MovieBoxGreenState;
@@ -151,7 +187,9 @@ protected:
 	char* AbsoluteDiffVolumeNodeID;
 	double AbsoluteDiffStatistics[4];
 
-
+	double FiducialsStatistics[4];
+	double InvFiducialsStatistics[4];
+	
 	char* JacobianVolumeNodeID;
 	double JacobianStatistics[4];
 

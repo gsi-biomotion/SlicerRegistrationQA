@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/slicerrt/!svn/ver/1892/trunk/SlicerRt/src/Isodose/Widgets
+END
+vtkSlicerRTScalarBarActor.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/slicerrt/!svn/ver/1892/trunk/SlicerRt/src/Isodose/Widgets/vtkSlicerRTScalarBarActor.cxx
+END
+vtkSlicerRTScalarBarActor.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/slicerrt/!svn/ver/1892/trunk/SlicerRt/src/Isodose/Widgets/vtkSlicerRTScalarBarActor.h
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/slicerrt/!svn/ver/1817/trunk/SlicerRt/src/Isodose/Widgets/CMakeLists.txt
+END

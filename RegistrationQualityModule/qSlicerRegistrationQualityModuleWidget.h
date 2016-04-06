@@ -6,6 +6,9 @@
 
 #include "qSlicerRegistrationQualityModuleExport.h"
 
+#include <vtkMRMLVectorVolumeNode.h>
+#include <vtkMRMLGridTransformNode.h>
+
 class qSlicerRegistrationQualityModuleWidgetPrivate;
 class vtkMRMLNode;
 
@@ -36,8 +39,10 @@ protected slots:
 	void invVectorVolumeChanged(vtkMRMLNode*);
 	void referenceVolumeChanged(vtkMRMLNode*);
 	void warpedVolumeChanged(vtkMRMLNode*);
-	void outputModelChanged(vtkMRMLNode*);
+	void outputDirectoyChanged();
 	void ROIChanged(vtkMRMLNode*);
+	void fiducialChanged(vtkMRMLNode*);
+	void invFiducialChanged(vtkMRMLNode*);
 
 	void movieBoxRedStateChanged(int state);
 	void movieBoxYellowStateChanged(int state);
@@ -45,9 +50,13 @@ protected slots:
 
 // 	void checkerboardVolumeChanged(vtkMRMLNode*);
 // 	void absoluteDiffVolumeChanged(vtkMRMLNode*);
+	
+	void saveScreenshotClicked();
+	void saveOutputFileClicked();
 
-	void absoluteDiffClicked(bool state);
 	// Image Checks
+	void absoluteDiffClicked(bool state);
+	void fiducialCalculate(bool reference);
 	void falseColorClicked(bool state);
 	void checkerboardClicked(bool state);
 	void movieToggle();
@@ -57,12 +66,16 @@ protected slots:
 	// Vector checks
 	void jacobianClicked(bool state);
 	void inverseConsistClicked(bool state);
+	
 	// Parameters
 	void setCheckerboardPattern(double);
+	
+	void setScalarBar2DVisibility(bool);
 
 protected:
 	QScopedPointer<qSlicerRegistrationQualityModuleWidgetPrivate> d_ptr;
 	QTimer *flickerTimer;
+	QString *lookupTableName;
 
 	virtual void setup();
 	void onEnter();
