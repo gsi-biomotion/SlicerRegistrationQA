@@ -572,8 +572,8 @@ class RegistrationHierarchyLogic:
       self.computeMaxVectorValues(phaseHierarchyNode)
       
       #Resample for computation friendly
-      vectorNode = self.resampleVectorVolume(vectorNode,resample, vectorHierarchyNode)
-      invVectorNode = self.resampleVectorVolume(invVectorNode, resample, invVectorHierarchyNode)
+      #vectorNode = self.resampleVectorVolume(vectorNode,resample, vectorHierarchyNode)
+      #invVectorNode = self.resampleVectorVolume(invVectorNode, resample, invVectorHierarchyNode)
       
       self.computeInverseConsistency(phaseHierarchyNode)
       self.computeJacobian(phaseHierarchyNode)
