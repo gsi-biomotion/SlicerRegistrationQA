@@ -19,12 +19,18 @@ NAME_INVWARP = 'InvWarpedImage' #Warped image from reference phase (reference + 
 NAME_VECTOR = 'Vector' #Vector Field from phase to reference phase
 NAME_INVVECTOR = 'InvVector' #Vector from reference phase to phase
 NAME_ABSDIFF = 'AbsoluteDifference'
+NAME_INVABSDIFF = 'InvAbsoluteDifference'
+NAME_DEFABS = "DefaultAbsoluteDifference"
 NAME_JACOBIAN = 'Jacobian'
+NAME_INVJACOBIAN = 'InvJacobian'
 NAME_INVCONSIST = 'InverseConsistency'
 NAME_REFPHASE = 'ReferenceHierarchyNode'
 #Roi should be named 'R'
 NAME_ROIFILEPATH = 'RoiFilePath' #If there is region of intrest it should be put under reference phase hierarchy node.
 NAME_DIRQA = 'DIRQA'
+DIRQAFILE = 'DIRQAFile'
+NAME_PERCENT = 'Percentile' #Special case to store each contribution to vector field magnitude
+NAME_INVPERCENT = 'InvPercentile'
 
 #Names for directories are just DIR + NAME_X. I.e. directory for CTs is stored under 'DIRCT' attribute
 
@@ -193,7 +199,7 @@ class ReadRegistrationNodeWidget:
     # Registration 4D Native
     self.native4DCheckBox = qt.QCheckBox()     
     self.native4DCheckBox.setToolTip( "Check for registration of 4DCT native" )
-    self.native4DCheckBox.setCheckState(2)
+    self.native4DCheckBox.setCheckState(0)
     parametersFormLayout.addRow("Registration of 4DCT native:", self.native4DCheckBox)
     
     # Registration 4D Contrast
@@ -236,7 +242,7 @@ class ReadRegistrationNodeWidget:
     #
     self.dirqaButton = qt.QPushButton("DIRQA!")
     self.dirqaButton.toolTip = "Makes registration check."
-    self.dirqaButton.enabled = False
+    self.dirqaButton.enabled = True
     parametersFormLayout.addRow(self.dirqaButton)
     
     # connections
@@ -537,10 +543,15 @@ class ReadRegistrationNodeLogic:
       if not registrationNodeContrast4D:
         #First create registration node
         #vectorDirectory = patientDirectory + 'Registration/4DM/'
-        #vectorDirectory = patientDirectory + 'contrast/Registration/4D/'
-        vectorDirectory = '/u/motion/Oscar_neueTrafo/'
+        vectorDirectory = patientDirectory + 'contrast/Registration/4D/'
+        #vectorDirectory = '/u/motion/Oscar_neueTrafo/'
         warpDirectory = vectorDirectory
-        dirqaDirectory = dirqaDirectory = '/u/motion/AIXd/user/aeichhor/Registrierung/' + patientName + '/BigRoi/'
+        dirqaDirectory = '/u/kanderle/AIXd/Data/Pigs/' + patientName + '/Registration/BigRoi/'
+        dirqaFile = '/u/kanderle/AIXd/Data/Pigs/' + patientName + '/Registration/BigRoi/DirqaData.txt'
+        if not os.path.exists(dirqaDirectory):
+           os.makedirs(dirqaDirectory)
+        #roiFile = '/u/motion/AIXd/user/aeichhor/Registrierung/' + patientName + '/BigRoi/R.acsv'
+        roiFile = '/u/kanderle/AIXd/Data/Pigs/' + patientName + '/Registration/BigRoi/R.acsv'
         #Create Registration node
         registrationNodeContrast4D = slicer.vtkMRMLSubjectHierarchyNode()
         registrationNodeContrast4D.SetName('Registration Node Contrast 4D')
@@ -551,6 +562,9 @@ class ReadRegistrationNodeLogic:
         registrationNodeContrast4D.SetAttribute('DIR' + NAME_WARP,warpDirectory)
         registrationNodeContrast4D.SetAttribute('DIR' + NAME_VECTOR,vectorDirectory)
         registrationNodeContrast4D.SetAttribute('DIR' + NAME_DIRQA,dirqaDirectory)
+        registrationNodeContrast4D.SetAttribute(DIRQAFILE,dirqaFile)
+        
+        registrationNodeContrast4D.SetAttribute(NAME_ROIFILEPATH,roiFile)
       
         registrationNodeContrast4D.SetAttribute('ReferenceNumber',referencePhase)
         registrationNodeContrast4D.SetAttribute('PatientName',patientName)
@@ -563,7 +577,8 @@ class ReadRegistrationNodeLogic:
       if register:
         registrationLogic.automaticRegistration(registrationNodeContrast4D,overwrite = overwrite, resample = resampleValue)
       if dirqa:
-	registrationLogic.computeDIRQAfromHierarchyNode(registrationNodeContrast4D)
+	registrationLogic.computeDIRQAfromHierarchyNode(registrationNodeContrast4D,[2,2,2])
+	registrationLogic.writeData(registrationNodeContrast4D)
       print "Finished Contrast 4D"
     
     print "Finished!"
@@ -655,6 +670,7 @@ class ReadRegistrationNodeLogic:
     warpDirectory = registrationNode.GetAttribute("DIR" + NAME_WARP )
     vectorDirectory = registrationNode.GetAttribute("DIR" + NAME_VECTOR )
     dirqaDirectory = registrationNode.GetAttribute("DIR" + NAME_DIRQA )
+    dirqaFile = registrationNode.GetAttribute(DIRQAFILE)
     
    
     if not os.path.exists(ctDirectory): 
@@ -715,55 +731,68 @@ class ReadRegistrationNodeLogic:
       self.checkWarpDirectory(warpDirectory, phaseNode, phase)
       self.checkVectorDirectory(vectorDirectory, phaseNode, phase)
       self.checkDirqaDirectory(dirqaDirectory, phaseNode, phase)
+      self.checkDirqaFile(dirqaFile, phaseNode, phase)
       
       
   def checkWarpDirectory(self, warpDirectory, phaseNode, phase):
     if os.path.exists(warpDirectory):
       for file in os.listdir(warpDirectory):
         index = file.find('_warped.nrrd')
+        
 	if index > -1:
-	  #Find out warpedimage or invWarpedImage
-	  print file
-	  if file[index-2:index] == phase:
-	    warpNode = self.createChild(phaseNode,NAME_WARP)
-	  elif file[index-5:index-3] == phase:
-	    warpNode = self.createChild(phaseNode,NAME_INVWARP)
-	  else:
-	    print "Cannot find phase number. Index: " + str(index)
-	    continue
-	  if warpNode:
-	    warpNode.SetAttribute('FilePath',warpDirectory+file)
+	  if file.find('fix') > -1:
+             if file[index-8:index-6] == phase:
+               warpNode = self.createChild(phaseNode,NAME_INVWARP)
+             elif file[index-2:index] == phase:
+               warpNode = self.createChild(phaseNode,NAME_WARP)
+             else:
+               #print "Cannot find phase number. Index: " + str(index)
+               continue
+          else:
+             if file[index-2:index] == phase:
+               warpNode = self.createChild(phaseNode,NAME_INVWARP)
+             elif file[index-5:index-3] == phase:
+               warpNode = self.createChild(phaseNode,NAME_WARP)
+             else:
+               print "Cannot find phase number. Index: " + str(index)
+               continue
+          if warpNode:
+            warpNode.SetAttribute('FilePath',warpDirectory+file)
 
   def checkVectorDirectory(self, vectorDirectory, phaseNode, phase):
     if os.path.exists(vectorDirectory):
       for file in os.listdir(vectorDirectory):
-	if 0:
-           index = file.find('_x.nrrd')
-           if index > -1:
-             #Find out warpedimage or invWarpedImage
-             if file[index-2:index] == phase:
-               warpNode = self.createChild(phaseNode,NAME_VECTOR)
-             elif file[index-5:index-3] == phase:
-               warpNode = self.createChild(phaseNode,NAME_INVVECTOR)
-             else:
-               continue
+	vectorNode = phaseNode.GetChildWithName(phaseNode, NAME_VECTOR)
+        invVectorNode = phaseNode.GetChildWithName(phaseNode, NAME_INVVECTOR)
+        if file.find('_vf.mha') > -1:
+             index = file.find('fix')
+             if index > -1 and not invVectorNode:
+               if file[index+3:index+5] == phase:
+                 warpNode = self.createChild(phaseNode,NAME_INVVECTOR)
+               
+             index = file.find('mov')
+             if index > -1 and not vectorNode:
+               if file[index+3:index+5] == phase:
+                 warpNode = self.createChild(phaseNode,NAME_VECTOR)
+
              if warpNode:
-               warpNode.SetAttribute('FilePath',vectorDirectory+file)
-        
-        if 1:
-           index = file.find('_vf.mha')
-           if index > -1:
-             if file[index-2:index] == phase:
-               warpNode = self.createChild(phaseNode,NAME_INVVECTOR)
-             elif file[index-5:index-3] == phase:
-               warpNode = self.createChild(phaseNode,NAME_VECTOR)
-             else:
-               continue
-             if warpNode:
+                 warpNode.SetAttribute('FilePath',vectorDirectory+file)
+        else:
+          index = file.find('_x.nrrd')
+          if index > -1:
+            #Find out warpedimage or invWarpedImage
+            if file[index-5:index-3] == phase and not vectorNode:
+              warpNode = self.createChild(phaseNode,NAME_VECTOR)
+            elif file[index-2:index] == phase and not invVectorNode:
+              warpNode = self.createChild(phaseNode,NAME_INVVECTOR)
+            else:
+              continue
+            if warpNode:
                warpNode.SetAttribute('FilePath',vectorDirectory+file)
       
 
   def checkDirqaDirectory(self, dirqaDirectory, phaseNode, phase):
+    return
     if os.path.exists(dirqaDirectory):
       for file in os.listdir(dirqaDirectory):
         index = file.find('ref00.nrrd')
@@ -778,6 +807,69 @@ class ReadRegistrationNodeLogic:
           if warpNode:
             warpNode.SetAttribute('FilePath',dirqaDirectory+file)
             
+  def checkDirqaFile(self, dirqaFile, phaseNode, phase):
+     from RegistrationHierarchy import RegistrationHierarchyLogic
+     
+     if not os.path.isfile(dirqaFile):
+       return
+     
+     regHierarchyLogic = RegistrationHierarchyLogic()
+     f = open(dirqaFile,"r")
+     content = f.read().split('\n')
+     i = 0
+     checks = [NAME_VECTOR, NAME_INVVECTOR,NAME_INVCONSIST, NAME_JACOBIAN,
+               NAME_INVJACOBIAN, NAME_ABSDIFF, NAME_INVABSDIFF, NAME_DEFABS,
+               "Abs"+NAME_VECTOR, "Abs"+NAME_INVVECTOR, NAME_PERCENT, NAME_INVPERCENT]
+
+     values = ["Mean","STD","Max","Min"]
+     directions = ["x","y","z"]
+     while i < len(content):
+        if content[i].find('Phase') > -1:
+          phaseNumber = int(content[i].split()[1])
+          #print phaseNode + phase
+          if phaseNumber == int(phase):
+            n = i+1
+            statistics = [0,0,0,0]
+            vectorStatistics = [[0,0,0],[0,0,0],[0,0,0],[0,0,0]]
+ 
+            while n < len(content):
+               #Break when you come to the next phase
+               if content[n].find('Phase') > -1:
+                  return
+               if not content[n]:
+                  n += 1
+                  continue
+               for check in checks:
+                  if content[n].split()[0] == check:
+                     n += 1
+                     #if check == NAME_ABSDIFF or check == NAME_INVABSDIFF or check == NAME_DEFABS:
+		       #continue
+                     if check == NAME_VECTOR or check == NAME_INVVECTOR:
+                       for j in range(3):
+                          for k in range(4):
+                             if content[n].split()[0] == (values[k]+"_"+directions[j] +":"):
+                                vectorStatistics[k][j] = float(content[n].split()[1])
+                                n += 1
+
+                       regHierarchyLogic.writeStatistics(phaseNode.GetChildWithName(phaseNode,
+                                     check),vectorStatistics,True)      
+                       n -= 1
+
+                     else:
+                        if check == ("Abs"+NAME_VECTOR):
+                          node = phaseNode.GetChildWithName(phaseNode, NAME_VECTOR)
+                        elif check == ("Abs"+NAME_INVVECTOR):
+                          node = phaseNode.GetChildWithName(phaseNode, NAME_INVVECTOR)
+                        else:
+                          node = self.createChild(phaseNode, check)
+                        for k in range(4):
+                           statistics[k] = float(content[n+k].split()[1])
+                        regHierarchyLogic.writeStatistics(node,statistics,False)
+                        n += 3
+               n += 1
+
+        i += 1          
+  
   def createChild(self,hierarchyNode,string):
     newHierarchy = slicer.vtkMRMLSubjectHierarchyNode()
     newHierarchy.SetParentNodeID(hierarchyNode.GetID())

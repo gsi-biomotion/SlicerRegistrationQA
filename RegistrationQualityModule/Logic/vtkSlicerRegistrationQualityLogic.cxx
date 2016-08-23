@@ -1166,6 +1166,76 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::InverseConsist(vtkMR
 	}
 	
 }
+//----------------------------------------------------------------------------
+//------Get warped image by applying transform on moving image
+vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::GetWarpedFromMoving(vtkMRMLScalarVolumeNode *movingVolume, vtkMRMLTransformNode *transform) {
+
+	if (!this->GetMRMLScene()) {
+		throw std::runtime_error("Internal Error, see command line!");
+                return NULL;
+	}
+
+
+	if (!movingVolume or !transform ) {
+		throw std::runtime_error("Check input parameters!");
+                return NULL;
+	}
+	
+	vtkMRMLScalarVolumeNode* outputVolume = NULL;
+	// Create new scalar volume
+	vtkNew<vtkMRMLScalarVolumeNode> outputVolumeNew;
+	vtkNew<vtkMRMLScalarVolumeDisplayNode> sDisplayNode;
+	sDisplayNode->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
+	this->GetMRMLScene()->AddNode(sDisplayNode.GetPointer());
+	outputVolumeNew->SetAndObserveDisplayNodeID(sDisplayNode->GetID());
+	outputVolumeNew->SetAndObserveStorageNodeID(NULL);
+	this->GetMRMLScene()->AddNode(outputVolumeNew.GetPointer());
+	outputVolume = outputVolumeNew.GetPointer();
+	
+	if(!outputVolume){
+	  throw std::runtime_error("Can't create output volume!");
+          return NULL;
+	}
+	
+	vtkNew<vtkImageData> imageData_new;	
+	vtkSmartPointer<vtkImageData> imageData_old = movingVolume->GetImageData();
+	
+	imageData_new->DeepCopy(imageData_old.GetPointer());
+	outputVolume->SetAndObserveImageData(imageData_new.GetPointer());
+	
+	//Direction
+	vtkNew<vtkMatrix4x4> gridDirectionMatrix_RAS;
+	movingVolume->GetIJKToRASDirectionMatrix(gridDirectionMatrix_RAS.GetPointer());
+        outputVolume->SetIJKToRASDirectionMatrix(gridDirectionMatrix_RAS.GetPointer());
+	
+	// Origin
+	outputVolume->SetOrigin( movingVolume->GetOrigin()[0], movingVolume->GetOrigin()[1], movingVolume->GetOrigin()[2] );
+
+	// Spacing
+	outputVolume->SetSpacing( movingVolume->GetSpacing()[0], movingVolume->GetSpacing()[1], movingVolume->GetSpacing()[2] );
+	
+	std::string outSS;
+        std::string Name("-warped");
+        outSS = movingVolume->GetName() + Name;
+        outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
+        outputVolume->SetName(outSS.c_str());
+	
+	outputVolume->SetAndObserveTransformNodeID( transform->GetID() );
+        
+        //Harden Transform
+        vtkSlicerTransformLogic* transformModuleLogic = vtkSlicerTransformLogic::New();
+        if (! transformModuleLogic->hardenTransform(outputVolume)){
+           vtkErrorMacro("getWarpedFromMoving: Can't harden transform!");
+           throw std::runtime_error("Internal Error, see command line!");
+           return NULL;
+        }
+        
+        return outputVolume;
+	
+	
+	
+	
+}
 //---Change Vector node to transform node-------------------------------------------------------------------------
 vtkMRMLGridTransformNode* vtkSlicerRegistrationQualityLogic::CreateTransformFromVector(vtkMRMLVectorVolumeNode* vectorVolume)
 {
