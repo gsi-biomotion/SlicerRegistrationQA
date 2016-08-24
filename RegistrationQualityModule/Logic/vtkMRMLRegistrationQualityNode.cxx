@@ -28,6 +28,8 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->ROINodeID = NULL;
 	this->FiducialNodeID = NULL;
 	this->InvFiducialNodeID = NULL;
+	this->OutputModelNodeID = NULL;
+	this->SubjectHierarchyNodeID = NULL;
 
 	//Checkerboard Parameters
 	this->CheckerboardPattern = 20;
@@ -68,6 +70,8 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetROINodeID(NULL);
 	this->SetFiducialNodeID(NULL);
 	this->SetInvFiducialNodeID(NULL);
+	this->SetSubjectHierarchyNodeID(NULL);
+	this->SetOutputModelNodeID(NULL);
 	this->SetCheckerboardVolumeNodeID(NULL);
 	this->SetAbsoluteDiffVolumeNodeID(NULL);
 	this->SetJacobianVolumeNodeID(NULL);
@@ -122,6 +126,14 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 		}
 		if (!strcmp(attName, "InvFiducialNodeID")) {
 			this->SetInvFiducialNodeID(attValue);
+                        continue;
+                }
+		if (!strcmp(attName, "SubjectHierarchyNodeID")) {
+			this->SetSubjectHierarchyNodeID(attValue);
+			continue;
+		}
+		if (!strcmp(attName, "OutputModelNodeID")) {
+			this->SetOutputModelNodeID(attValue);
 			continue;
 		}
 		if (!strcmp(attName, "CheckerboardPattern")) {
@@ -190,7 +202,10 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 			<< (this->FiducialNodeID ? this->FiducialNodeID : "NULL") << "\"";
 	of << indent << " InvFiducialNodeID=\""
 			<< (this->InvFiducialNodeID ? this->InvFiducialNodeID : "NULL") << "\"";
-
+	of << indent << " SubjectHierarchyNodeID=\""
+			<< (this->SubjectHierarchyNodeID ? this->SubjectHierarchyNodeID : "NULL") << "\"";
+	of << indent << " OutputModelNodeID=\""
+			<< (this->OutputModelNodeID ? this->OutputModelNodeID : "NULL") << "\"";
 	of << indent << " CheckerboardPattern=\"" << this->CheckerboardPattern << "\"";
 // 	of << indent << " CheckerboardVolumeNodeID=\""
 // 			<< (this->CheckerboardVolumeNodeID ? this->CheckerboardVolumeNodeID : "NULL") << "\"";
@@ -224,6 +239,8 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 	this->SetROINodeID(node->GetROINodeID());
 	this->SetFiducialNodeID(node->GetFiducialNodeID());
 	this->SetInvFiducialNodeID(node->GetInvFiducialNodeID());
+	this->SetSubjectHierarchyNodeID(node->GetSubjectHierarchyNodeID());
+	this->SetOutputModelNodeID(node->GetOutputModelNodeID());
 
 // 	this->SetCheckerboardVolumeNodeID(node->GetCheckerboardVolumeNodeID());
 	this->CheckerboardPattern=node->CheckerboardPattern;
@@ -431,6 +448,23 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveInverseConsistVolumeNodeID(con
 }
 
 //----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveSubjectHierarchyNodeID(const char* id) {
+	cout << "SetAndObserveSubjectHierarchyNodeID(" << (id?id:"NULL") << ")" << endl;
+	if (this->SubjectHierarchyNodeID) {
+		cout << "Old node not NULL (" << SubjectHierarchyNodeID << ")" << endl;
+		this->Scene->RemoveReferencedNodeID(this->SubjectHierarchyNodeID, this);
+	}
+	cout << "Set new node" << endl;
+	this->SetSubjectHierarchyNodeID(id);
+
+	if (id) {
+		cout << "AddReferencedNodeID" << endl;
+		this->Scene->AddReferencedNodeID(this->SubjectHierarchyNodeID, this);
+	}
+	cout << "Done" << endl;
+}
+
+//----------------------------------------------------------------------------
 void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 	Superclass::PrintSelf(os,indent);
 
@@ -446,6 +480,8 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 			<< (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\n";
 	os << indent << " WarpedNodeID = "
 			<< (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\n";
+	os << indent << " SubjectHierarchyNodeID = "
+			<< (this->SubjectHierarchyNodeID ? this->SubjectHierarchyNodeID : "NULL") << "\n";
 
 	os << indent << " OutputDirectory = "
 			<< (this->OutputDirectory ? this->OutputDirectory : "NULL") << "\n";

@@ -20,13 +20,10 @@ set(${KIT}_TARGET_LIBRARIES
   vtkSlicerMarkupsModuleMRML
   vtkSlicerVolumesModuleLogic
   vtkSlicerAnnotationsModuleMRML
-
+  qSlicerVolumesSubjectHierarchyPlugins
+  vtkSlicerSubjectHierarchyModuleMRML
+  tinyXML
   )
-
-# SET_SOURCE_FILES_PROPERTIES(
-# 	DIRQAImage.cxx
-# 	WRAP_EXCLUDE
-# )
 
 #-----------------------------------------------------------------------------
 SlicerMacroBuildModuleLogic(

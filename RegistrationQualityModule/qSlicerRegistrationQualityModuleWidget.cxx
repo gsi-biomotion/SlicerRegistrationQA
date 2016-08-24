@@ -14,6 +14,9 @@
 #include <QTimer>
 #include <QInputDialog>
 #include <QLineEdit>
+#include <QStandardItemModel>
+#include <QMenu>
+
 
 // SlicerQt includes
 #include <qSlicerAbstractCoreModule.h>
@@ -336,10 +339,22 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 		
 		if (pNode->GetROINodeID()) {
 			d->ROIInputComboBox->setCurrentNode(pNode->GetROINodeID());
+                } else {
+                        this->ROIChanged(d->ROIInputComboBox->currentNode());
+                }
+
+		if (pNode->GetSubjectHierarchyNodeID()) {
+			d->InputSubjectComboBox->setCurrentNode(pNode->GetSubjectHierarchyNodeID());
 		} else {
-			this->ROIChanged(d->ROIInputComboBox->currentNode());
+			this->subjectHierarchyChanged(d->InputSubjectComboBox->currentNode());
 		}
-		
+
+		if (pNode->GetOutputModelNodeID()) {
+			d->OutputModelComboBox->setCurrentNode(pNode->GetOutputModelNodeID());
+                }else {
+                        this->outputModelChanged(d->OutputModelComboBox->currentNode());
+                }
+
 		if (pNode->GetFiducialNodeID()) {
 			d->FiducialInputComboBox->setCurrentNode(pNode->GetFiducialNodeID());
 		} else {
@@ -662,6 +677,24 @@ void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* no
 // 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
 // 	logic->ImageDifference();
 }
+
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::subjectHierarchyChanged(vtkMRMLNode* node) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	cout << "qSlicerRegistrationQualityModuleWidget::subjectHierarchyChanged()" << endl;
+
+	//TODO: Move into updatefrommrml?
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if (!pNode || !this->mrmlScene() || !node) {
+		return;
+	}
+
+	pNode->DisableModifiedEventOn();
+	pNode->SetAndObserveSubjectHierarchyNodeID(node->GetID());
+	pNode->DisableModifiedEventOff();
+}
+
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::outputDirectoyChanged() {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
@@ -745,8 +778,28 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	this->Superclass::setup();
 	d->StillErrorLabel->setVisible(false);
 
-	connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegistrationQualityParametersNode(vtkMRMLNode*)));
+	//new
+	d->subjectTreeView->setModel(d->logic()->getTreeViewModel());
+	d->subjectTreeView->header()->hide();
 
+	contextMenu = new QMenu(d->subjectTreeView);
+	contextMenuShowAction = new QAction("Show",contextMenu);
+	contextMenu->addAction(contextMenuShowAction);
+	connect(contextMenu, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuClicked(QAction*)));
+
+	// Make the ComboBox only show "Registration" nodes.
+	d->InputSubjectComboBox->addAttribute("vtkMRMLSubjectHierarchyNode","DIRQARegistration");
+	connect(d->InputSubjectComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(subjectHierarchyChanged(vtkMRMLNode*)));
+
+
+	d->subjectTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(d->subjectTreeView, SIGNAL(customContextMenuRequested(QPoint const&)), this, SLOT(treeViewContextMenu(QPoint const&)));
+
+	connect(d->loadPhaseButton, SIGNAL(clicked(bool)), this, SLOT(loadPhaseClicked(bool)));
+
+	//end new
+
+	connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegistrationQualityParametersNode(vtkMRMLNode*)));
 	connect(d->InputFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(vectorVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputInvFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(invVectorVolumeChanged(vtkMRMLNode*)));
 	connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
@@ -756,6 +809,7 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->InvFiducialInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(invFiducialChanged(vtkMRMLNode*)));
 //	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
 //	connect(d->AbsoluteDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(absoluteDiffVolumeChanged(vtkMRMLNode*)));
+	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
 
 	connect(d->SaveScreenshotPushButton, SIGNAL(clicked()), this, SLOT(saveScreenshotClicked()));
 	connect(d->SaveOutputFilePushButton, SIGNAL(clicked()), this, SLOT(saveOutputFileClicked()));
@@ -775,7 +829,8 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
-	
+        connect(d->xmlFileInput, SIGNAL(editingFinished()), this, SLOT (xmlFileNameEdited()));
+        connect(d->loadXMLButton, SIGNAL(clicked()), this, SLOT (loadXMLClicked()));
 	connect( d->checkBox_ScalarBar2D, SIGNAL(toggled(bool)), this, SLOT( setScalarBar2DVisibility(bool) ) );
 	
 	qSlicerApplication * app = qSlicerApplication::application();
@@ -855,8 +910,37 @@ void qSlicerRegistrationQualityModuleWidget::saveOutputFileClicked() {
 	}
 	QApplication::restoreOverrideCursor();
 }
+
+// newNode
+
+void qSlicerRegistrationQualityModuleWidget::treeViewContextMenu(QPoint const& clickedPoint) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	cout << "Context Menu! x=" << clickedPoint.x() << " y=" << clickedPoint.y();
+	QModelIndex index = d->subjectTreeView->indexAt(clickedPoint);
+	cout << " data=" << index.data().toString().toStdString() << endl;
+
+	contextMenu->popup(d->subjectTreeView->mapToGlobal(clickedPoint));
+
+}
 // Image Checks
 //-----------------------------------------------------------------------------
+
+void qSlicerRegistrationQualityModuleWidget::contextMenuClicked(QAction*) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+	cout << "Context Menu Action" << endl;
+	QModelIndex index = d->subjectTreeView->selectionModel()->currentIndex();
+	d->logic()->showNode(&index);
+}
+
+void qSlicerRegistrationQualityModuleWidget::loadPhaseClicked(bool) {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+	cout << "loadPhase" << endl;
+	QModelIndex index = d->subjectTreeView->selectionModel()->currentIndex();
+	d->logic()->showNode(&index);
+}
+
+// end new
 
 //-----------------------------------------------------------------------------
 // Absolute Difference
@@ -1154,7 +1238,6 @@ void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(double check
 	pNode->SetCheckerboardPattern(checkboardPattern);
 	pNode->DisableModifiedEventOff();
 }
-
 //------------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::setScalarBar2DVisibility(bool visible)
 {
@@ -1205,4 +1288,44 @@ void qSlicerRegistrationQualityModuleWidget::setScalarBar2DVisibility(bool visib
   d->ScalarBarWidget2DRed->SetEnabled(visible);
   d->ScalarBarWidget2DYellow->SetEnabled(visible);
   d->ScalarBarWidget2DGreen->SetEnabled(visible);
+}
+void qSlicerRegistrationQualityModuleWidget::xmlFileNameEdited() {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	cout << "Neuer Text: " << d->xmlFileInput->text().toStdString() << endl;
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	pNode->DisableModifiedEventOn();
+	pNode->SetXMLFileName(d->xmlFileInput->text().toStdString());
+	pNode->DisableModifiedEventOff();
+}
+
+void qSlicerRegistrationQualityModuleWidget::loadXMLClicked() {
+	Q_D(qSlicerRegistrationQualityModuleWidget);
+
+	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+	if(pNode->GetXMLFileName() == "") {
+
+		QString fileName = QFileDialog::getOpenFileName( NULL,
+														 QString( tr( "Select Registration XML-File" ) ),
+														 QDir::homePath(),
+														 QString( tr( "XML-Files ( *.xml )" ) ) );
+		cout << fileName.toAscii().data() << endl;
+		if ( !fileName.isNull() ) {
+			d->xmlFileInput->setText(fileName);
+			pNode->SetXMLFileName(fileName.toAscii().data());
+		} else {
+			return;
+		}
+	}
+
+	try {
+		d->logic()->ReadRegistrationXML();
+	} catch (std::runtime_error e) {
+		d->StillErrorLabel->setText(e.what());
+		d->StillErrorLabel->setVisible(true);
+		cerr << e.what() << endl;
+		return;
+	}
+	d->StillErrorLabel->setText("");
 }

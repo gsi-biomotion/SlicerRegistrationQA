@@ -11,6 +11,7 @@
 
 class qSlicerRegistrationQualityModuleWidgetPrivate;
 class vtkMRMLNode;
+class QMenu;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class Q_SLICER_QTMODULES_REGISTRATIONQUALITY_EXPORT qSlicerRegistrationQualityModuleWidget :
@@ -34,6 +35,14 @@ public slots:
 
 protected slots:
 	void onLogicModified();
+
+	// new
+
+	void treeViewContextMenu(QPoint const&);
+	void contextMenuClicked(QAction*);
+	void loadPhaseClicked(bool);
+
+	// end new
 
 	void vectorVolumeChanged(vtkMRMLNode*);
 	void invVectorVolumeChanged(vtkMRMLNode*);
@@ -69,13 +78,22 @@ protected slots:
 	
 	// Parameters
 	void setCheckerboardPattern(double);
-	
 	void setScalarBar2DVisibility(bool);
+	void xmlFileNameEdited();
+	void loadXMLClicked();
+	void subjectHierarchyChanged(vtkMRMLNode*);
 
 protected:
 	QScopedPointer<qSlicerRegistrationQualityModuleWidgetPrivate> d_ptr;
 	QTimer *flickerTimer;
 	QString *lookupTableName;
+
+	// new
+
+	QMenu* contextMenu;
+	QAction* contextMenuShowAction;
+
+	// end new
 
 	virtual void setup();
 	void onEnter();

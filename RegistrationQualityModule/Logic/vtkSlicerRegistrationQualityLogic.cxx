@@ -47,6 +47,9 @@
 #include <vtkMRMLMarkupsNode.h>
 #include <vtkMRMLMarkupsDisplayNode.h>
 
+#include <vtkMRMLSubjectHierarchyNode.h>
+#include <vtkMRMLSubjectHierarchyConstants.h>
+
 // VTK includes
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
@@ -72,6 +75,12 @@
 #include <iostream>
 #include <cassert>
 #include <math.h>
+#include <exception>
+
+#include <tinyxml.h>
+#include <DIRQAImage.h>
+#include <QStandardItemModel>
+
 
 class vtkSlicerRegistrationQualityLogic::vtkInternal {
 public:
@@ -90,6 +99,7 @@ vtkStandardNewMacro(vtkSlicerRegistrationQualityLogic);
 //----------------------------------------------------------------------------
 vtkSlicerRegistrationQualityLogic::vtkSlicerRegistrationQualityLogic() {
 	this->RegistrationQualityNode = NULL;
+	subjectModel = new QStandardItemModel();
 	this->TransformField = vtkSmartPointer<vtkImageData>::New();
 	this->Internal = new vtkInternal;
 }
@@ -98,6 +108,7 @@ vtkSlicerRegistrationQualityLogic::vtkSlicerRegistrationQualityLogic() {
 vtkSlicerRegistrationQualityLogic::~vtkSlicerRegistrationQualityLogic() {
 	vtkSetAndObserveMRMLNodeMacro(this->RegistrationQualityNode, NULL);
 	delete this->Internal;
+	delete subjectModel;
 }
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::SetVolumesLogic(vtkSlicerVolumesLogic* logic) {
@@ -778,6 +789,429 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 	return true;
 }
 
+vtkMRMLSubjectHierarchyNode* vtkSlicerRegistrationQualityLogic::getPhaseByIndex(int index) {
+	if(!RegistrationQualityNode->GetSubjectHierarchyNodeID()) {
+		cout << "Error: No SubjectHierarchyNodeID" << endl;
+		return NULL;
+	}
+	vtkMRMLSubjectHierarchyNode* shNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
+		GetMRMLScene()->GetNodeByID(RegistrationQualityNode->GetSubjectHierarchyNodeID()));
+
+	if(!shNode) {
+		cout << "Error: Invalid RegistrationNode" << endl;
+		return NULL;
+	}
+
+	cout << "looking for index " << index << endl;
+	for(int i=0; i<=index;i++) {
+		cout << "trying node " << i << endl;
+		vtkMRMLSubjectHierarchyNode* childNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(shNode->GetNthChildNode(index));
+		if(childNode) {
+			cout << "node " << i << " exists" << endl;
+			const char* attr = childNode->GetAttribute("index");
+			if(attr && atoi(attr) == index) {
+				cout << "node " << i << " has correct index: " << attr << endl;
+				return childNode;
+			}
+		}
+	}
+
+	return NULL;
+
+}
+
+bool vtkSlicerRegistrationQualityLogic::loadFromSHNode(vtkMRMLSubjectHierarchyNode* sHNode) {
+	if(!sHNode) {
+		cout << "Error: Cannot load from nullpointer" << endl;
+		return false;
+	}
+
+	const char* filename = sHNode->GetAttribute("filename");
+	const char* tag = sHNode->GetAttribute("tag");
+	cout << "Image: " << sHNode->GetID() << " file=" << (filename!=NULL?filename:"invalid") << endl;
+
+	if(filename && tag && !sHNode->GetAssociatedNodeID()) {
+		vtkMRMLVolumeNode* imageNode = Internal->VolumesLogic->AddArchetypeVolume(filename, tag, 0, NULL);
+
+		if(imageNode) {
+			sHNode->SetAssociatedNodeID(imageNode->GetID());
+			cout << "New volume successfully loaded!" << endl;
+		} else {
+			cout << "Volume could not be loaded!" << endl;
+			return false;
+		}
+	}
+	//TODO: Volumes go back to gray value - perhaps we should rembemer previous color settings?
+	if (!state) {
+		this->SetDefaultDisplay();
+		return;
+	}
+
+	return true;
+}
+
+void vtkSlicerRegistrationQualityLogic::showNode(QModelIndex* index) {
+
+	if(!index->isValid()) {
+		cout << "vtkSlicerRegistrationQualityLogic::showNode: Invalid QModelIndex" << endl;
+		return;
+	}
+
+	if(index->parent().isValid()) {
+		cout << "vtkSlicerRegistrationQualityLogic::showNode: Parent index should not be valid for phase node" << endl;
+		return;
+	}
+
+	vtkMRMLSubjectHierarchyNode* node = vtkMRMLSubjectHierarchyNode::SafeDownCast(static_cast<vtkObjectBase*>(
+		getTreeViewModel()->itemFromIndex(*index)->data().value<void*>()));
+	if(!node) {
+		cout << "node is null" << endl;
+		return;
+	}
+
+	cout << "NodeID: " << node->GetID() << endl;
+
+	vtkMRMLSubjectHierarchyNode* imageSHNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(node,"Image");
+	if(imageSHNode) {
+		loadFromSHNode(imageSHNode);
+	} else {
+		cout << "no child with name \"Image\"" << endl;
+	}
+
+	vtkMRMLSubjectHierarchyNode* warpedSHNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(node,"Warped");
+	if(warpedSHNode) {
+		loadFromSHNode(warpedSHNode);
+	} else {
+		cout << "no child with name \"Warped\"" << endl;
+	}
+
+	vtkMRMLSubjectHierarchyNode* vectorSHNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(node,"Vector");
+	if(vectorSHNode) {
+		loadFromSHNode(vectorSHNode);
+	} else {
+		cout << "no child with name \"Vector\"" << endl;
+	}
+
+	const char* refIndex = node->GetAttribute("reference");
+	if(!refIndex) {
+		cout << "Error: No reference phase" << endl;
+	}
+	vtkMRMLSubjectHierarchyNode* refNode = getPhaseByIndex(atoi(refIndex));
+	if(refNode) {
+		vtkMRMLSubjectHierarchyNode* refImageNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(refNode,"Image");
+		if(refImageNode) {
+			loadFromSHNode(refImageNode);
+		} else {
+			cout << "no child with name \"Image\" in reference node" << endl;
+		}
+	} else {
+		cout << "Error: Reference Node doesn't exist?" << endl;
+	}
+
+}
+
+bool vtkSlicerRegistrationQualityLogic::checkRegistrationIndices(
+	std::vector<vtkSmartPointer<DIRQAImage> >& images,
+	std::vector<vtkSmartPointer<DIRQAImage> >& warped) {
+
+	// Check images for consistent reference-phase-indices
+	std::sort(warped.begin(), warped.end(), DIRQAImage::compareOnFixedIndex);
+	//images have to be and warped-reference-phases are sorted based on the same index
+	// --> easier lookup of corresponding images
+	std::vector<vtkSmartPointer<DIRQAImage> >::iterator correspondingImage = images.begin();
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
+
+		while(correspondingImage!=images.end()) {
+			if((*correspondingImage)->getIndex() != (*it)->getFixedIndex()) {
+				++correspondingImage;
+			} else {
+				break;
+			}
+		}
+
+		if(correspondingImage==images.end()) {
+			cout << "Error: Reference-image for " << **it << " does not exist." << endl;
+			return false;
+		} else {
+			cout << "Info: Reference-image for " << **it << " exists." << endl;
+		}
+	}
+// 	cout << "Info: Reference-images for all warped-images are OK." << endl;
+
+	// Check warped-images for consistent indices (Not two warped versions of the same image/phase)
+	// Corresponding image must exist
+	std::sort(warped.begin(), warped.end(), DIRQAImage::compareOnIndex);
+	int oldIndex=-1;
+	//images and warped are sorted based on the same index --> easier lookup of corresponding images
+	correspondingImage = images.begin();
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
+		int newIndex = (*it)->getIndex();
+		if(newIndex-oldIndex <= 0) {
+			cout << "Error: Warped-image-indices must be unique and >=0." << endl;
+			return false;
+		}
+
+		while(correspondingImage!=images.end()) {
+			if((*correspondingImage)->getIndex() != (*it)->getIndex()) {
+				++correspondingImage;
+			} else {
+				break;
+			}
+		}
+
+		if(correspondingImage==images.end()) {
+			cout << "Error: No corresponding image for " << **it << "." << endl;
+			return false;
+		} else {
+			cout << "Info: Corresponding image for " << **it << " exists." << endl;
+		}
+		oldIndex = newIndex;
+	}
+// 	cout << "Info: Warped-image-indices are OK." << endl;
+	return true;
+}
+
+void vtkSlicerRegistrationQualityLogic::associateImagesToPhase(
+	std::vector<vtkSmartPointer<DIRQAImage> >& images,
+	std::vector<vtkSmartPointer<DIRQAImage> >& warped,
+	std::vector<vtkMRMLSubjectHierarchyNode*>& phaseNodes,
+	std::string shNodeTag) {
+
+	if (!GetMRMLScene() || !RegistrationQualityNode) {
+		vtkErrorMacro("associateImagesToPhase: Invalid scene or parameter set node!");
+		return;
+	}
+
+	uint32_t imageIndex = 0;
+
+	// Associate warped images to corresponding phase-SH-nodes
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
+
+		// Find corresponding image-index
+		while(imageIndex < images.size()) {
+			if(images.at(imageIndex)->getIndex() != (*it)->getIndex()) {
+				imageIndex++;
+			} else {
+				break;
+			}
+		}
+		if(imageIndex >= images.size()) {
+			throw std::logic_error("Error: This cannot happen! I just checked it.");
+		}
+
+		// phaseNodes has same order (and size) as images
+		vtkMRMLSubjectHierarchyNode* currentWarpedImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
+			GetMRMLScene(), phaseNodes.at(imageIndex), NULL, shNodeTag.c_str(), NULL);
+		currentWarpedImage->SetAttribute("filename",(*it)->getFileName().c_str());
+		currentWarpedImage->SetAttribute("tag",(*it)->getTag().c_str());
+		currentWarpedImage->SetAttribute("DIRQAWarped",""); // TODO set for Vector, ... accordingly
+
+		char refIndex[21]; // enough for 64bit numbers + \0
+		sprintf(refIndex,"%d",(*it)->getFixedIndex());
+		const char* reference = phaseNodes.at(imageIndex)->GetAttribute("reference");
+
+// 		currentWarpedImage->SetAttribute("reference",refIndex); // set image attribute
+		if(reference) { // set phase attribute
+			if(atoi(reference) != (*it)->getFixedIndex()) {
+				throw std::runtime_error("Error: Inconsistent reference phase within phase.");
+			} else {
+				cout << "ref phase already set" << endl;
+			}
+		} else {
+			phaseNodes.at(imageIndex)->SetAttribute("reference",refIndex);
+			cout << "setting ref phase" << endl;
+		}
+		currentWarpedImage = currentWarpedImage!=NULL?NULL:currentWarpedImage;
+	}
+}
+
+void appendSHNodeToQItem(vtkMRMLSubjectHierarchyNode* node, QStandardItem* item) {
+	if(!item || !node) return;
+
+	for(int i=0; i<(node->GetNumberOfChildrenNodes()); ++i) {
+		vtkMRMLSubjectHierarchyNode* childNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node->GetNthChildNode(i));
+		if(!childNode) {
+			cout << "Error: SHNode is NULL!" << endl;
+			continue;
+		}
+		QStandardItem* newItem = new QStandardItem();
+		newItem->setText(childNode->GetNameWithoutPostfix().c_str());
+		newItem->setData(QVariant::fromValue(static_cast<void*>(childNode)));
+		appendSHNodeToQItem(childNode, newItem);
+		item->appendRow(newItem);
+	}
+}
+
+void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scene*/) {
+
+// 	TiXmlDocument doc("/home/brandtts/steeringfile.xml");
+	std::string xmlFileName = RegistrationQualityNode->GetXMLFileName();
+	if(xmlFileName == "") {
+		throw std::runtime_error("Please enter path to proper XML file!");
+	}
+
+	TiXmlDocument doc(xmlFileName.c_str());
+	if(!doc.LoadFile()) {
+		cout << "Fehler beim Laden" << endl;
+		throw std::runtime_error("Unable to read XML-File");
+	}/* else {
+		// 		dump(&doc);
+	}*/
+
+	vtkMRMLScene* scene = GetMRMLScene();
+
+	if (!scene || !RegistrationQualityNode) {
+		vtkErrorMacro("ReadRegistrationXML: Invalid scene or parameter set node!");
+		return;
+	}
+
+	// First accumulate all "images" etc. from file
+	std::vector<vtkSmartPointer<DIRQAImage> > images;
+	std::vector<vtkSmartPointer<DIRQAImage> > warped;
+	std::vector<vtkSmartPointer<DIRQAImage> > vector;
+
+	//Create SH-Node
+// 	qSlicerSubjectHierarchyDefaultPlugin* shDefaultPlugin = qSlicerSubjectHierarchyPluginHandler::instance()->defaultPlugin();
+// 	vtkMRMLSubjectHierarchyNode* regSHNode = shDefaultPlugin->createChildNode(NULL,"Registration");
+
+	// Maps strings ("image", ...) to enum-values (IMAGE, ...)
+	DIRQAImage::initHashMap();
+
+	TiXmlNode *child=doc.FirstChild("dirqafile"); //TODO check NULL
+	if(!child) {
+		cout << "XML-File has wrong format" << endl;
+		throw std::runtime_error("Unable to read XML-File");
+	}
+
+	child=child->FirstChild(/*"image"*/);
+	while(child!=0) {
+// 		cout << "--constructor--" << endl;
+		vtkSmartPointer<DIRQAImage> di = vtkSmartPointer<DIRQAImage>::New();
+		di->readFromXML(*child);
+		// 		di->load(Internal->VolumesLogic);
+// 		if(di->getImageType()==DIRQAImage::IMAGE) {
+// 			vtkMRMLSubjectHierarchyNode* phaseSHNode = shDefaultPlugin->createChildNode(regSHNode,di->getTag().c_str());
+// 			vtkMRMLSubjectHierarchyNode* imageSHNode = shDefaultPlugin->createChildNode(phaseSHNode,"Image");
+//
+// 		}
+		switch(di->getImageType()) {
+			case DIRQAImage::IMAGE:
+				images.push_back(di);
+				break;
+			case DIRQAImage::WARPED:
+				warped.push_back(di);
+				break;
+			case DIRQAImage::VECTOR:
+				vector.push_back(di);
+				break;
+			default:
+				cout << "Currently not supported!" << endl;
+				di->Delete();
+				break;
+		}
+
+
+		child=child->NextSibling(/*"image"*/);
+	}
+
+	// Report all "images" read from file
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = images.begin(); it!=images.end(); ++it) {
+		cout << "|" << **it << "|" << endl;
+	}
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
+		cout << "|" << **it << "|" << endl;
+	}
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = vector.begin(); it!=vector.end(); ++it) {
+		cout << "|" << **it << "|" << endl;
+	}
+
+	if(images.empty()) {
+		cout << "No images found in xml-file. Nothing to do.";
+		return;
+	}
+
+	{
+		// Check images for consistent indices
+		std::sort(images.begin(), images.end(), DIRQAImage::compareOnIndex);
+		int oldIndex=-1;
+		for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = images.begin(); it!=images.end(); ++it) {
+			int newIndex = (*it)->getIndex();
+			if(newIndex-oldIndex <= 0) {
+				cout << "Error: Image-indices must be unique and >=0." << endl;
+				return;
+			}
+			oldIndex = newIndex;
+		}
+		if( (uint32_t) (images.back()->getIndex() - images.front()->getIndex()) >= images.size()) {
+			cout << "Warning: Image-indices are not contigous." << endl;
+		} else {
+			cout << "Info: Image-indices are OK." << endl;
+		}
+	}
+
+	if(checkRegistrationIndices(images, warped)) {
+		cout << "Info: Warped-image-indices are OK." << endl;
+	} else {
+		return;
+	}
+
+	if(checkRegistrationIndices(images, vector)) {
+		cout << "Info: Vector-image-indices are OK." << endl;
+	} else {
+		return;
+	}
+
+	// Create main SubjectHierarchyNode
+	// Don't need SmartPointers here (Nodes are created within the scene)
+	vtkMRMLSubjectHierarchyNode* registrationSHNode = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
+		scene, NULL, vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_SUBJECT, "Registration", NULL);
+
+	// Set SubjectHierarchy "node type" (used for the NodeComboBox)
+	registrationSHNode->SetAttribute("DIRQARegistration","");
+
+	// Each image defines one phase. Phase name like image tag
+	std::vector<vtkMRMLSubjectHierarchyNode*> phaseNodes;
+	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = images.begin(); it!=images.end(); ++it) {
+		vtkMRMLSubjectHierarchyNode* currentPhase = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
+			scene, registrationSHNode, vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_STUDY,
+			(*it)->getTag().c_str(), NULL
+		);
+		phaseNodes.push_back(currentPhase);
+
+		vtkMRMLSubjectHierarchyNode* currentImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
+			scene, currentPhase, NULL, "Image", NULL);
+
+		// Set SubjectHierarchy "node types"
+		currentPhase->SetAttribute("DIRQAPhase","");
+		currentImage->SetAttribute("DIRQAImage","");
+
+		char index[21]; // enough for 64bit numbers + \0
+		sprintf(index,"%d",(*it)->getIndex());
+		currentPhase->SetAttribute("index",index);
+
+// 		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
+// 		currentImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
+		currentImage->SetAttribute("filename",(*it)->getFileName().c_str());
+		currentImage->SetAttribute("tag",(*it)->getTag().c_str());
+		currentImage = currentImage!=NULL?NULL:currentImage;
+	}
+
+	associateImagesToPhase(images, warped, phaseNodes, "Warped");
+	associateImagesToPhase(images, vector, phaseNodes, "Vector");
+
+	cout << "registrationSHNode->GetID() = " << registrationSHNode->GetID() << endl;
+	this->RegistrationQualityNode->SetAndObserveSubjectHierarchyNodeID(registrationSHNode->GetID());
+
+	subjectModel->clear();
+	QStandardItem* item = subjectModel->invisibleRootItem();
+	appendSHNodeToQItem(registrationSHNode, item);
+// 	subjectModel->appendRow(item);
+
+}
+
+QStandardItemModel* vtkSlicerRegistrationQualityLogic::getTreeViewModel() {
+	return subjectModel;
+}
 
 //--- Image Checks -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
@@ -785,12 +1219,8 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 		vtkErrorMacro("Invalid scene or parameter set node!");
 		throw std::runtime_error("Internal Error, see command line!");
 	}
-	
-	//TODO: Volumes go back to gray value - perhaps we should rembemer previous color settings?
-	if (!state) {
-		this->SetDefaultDisplay();
-		return;
-	}
+
+// 	ReadRegistrationXML(/*GetMRMLScene()*/);
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
@@ -952,7 +1382,6 @@ void vtkSlicerRegistrationQualityLogic::Movie() {
 		}
 	}
 }
-
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 	//   Calling checkerboardfilter cli. Logic has been copied and modified from CropVolumeLogic onApply.
@@ -1031,7 +1460,6 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 				this->RegistrationQualityNode->GetCheckerboardVolumeNodeID()));
 	this->SetForegroundImage(checkerboardVolume,referenceVolume,0);
 }
-
 //----------------------------------------------------------------------------
 vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::Jacobian(vtkMRMLVectorVolumeNode *vectorVolume,vtkMRMLAnnotationROINode *inputROI ) {
 

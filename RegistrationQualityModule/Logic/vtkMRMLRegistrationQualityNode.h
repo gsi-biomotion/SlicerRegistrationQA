@@ -71,6 +71,14 @@ public:
 	
 	vtkGetMacro(NumberOfScreenshots, int);
 	vtkSetMacro(NumberOfScreenshots, int);
+	vtkSetStringMacro(SubjectHierarchyNodeID);
+	vtkGetStringMacro(SubjectHierarchyNodeID);
+	void SetAndObserveSubjectHierarchyNodeID(const char* id);
+
+	vtkSetStringMacro(OutputModelNodeID);
+	vtkGetStringMacro(OutputModelNodeID);
+	void SetAndObserveOutputModelNodeID(const char* id);
+
 	// Movie parameters
 	vtkGetMacro(MovieBoxRedState, int);
 	vtkGetMacro(MovieBoxYellowState, int);
@@ -107,6 +115,15 @@ public:
 			MovieRun ^= 1<<2;
 			Modified();
 		}
+	}
+
+	virtual void SetXMLFileName(std::string file) {
+		xmlFileName = file;
+		Modified();
+	}
+
+	virtual std::string GetXMLFileName() {
+		return xmlFileName;
 	}
 
 	// Checkerboard parameters
@@ -171,12 +188,17 @@ protected:
 	char *FiducialNodeID;
 	char *InvFiducialNodeID;
 
+	char* OutputModelNodeID;
+	char* SubjectHierarchyNodeID;
+
 	int NumberOfScreenshots;
 	
 	int MovieBoxRedState;
 	int MovieBoxYellowState;
 	int MovieBoxGreenState;
 	int MovieRun;
+
+	std::string xmlFileName;
 
 	char* CheckerboardVolumeNodeID;
 	int CheckerboardPattern;

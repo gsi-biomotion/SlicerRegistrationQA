@@ -1,0 +1,5 @@
+Things to change before compiling:
+
+ - Place of the xml-file (in vtkSlicerRegistrationQualityLogic::ReadRegistrationXML in
+   RegistrationQualityModule/vtkSlicerRegistrationQualityLogic.cxx)
+ - Include folders and library paths in RegistrationQualityModule/Logic/CMakeLists.txt

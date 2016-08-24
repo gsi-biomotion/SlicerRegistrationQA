@@ -26,6 +26,10 @@ class vtkMRMLRegistrationQualityNode;
 // class vtkMRMLVectorVolumeNode;
 class vtkSlicerVolumesLogic;
 // class vtkSlicerTransformLogic;
+class DIRQAImage;
+class vtkMRMLSubjectHierarchyNode;
+class QStandardItemModel;
+class QModelIndex;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkSlicerRegistrationQualityLogic :
@@ -41,12 +45,24 @@ public:
 	 * Will either remake or account for scenario some other way
 	 */
 
+<<<<<<< HEAD
 	void SaveScreenshot(const char*);
 	void SaveOutputFile();
         void CalculateDIRQAFrom(int number, int state);
 	vtkMRMLScalarVolumeNode* AbsoluteDifference(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*, vtkMRMLAnnotationROINode* inputROI = NULL);
 	bool CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transofrm, double statisticValues[4],bool absoluteDifference=true);
 
+=======
+	bool checkRegistrationIndices(std::vector<vtkSmartPointer<DIRQAImage> >& images,
+								  std::vector<vtkSmartPointer<DIRQAImage> >& warped);
+	void associateImagesToPhase(std::vector<vtkSmartPointer<DIRQAImage> >& images,
+								std::vector<vtkSmartPointer<DIRQAImage> >& warped,
+								std::vector<vtkMRMLSubjectHierarchyNode*>& phaseNodes,
+								std::string shNodeTag);
+	void ReadRegistrationXML();
+	QStandardItemModel* getTreeViewModel();
+	void SquaredDifference(int state);
+>>>>>>> xml
 	void FalseColor(int state);
 	void Flicker(int opacity);
 	void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
@@ -57,12 +73,18 @@ public:
 	vtkMRMLScalarVolumeNode* InverseConsist(vtkMRMLVectorVolumeNode *vectorVolume1,vtkMRMLVectorVolumeNode *vectorVolume2,vtkMRMLAnnotationROINode *inputROI=NULL);
 	void SetDefaultDisplay();
 	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double statisticValues[4]);
+<<<<<<< HEAD
 	vtkMRMLGridTransformNode* CreateTransformFromVector(vtkMRMLVectorVolumeNode* vectorVolume);
 	vtkMRMLVectorVolumeNode* CreateVectorFromTransform(vtkMRMLTransformNode* transform);
 	
 	vtkMRMLScalarVolumeNode* GetWarpedFromMoving(vtkMRMLScalarVolumeNode *movingVolume, vtkMRMLTransformNode *transform);
 	
 
+=======
+	vtkMRMLSubjectHierarchyNode* getPhaseByIndex(int index);
+	bool loadFromSHNode(vtkMRMLSubjectHierarchyNode* sHNode);
+	void showNode(QModelIndex* index);
+>>>>>>> xml
 
 public:
 	void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);
@@ -92,6 +114,8 @@ protected:
 	/// Parameter set MRML node
 	vtkMRMLRegistrationQualityNode* RegistrationQualityNode;
 	
+
+	QStandardItemModel* subjectModel;
 
 private:
 	vtkSlicerRegistrationQualityLogic(const vtkSlicerRegistrationQualityLogic&);// Not implemented
