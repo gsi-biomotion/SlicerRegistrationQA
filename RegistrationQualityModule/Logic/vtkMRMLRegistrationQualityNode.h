@@ -184,9 +184,9 @@ protected:
 	char* ReferenceVolumeNodeID;
 	char* WarpedVolumeNodeID;
 	char* OutputDirectory;
-	char *ROINodeID;
-	char *FiducialNodeID;
-	char *InvFiducialNodeID;
+	char* ROINodeID;
+	char* FiducialNodeID;
+	char* InvFiducialNodeID;
 
 	char* OutputModelNodeID;
 	char* SubjectHierarchyNodeID;

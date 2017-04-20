@@ -694,7 +694,20 @@ void qSlicerRegistrationQualityModuleWidget::subjectHierarchyChanged(vtkMRMLNode
 	pNode->SetAndObserveSubjectHierarchyNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();
 }
+//-----------------------------------------------------------------------------
+void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* node) {
+        Q_D(qSlicerRegistrationQualityModuleWidget);
 
+        //TODO: Move into updatefrommrml?
+        vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+        if (!pNode || !this->mrmlScene() || !node) {
+                return;
+        }
+
+        pNode->DisableModifiedEventOn();
+        pNode->SetAndObserveOutputModelNodeID(node->GetID());
+        pNode->DisableModifiedEventOff();
+}
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::outputDirectoyChanged() {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
@@ -788,7 +801,7 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(contextMenu, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuClicked(QAction*)));
 
 	// Make the ComboBox only show "Registration" nodes.
-	d->InputSubjectComboBox->addAttribute("vtkMRMLSubjectHierarchyNode","DIRQARegistration");
+// 	d->InputSubjectComboBox->addAttribute("vtkMRMLSubjectHierarchyNode","*");
 	connect(d->InputSubjectComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(subjectHierarchyChanged(vtkMRMLNode*)));
 
 

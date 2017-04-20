@@ -841,15 +841,9 @@ bool vtkSlicerRegistrationQualityLogic::loadFromSHNode(vtkMRMLSubjectHierarchyNo
 			return false;
 		}
 	}
-	//TODO: Volumes go back to gray value - perhaps we should rembemer previous color settings?
-	if (!state) {
-		this->SetDefaultDisplay();
-		return;
-	}
-
 	return true;
 }
-
+	
 void vtkSlicerRegistrationQualityLogic::showNode(QModelIndex* index) {
 
 	if(!index->isValid()) {
@@ -1164,7 +1158,7 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 	// Create main SubjectHierarchyNode
 	// Don't need SmartPointers here (Nodes are created within the scene)
 	vtkMRMLSubjectHierarchyNode* registrationSHNode = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
-		scene, NULL, vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_SUBJECT, "Registration", NULL);
+		scene, NULL, "Subject", "Registration", NULL);
 
 	// Set SubjectHierarchy "node type" (used for the NodeComboBox)
 	registrationSHNode->SetAttribute("DIRQARegistration","");
@@ -1173,7 +1167,7 @@ void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scen
 	std::vector<vtkMRMLSubjectHierarchyNode*> phaseNodes;
 	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = images.begin(); it!=images.end(); ++it) {
 		vtkMRMLSubjectHierarchyNode* currentPhase = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
-			scene, registrationSHNode, vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_STUDY,
+			scene, registrationSHNode, "Study",
 			(*it)->getTag().c_str(), NULL
 		);
 		phaseNodes.push_back(currentPhase);
@@ -1233,6 +1227,12 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 	if (!referenceVolume || !warpedVolume) {
 		throw std::runtime_error("Reference or warped volume not set!");
 	}
+	
+	//TODO: Volumes go back to gray value - perhaps we should rembemer previous color settings?
+        if (!state) {
+                this->SetDefaultDisplay();
+                return;
+        }
 	
 	vtkMRMLScalarVolumeDisplayNode *referenceVolumeDisplayNode = referenceVolume->GetScalarVolumeDisplayNode();
 	vtkMRMLScalarVolumeDisplayNode *warpedVolumeDisplayNode = warpedVolume->GetScalarVolumeDisplayNode();

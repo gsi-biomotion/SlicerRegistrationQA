@@ -389,6 +389,17 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveInvFiducialNodeID(const char* 
 	}
 }
 //----------------------------------------------------------------------------
+void vtkMRMLRegistrationQualityNode::SetAndObserveOutputModelNodeID(const char* id) {
+        if (this->OutputModelNodeID) {
+                this->Scene->RemoveReferencedNodeID(this->OutputModelNodeID, this);
+        }
+        this->SetOutputModelNodeID(id);
+
+        if (id) {
+                this->Scene->AddReferencedNodeID(this->OutputModelNodeID, this);
+        }
+}
+//----------------------------------------------------------------------------
 vtkMRMLColorTableNode* vtkMRMLRegistrationQualityNode::GetColorTableNode()
 {
   return vtkMRMLColorTableNode::SafeDownCast( this->GetNodeReference(COLOR_TABLE_REFERENCE_ROLE) );

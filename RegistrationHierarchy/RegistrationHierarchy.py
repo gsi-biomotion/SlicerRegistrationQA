@@ -115,7 +115,7 @@ class RegistrationHierarchyWidget:
     # Select Subject Hierarchy
     #
     self.regHierarchyComboBox = slicer.qMRMLSubjectHierarchyTreeView()
-    #self.regHierarchyComboBox.nodeTypes = ( ("vtkMRMLSubjectHierarchyNode"),"" )
+    #self.regHierarchyComboBox.nodeTypes = ( ("vtkMRMLSubjectHierarchyNode"),"" )vtkMRMLSubjectHierarchyNode
     #self.regHierarchyComboBox.addAttribute( "vtkMRMLScalarVolumeNode", "Name", "Registration Node" )
     #self.regHierarchyComboBox.selectNodeUponCreation = True
     #self.regHierarchyComboBox.addEnabled = False
@@ -604,8 +604,8 @@ class RegistrationHierarchyLogic:
          self.setVectorField(invVectorNode, resampleTRiP)
          
       #Set origins manually to zero! Due to trip
-      vectorNode.SetOrigin([0,0,0])
-      invVectorNode.SetOrigin([0,0,0])
+      #vectorNode.SetOrigin([0,0,0])
+      #invVectorNode.SetOrigin([0,0,0])
       
 
       #Resample for computation friendly
@@ -1509,6 +1509,9 @@ class RegistrationHierarchyLogic:
      name = regHierarchy.GetAttribute('PatientName') + "_roi"
      filePath = regHierarchy.GetAttribute(NAME_ROIFILEPATH)
      nodeID = annotationLogic.LoadAnnotation(filePath, name, 3)
+     if not nodeID:
+        print "Can't load " + filePath + " as ROI."
+        return None
      node = slicer.util.getNode(nodeID)
      if node:
         print "Loaded ROI from " + filePath

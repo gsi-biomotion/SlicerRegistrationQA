@@ -48,6 +48,7 @@ protected slots:
 	void invVectorVolumeChanged(vtkMRMLNode*);
 	void referenceVolumeChanged(vtkMRMLNode*);
 	void warpedVolumeChanged(vtkMRMLNode*);
+        void outputModelChanged(vtkMRMLNode*);
 	void outputDirectoyChanged();
 	void ROIChanged(vtkMRMLNode*);
 	void fiducialChanged(vtkMRMLNode*);

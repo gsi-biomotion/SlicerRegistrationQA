@@ -302,9 +302,11 @@ class ReadRegistrationNodeWidget:
       return 
     
     #self.pathCT.text = '/u/kanderle/AIXd/Data/FC/' + patientName + '/'
+    #self.pathCT.text = '/u/kanderle/AIXd/Data/ZIM/20161114/'
+    self.pathCT.text = '/u/kanderle/AIXd/Data/ZIM/MotionPhantom/4DMotionPhantom/4DCTs/1/'
     #self.pathCT.text = '/u/motion/AIXd/Data/PatientData/CNAO/Dataset/' + patientName + '/'
     #self.pathCT.text = '/u/motion/Data/PatientData/HIT/' + patientName + '/25062014/'
-    self.pathCT.text = '/u/motion/Data/PatientData/PIGS/' + patientName + '/'
+    #self.pathCT.text = '/u/motion/Data/PatientData/PIGS/' + patientName + '/'
 
   
   def checkCheckboxes(self):	  
@@ -417,15 +419,15 @@ class ReadRegistrationNodeLogic:
     #From Contrast Registration
     
     
-    ##ctDirectoryNative = patientDirectory + '4DCT_1/NRRD/'
-    ##ctDirectoryContrast = patientDirectory + '4DCT_2/NRRD/'
+    ctDirectoryNative = patientDirectory + 'CTX/'
+    #ctDirectoryContrast = patientDirectory + '4DCT_2/NRRD/'
     #ctDirectoryNative = patientDirectory + 'CTX1/'
     #ctDirectoryContrast = patientDirectory + 'CTXM/'
     #ctDirectoryContrast = '/u/motion/AIXd/Data/PatientData/FC/' + patientName +'/4D/Phases/Plan/'
     #ctDirectoryNative = patientDirectory + '4DCT_1/CTX/'
     #ctDirectoryContrast = patientDirectory  + '4DCT_2/CTX/'
-    ctDirectoryNative = patientDirectory + 'native/CTX/'
-    ctDirectoryContrast = patientDirectory  + 'contrast/CTX/'
+    #ctDirectoryNative = patientDirectory + 'native/CTX/'
+    #ctDirectoryContrast = patientDirectory  + 'contrast/CTX/'
     
     
     if fromContrast:
@@ -505,7 +507,7 @@ class ReadRegistrationNodeLogic:
         #First create registration node
         #vectorDirectory = patientDirectory + '4DCT_1/Registration/4D/'
         #vectorDirectory = patientDirectory + 'native/Registration/4D/'
-        #vectorDirectory = patientDirectory + 'Registration/4D1/'
+        vectorDirectory = patientDirectory + 'Registration/4D/'
         #vectorDirectory = '/u/kanderle/MHA/'
         warpDirectory = vectorDirectory
         

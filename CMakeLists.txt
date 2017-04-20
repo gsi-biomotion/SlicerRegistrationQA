@@ -16,10 +16,14 @@ find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
 
 #-----------------------------------------------------------------------------
+include_directories(tinyxml)
+add_subdirectory(tinyxml)
+
 add_subdirectory(RegistrationQualityModule)
 add_subdirectory(AbsoluteDifference)
 add_subdirectory(JacobianFilter)
 add_subdirectory(InverseConsistency)
+add_subdirectory(AddVectorFields)
 
 #-----------------------------------------------------------------------------
 include(${Slicer_EXTENSION_CPACK})

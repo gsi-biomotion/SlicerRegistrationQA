@@ -41,6 +41,8 @@ set(MODULE_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleLogic
   vtkSlicer${MODULE_NAME}ModuleWidgets
   vtkSlicerVolumesModuleLogic
+  vtkSlicerSubjectHierarchyModuleLogic
+   qSlicerSubjectHierarchyModuleWidgets
   )
 
 set(MODULE_RESOURCES
