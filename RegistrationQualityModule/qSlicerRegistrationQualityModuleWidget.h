@@ -38,67 +38,59 @@ public slots:
 
 protected slots:
 	void onLogicModified();
+        void updateButtonsAndTable();
 
 	// new
 
-// 	void treeViewContextMenu(QPoint const&);
-// 	void contextMenuClicked(QAction*);
-// 	void loadPhaseClicked(bool);
+	void fixedVolumeChanged(vtkMRMLNode*);
+        void movingVolumeChanged(vtkMRMLNode*);
+        void forwardWarpedVolumeChanged(vtkMRMLNode*);
+        void backwardWarpedVolumeChanged(vtkMRMLNode*);
 
-	// end new
-        void referenceVolumeChanged(vtkMRMLNode*);
-        void warpedVolumeChanged(vtkMRMLNode*);
-
-	void vectorVolumeChanged(vtkMRMLNode*);
-	void invVectorVolumeChanged(vtkMRMLNode*);
-	
+        void vectorVolumeChanged(vtkMRMLNode*);
+        void invVectorVolumeChanged(vtkMRMLNode*);
+        
         void outputModelChanged(vtkMRMLNode*);
-	void outputDirectoyChanged();
-	void ROIChanged(vtkMRMLNode*);
-	void fiducialChanged(vtkMRMLNode*);
-	void invFiducialChanged(vtkMRMLNode*);
+        void outputDirectoyChanged();
+        void ROIChanged(vtkMRMLNode*);
+        void fixedFiducialChanged(vtkMRMLNode*);
+        void movingFiducialChanged(vtkMRMLNode*);
+        
+        void FixedSegmentIDChanged(QString);
+        void MovingSegmentIDChanged(QString);
+        void fixedSegmentationNodeChanged(vtkMRMLNode*);
+        void movingSegmentationNodeChanged(vtkMRMLNode*);
+        
+        void movieBoxRedStateChanged(int state);
+        void movieBoxYellowStateChanged(int state);
+        void movieBoxGreenStateChanged(int state);
+        void ROIaroundSegmentClicked();
+        void RegistrationDirectionChanged(int state);
+        void saveScreenshotClicked();
+        void saveOutputFileClicked();
 
-	void movieBoxRedStateChanged(int state);
-	void movieBoxYellowStateChanged(int state);
-	void movieBoxGreenStateChanged(int state);
+        // Image Checks
+        void absoluteDiffClicked();
+        void fiducialClicked();
+        void falseColorClicked();
+        void checkerboardClicked();
+        void movieToggle();
+        void flickerToggle();
+        void flickerToggle1();
 
-// 	void checkerboardVolumeChanged(vtkMRMLNode*);
-// 	void absoluteDiffVolumeChanged(vtkMRMLNode*);
-	
-	void saveScreenshotClicked();
-	void saveOutputFileClicked();
-
-	// Image Checks
-	void absoluteDiffClicked();
-	void fiducialClicked();
-	void falseColorClicked();
-	void checkerboardClicked();
-	void movieToggle();
-	void flickerToggle();
-	void flickerToggle1();
-
-	// Vector checks
-	void jacobianClicked();
-	void inverseConsistClicked();
-	
-	// Parameters
-	void setCheckerboardPattern(int);
-	void setScalarBar2DVisibility(bool);
-// 	void xmlFileNameEdited();
-// 	void loadXMLClicked();
-// 	void subjectHierarchyChanged(vtkMRMLNode*);
+        // Vector checks
+        void jacobianClicked();
+        void inverseConsistClicked();
+        
+        // Contour checks
+        void contourButtonClicked();
+        
+        // Parameters
+        void setCheckerboardPattern(int);
 
 protected:
 	QScopedPointer<qSlicerRegistrationQualityModuleWidgetPrivate> d_ptr;
 	QTimer *flickerTimer;
-	QString *lookupTableName;
-
-	// new
-
-// 	QMenu* contextMenu;
-// 	QAction* contextMenuShowAction;
-
-	// end new
 
 	virtual void setup();
 	void onEnter();

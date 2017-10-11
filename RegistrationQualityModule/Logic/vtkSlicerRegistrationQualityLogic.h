@@ -18,6 +18,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 #include <vtkMatrix4x4.h>
+#include <vtkSegment.h>
 
 
 #include "vtkSlicerRegistrationQualityModuleLogicExport.h"
@@ -25,18 +26,14 @@
 class vtkMRMLRegistrationQualityNode;
 class vtkMRMLVectorVolumeNode;
 class vtkMRMLVolumeNode;
-// class vtkSlicerTransformLogic;
+class vtkMRMLTableNode;
 class vtkMRMLTransformNode;
 class vtkMRMLGridTransformNode;
 class vtkMRMLScalarVolumeNode;
 class vtkMRMLAnnotationROINode;
 class vtkMRMLMarkupsFiducialNode;
-// class DIRQAImage;
-class vtkMRMLSubjectHierarchyNode;
 class vtkMRMLSliceCompositeNode;
-class QStandardItemModel;
 class vtkMRMLSegmentationNode;
-// class QModelIndex;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkSlicerRegistrationQualityLogic :
@@ -48,45 +45,86 @@ public:
 	vtkTypeMacro(vtkSlicerRegistrationQualityLogic, vtkSlicerModuleLogic);
 	void PrintSelf(ostream& os, vtkIndent indent);
 
-	/**
-	 * Issue when input data is changed without modifying node
-	 * Will either remake or account for scenario some other way
-	 */
-
 	void SaveScreenshot(const char*);
 	void SaveOutputFile();
         void CalculateDIRQAFrom(int number);
-	vtkMRMLScalarVolumeNode* AbsoluteDifference(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*, vtkMRMLAnnotationROINode* inputROI = NULL);
-	bool CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transofrm, double *statisticValues);
-        bool CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLVectorVolumeNode *vectorNode, double *statisticValues);
-// 	bool checkRegistrationIndices(std::vector<vtkSmartPointer<DIRQAImage> >& images,
-// 								  std::vector<vtkSmartPointer<DIRQAImage> >& warped);
-// 	void associateImagesToPhase(std::vector<vtkSmartPointer<DIRQAImage> >& images,
-// 								std::vector<vtkSmartPointer<DIRQAImage> >& warped,
-// 								std::vector<vtkMRMLSubjectHierarchyNode*>& phaseNodes,
-// 								std::string shNodeTag);
-// 	void ReadRegistrationXML();
-	void FalseColor(int state);
+	
+        void CalculateContourStatistic();
+	
+	void FalseColor(bool falseColor);
 	void Flicker(int opacity);
-	void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
+	
 	void Movie();
 	void Checkerboard();
-	void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
-	vtkMRMLScalarVolumeNode* Jacobian(vtkMRMLVectorVolumeNode *vectorVolume,vtkMRMLAnnotationROINode *inputROI = NULL);
-	vtkMRMLScalarVolumeNode* InverseConsist(vtkMRMLVectorVolumeNode *vectorVolume1,vtkMRMLVectorVolumeNode *vectorVolume2,vtkMRMLAnnotationROINode *inputROI=NULL);
-	void SetDefaultDisplay();
-	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double statisticValues[4]);
+        
+        /** Calculates distance between reference and moving fiducials before and after transofrm.
+         *  Transform can be either be a vtkMRMLTransformNode or vtkMRMLVolumeNode. The difference
+         *  in distance is writen is statisticValues, with the 2N entries, where N = number of markups.
+         *  Even entries are before and odd after registration, respectively.
+         */
+        bool CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transofrm, double *statisticValues);
+        bool CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLVectorVolumeNode *vectorNode, double *statisticValues);
+
+        /** Takes two scalar volumes and calls a CLI-module to calculate mean square error 
+         *  between them either on the whole volume or on the ROI, if specified.
+         */
+        vtkMRMLScalarVolumeNode* AbsoluteDifference(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*, vtkMRMLAnnotationROINode* inputROI = NULL);
+        
+        /** Takes vector field and calls a CLI-module to calculate jacobian determinant 
+         *  either on the whole vector volume or on the ROI, if specified.
+         */
+	vtkMRMLScalarVolumeNode* Jacobian(vtkMRMLVectorVolumeNode *vectorVolume,
+                                          vtkMRMLAnnotationROINode *inputROI = NULL);
+        
+        /** Takes two vector fields and calls a CLI-module to calculate inverse
+         *  consistency between them. The calculation is done either on the 
+         *  whole vector volume or on the ROI, if specified.
+         *  If tableNode is given, basic statistic values are writen into it.
+         */
+	vtkMRMLScalarVolumeNode* InverseConsist(vtkMRMLVectorVolumeNode *vectorVolume1,
+                                                vtkMRMLVectorVolumeNode *vectorVolume2,
+                                                vtkMRMLAnnotationROINode *inputROI=NULL);
+	/** Set the background to fixed image, forground to warped image with opacity 0.5
+         */
+        void SetDefaultDisplay();
+        
+	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double* statisticValues);
         vtkMRMLVolumeNode* LoadVolumeFromFile( std::string filePath, std::string volumeName);
 
-	vtkMRMLGridTransformNode* CreateTransformFromVector(vtkMRMLVectorVolumeNode* vectorVolume);
+	/** Change transform into vector volume
+         */
+        vtkMRMLGridTransformNode* CreateTransformFromVector(vtkMRMLVectorVolumeNode* vectorVolume);
+        
+        /** Change vector volume into transform
+         */
 	vtkMRMLVectorVolumeNode* CreateVectorFromTransform(vtkMRMLTransformNode* transform);
-	
+        
+	/** Create new warped volume from moving volume by applying transformation on it
+         */
 	vtkMRMLScalarVolumeNode* GetWarpedFromMoving(vtkMRMLScalarVolumeNode *movingVolume, vtkMRMLTransformNode *transform);
-        vtkMRMLAnnotationROINode* CreateROIAroundSegment(vtkMRMLSegmentationNode* segmentationNode,std::string segmentStringID);
+        
+        /** Helper function to load from registration parameters node
+         */
+        void CreateROI();
+        
+        /** Create ROI around segment. If there's only one segment, ROI will be created only around it.
+         */
+        vtkMRMLAnnotationROINode* CreateROIAroundSegments(vtkMRMLSegmentationNode* segmentation1Node,const char* segment1StringID,
+                                                           vtkMRMLSegmentationNode* segmentation2Node,const char* segment2StringID);
 	
-// 	vtkMRMLSubjectHierarchyNode* getPhaseByIndex(int index);
-// 	bool loadFromSHNode(vtkMRMLSubjectHierarchyNode* sHNode);
-// 	void showNode(QModelIndex* index);
+	/** Create default table node, used in jacobian, absdiff, fiducials
+         *  and inverse consistency
+         */
+        vtkMRMLTableNode* CreateDefaultRegQATable();
+        
+        /** Update table with all the node names
+         */
+        void UpdateRegQATable();
+        
+        /** Change in which direction (forward or backward) should
+         *  the QA be performed.
+         */
+        void ChangeRegistrationDirectionToBackward(bool backward);
 
 
 public:
@@ -107,21 +145,21 @@ protected:
 	virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node);
 	virtual void OnMRMLSceneEndImport();
 	virtual void OnMRMLSceneEndClose();
+        
 	void InvertXandY(vtkImageData* imageData);
+        bool GetRadiusAndCenter(vtkSegment* segment, double radius[3], double center[3]);
+        void UpdateTableWithStatisticalValues(double* statisticValues, int row);
+        void UpdateTableWithFiducialValues(vtkMRMLMarkupsFiducialNode* fiducial, double* statisticValues);
+        void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
+        void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
 
 protected:
-	vtkSmartPointer<vtkImageData> TransformField;
 	/// Parameter set MRML node
 	vtkMRMLRegistrationQualityNode* RegistrationQualityNode;
-	
-
-	QStandardItemModel* subjectModel;
 
 private:
 	vtkSlicerRegistrationQualityLogic(const vtkSlicerRegistrationQualityLogic&);// Not implemented
 	void operator=(const vtkSlicerRegistrationQualityLogic&);// Not implemented
-	class vtkInternal;
-	vtkInternal* Internal;
 };
 
 #endif

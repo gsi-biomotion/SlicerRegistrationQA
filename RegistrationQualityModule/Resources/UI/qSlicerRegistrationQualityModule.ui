@@ -16,12 +16,6 @@
     <height>1415</height>
    </rect>
   </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
   <property name="font">
    <font>
     <weight>50</weight>
@@ -40,12 +34,6 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="ctkCollapsibleButton" name="ParameterSetCollapsibleButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
      <property name="text">
       <string>Parameter Set</string>
      </property>
@@ -54,12 +42,6 @@
        <widget class="qMRMLNodeComboBox" name="ParameterComboBox">
         <property name="enabled">
          <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
         </property>
         <property name="nodeTypes">
          <stringlist>
@@ -79,19 +61,13 @@
    </item>
    <item>
     <widget class="ctkCollapsibleButton" name="IO">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
      <property name="cursor">
       <cursorShape>ArrowCursor</cursorShape>
      </property>
      <property name="text">
       <string>IO</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+     <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0,0,0">
       <property name="topMargin">
        <number>9</number>
       </property>
@@ -101,110 +77,58 @@
       <item>
        <widget class="QFrame" name="inputFrame">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
         </property>
-        <layout class="QFormLayout" name="classicLayout">
-         <property name="fieldGrowthPolicy">
-          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-         </property>
-         <item row="0" column="0" colspan="2">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>100</height>
+         </size>
+        </property>
+        <layout class="QVBoxLayout" name="classicLayout">
+         <item>
           <widget class="qMRMLSubjectHierarchyTreeView" name="SubjectHierarchyTreeView">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+           <property name="dragDropMode">
+            <enum>QAbstractItemView::InternalMove</enum>
            </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+           <property name="indentation">
+            <number>12</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="inputSecondFrame">
+           <layout class="QGridLayout" name="inpudSecondIOGrid">
+            <item row="0" column="0">
+             <widget class="QPushButton" name="ROIaroundSegmentButton">
+              <property name="text">
+               <string>Create ROI around segments</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="BackwardCheckBox">
+              <property name="toolTip">
+               <string>Check if you want to inspect backward registration.</string>
+              </property>
+              <property name="text">
+               <string>Backward Registration</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
        </widget>
       </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_2">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Output</string>
-        </property>
-        <layout class="QFormLayout" name="formLayout_4">
-         <property name="fieldGrowthPolicy">
-          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-         </property>
-         <item row="0" column="0">
-          <widget class="QPushButton" name="SaveScreenshotPushButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>Save the current screenshot for output file.</string>
-           </property>
-           <property name="text">
-            <string>Save Screenshot</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QPushButton" name="SaveOutputFilePushButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip">
-            <string>Saves the output.</string>
-           </property>
-           <property name="text">
-            <string>Save Output File</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="ctkCollapsibleButton" name="Measures">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>25000</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Options for visualization of deformation field and images&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
+   </layout>
+   </widget>
+</item>
+<item>
+   <widget class="ctkCollapsibleButton" name="Measures">
      <property name="text">
       <string>Measures</string>
      </property>
@@ -233,8 +157,11 @@
          </item>
          <item row="0" column="1">
           <widget class="QCheckBox" name="ColorCheckBox">
+           <property name="toolTip">
+            <string>Display overlay with volumes in contrast colors</string>
+           </property>
            <property name="text">
-            <string>Inverted Colors</string>
+            <string>Contrast Colors</string>
            </property>
           </widget>
          </item>
@@ -472,6 +399,13 @@
            </property>
           </widget>
          </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="contourButton">
+           <property name="text">
+            <string>Contour Measures</string>
+           </property>
+          </widget>
+         </item>
          <item row="1" column="0">
           <widget class="QPushButton" name="jacobianButton">
            <property name="text">
@@ -479,7 +413,7 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="1" column="1">
           <widget class="QPushButton" name="consistencyButton">
            <property name="text">
             <string>Inverse Consistency</string>
@@ -491,42 +425,72 @@
       </item>
      </layout>
     </widget>
-   </item>
-   <item>
-    <widget class="qMRMLTableView" name="MRMLTableView">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::MinimumExpanding</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>10</width>
-       <height>10</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item>
+</item>
+<item>
+   <widget class="ctkCollapsibleButton" name="ctkTable">
+      <property name="text">
+         <string>Table</string>
+      </property>
+      <property name="autoRepeatInterval">
+         <number>100</number>
+      </property>
+      <layout class="QVBoxLayout" name="gridLayout_Table">
+      <item>
+       <widget class="qMRMLTableView" name="MRMLTableView">
+        <property name="sizePolicy">
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>100</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="SaveScreenshotPushButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="visible">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Save the current screenshot for output file.</string>
+        </property>
+        <property name="text">
+         <string>Save Screenshot</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="SaveOutputFilePushButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="visible">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Saves the output.</string>
+        </property>
+        <property name="text">
+         <string>Save Output File</string>
+        </property>
+       </widget>
+      </item>
+   </layout>
+   </widget>
+</item>
+<item>
     <widget class="Line" name="line">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
-   </item>
-  </layout>
- </widget>
+</item>
+</layout>
+</widget>
  <customwidgets>
   <customwidget>
    <class>qMRMLNodeComboBox</class>
