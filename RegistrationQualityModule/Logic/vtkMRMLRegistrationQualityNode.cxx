@@ -21,13 +21,13 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->VectorVolumeNodeID = NULL;
 	this->InvVectorVolumeNodeID = NULL;
 	this->TransformNodeID = NULL;
-	this->InvTransformNodeID = NULL;
-	this->ReferenceVolumeNodeID = NULL;
+	this->MovingTransformNodeID = NULL;
+	this->FixedVolumeNodeID = NULL;
 	this->WarpedVolumeNodeID = NULL;
 	this->OutputDirectory = NULL;
 	this->ROINodeID = NULL;
-	this->FiducialNodeID = NULL;
-	this->InvFiducialNodeID = NULL;
+	this->FixedFiducialNodeID = NULL;
+	this->MovingFiducialNodeID = NULL;
 	this->OutputModelNodeID = NULL;
 	this->SubjectHierarchyNodeID = NULL;
 
@@ -63,13 +63,13 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetVectorVolumeNodeID(NULL);
 	this->SetInvVectorVolumeNodeID(NULL);
 	this->SetTransformNodeID(NULL);
-	this->SetInvTransformNodeID(NULL);
-	this->SetReferenceVolumeNodeID(NULL);
+	this->SetMovingTransformNodeID(NULL);
+	this->SetFixedVolumeNodeID(NULL);
 	this->SetWarpedVolumeNodeID(NULL);
 	this->SetOutputDirectory(NULL);
 	this->SetROINodeID(NULL);
-	this->SetFiducialNodeID(NULL);
-	this->SetInvFiducialNodeID(NULL);
+	this->SetFixedFiducialNodeID(NULL);
+	this->SetMovingFiducialNodeID(NULL);
 	this->SetSubjectHierarchyNodeID(NULL);
 	this->SetOutputModelNodeID(NULL);
 	this->SetCheckerboardVolumeNodeID(NULL);
@@ -100,12 +100,12 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 			this->SetTransformNodeID(attValue);
 			continue;
 		}
-		if (!strcmp(attName, "InvTransformNodeID")) {
-			this->SetInvTransformNodeID(attValue);
+		if (!strcmp(attName, "MovingTransformNodeID")) {
+			this->SetMovingTransformNodeID(attValue);
 			continue;
 		}
-		if (!strcmp(attName, "ReferenceVolumeNodeID")) {
-			this->SetReferenceVolumeNodeID(attValue);
+		if (!strcmp(attName, "FixedVolumeNodeID")) {
+			this->SetFixedVolumeNodeID(attValue);
 			continue;
 		}
 		if (!strcmp(attName, "WarpedVolumeNodeID")) {
@@ -120,12 +120,12 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 			this->SetROINodeID(attValue);
 			continue;
 		}
-		if (!strcmp(attName, "FiducialNodeID")) {
-			this->SetFiducialNodeID(attValue);
+		if (!strcmp(attName, "FixedFiducialNodeID")) {
+			this->SetFixedFiducialNodeID(attValue);
 			continue;
 		}
-		if (!strcmp(attName, "InvFiducialNodeID")) {
-			this->SetInvFiducialNodeID(attValue);
+		if (!strcmp(attName, "MovingFiducialNodeID")) {
+			this->SetMovingFiducialNodeID(attValue);
                         continue;
                 }
 		if (!strcmp(attName, "SubjectHierarchyNodeID")) {
@@ -188,20 +188,20 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 			<< (this->InvVectorVolumeNodeID ? this->InvVectorVolumeNodeID : "NULL") << "\"";
 	of << indent << " TransformNodeID=\""
 			<< (this->TransformNodeID ? this->TransformNodeID : "NULL") << "\"";
-	of << indent << " InvTransformNodeID=\""
-			<< (this->InvTransformNodeID ? this->InvTransformNodeID : "NULL") << "\"";
-	of << indent << " ReferenceVolumeNodeID=\""
-			<< (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\"";
+	of << indent << " MovingTransformNodeID=\""
+			<< (this->MovingTransformNodeID ? this->MovingTransformNodeID : "NULL") << "\"";
+	of << indent << " FixedVolumeNodeID=\""
+			<< (this->FixedVolumeNodeID ? this->FixedVolumeNodeID : "NULL") << "\"";
 	of << indent << " WarpedVolumeNodeID=\""
 			<< (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\"";
 	of << indent << " OutputDirectory=\""
 			<< (this->OutputDirectory ? this->OutputDirectory : "NULL") << "\"";
 	of << indent << " ROINodeID=\""
 			<< (this->ROINodeID ? this->ROINodeID : "NULL") << "\"";
-	of << indent << " FiducialNodeID=\""
-			<< (this->FiducialNodeID ? this->FiducialNodeID : "NULL") << "\"";
-	of << indent << " InvFiducialNodeID=\""
-			<< (this->InvFiducialNodeID ? this->InvFiducialNodeID : "NULL") << "\"";
+	of << indent << " FixedFiducialNodeID=\""
+			<< (this->FixedFiducialNodeID ? this->FixedFiducialNodeID : "NULL") << "\"";
+	of << indent << " MovingFiducialNodeID=\""
+			<< (this->MovingFiducialNodeID ? this->MovingFiducialNodeID : "NULL") << "\"";
 	of << indent << " SubjectHierarchyNodeID=\""
 			<< (this->SubjectHierarchyNodeID ? this->SubjectHierarchyNodeID : "NULL") << "\"";
 	of << indent << " OutputModelNodeID=\""
@@ -232,13 +232,13 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 	this->SetVectorVolumeNodeID(node->GetVectorVolumeNodeID());
 	this->SetInvVectorVolumeNodeID(node->GetInvVectorVolumeNodeID());
 	this->SetTransformNodeID(node->GetTransformNodeID());
-	this->SetInvTransformNodeID(node->GetInvTransformNodeID());
-	this->SetReferenceVolumeNodeID(node->GetReferenceVolumeNodeID());
+	this->SetMovingTransformNodeID(node->GetMovingTransformNodeID());
+	this->SetFixedVolumeNodeID(node->GetFixedVolumeNodeID());
 	this->SetWarpedVolumeNodeID(node->GetWarpedVolumeNodeID());
 	this->SetOutputDirectory(node->GetOutputDirectory());
 	this->SetROINodeID(node->GetROINodeID());
-	this->SetFiducialNodeID(node->GetFiducialNodeID());
-	this->SetInvFiducialNodeID(node->GetInvFiducialNodeID());
+	this->SetFixedFiducialNodeID(node->GetFixedFiducialNodeID());
+	this->SetMovingFiducialNodeID(node->GetMovingFiducialNodeID());
 	this->SetSubjectHierarchyNodeID(node->GetSubjectHierarchyNodeID());
 	this->SetOutputModelNodeID(node->GetOutputModelNodeID());
 
@@ -267,8 +267,8 @@ void vtkMRMLRegistrationQualityNode::UpdateReferenceID(const char *oldID, const 
 	if (this->TransformNodeID && !strcmp(oldID, this->TransformNodeID)) {
 		this->SetAndObserveTransformNodeID(newID);
 	}
-	if (this->InvTransformNodeID && !strcmp(oldID, this->InvTransformNodeID)) {
-		this->SetAndObserveInvTransformNodeID(newID);
+	if (this->MovingTransformNodeID && !strcmp(oldID, this->MovingTransformNodeID)) {
+		this->SetAndObserveMovingTransformNodeID(newID);
 	}
 
 	if (this->OutputDirectory && !strcmp(oldID, this->OutputDirectory)) {
@@ -310,25 +310,25 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveTransformNodeID(const char* id
 	}
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveInvTransformNodeID(const char* id) {
-	if (this->InvTransformNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->InvTransformNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveMovingTransformNodeID(const char* id) {
+	if (this->MovingTransformNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->MovingTransformNodeID, this);
 	}
-	this->SetInvTransformNodeID(id);
+	this->SetMovingTransformNodeID(id);
 
 	if (id) {
-		this->Scene->AddReferencedNodeID(this->InvTransformNodeID, this);
+		this->Scene->AddReferencedNodeID(this->MovingTransformNodeID, this);
 	}
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveReferenceVolumeNodeID(const char* id) {
-	if (this->ReferenceVolumeNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->ReferenceVolumeNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveFixedVolumeNodeID(const char* id) {
+	if (this->FixedVolumeNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->FixedVolumeNodeID, this);
 	}
-	this->SetReferenceVolumeNodeID(id);
+	this->SetFixedVolumeNodeID(id);
 
 	if (id) {
-		this->Scene->AddReferencedNodeID(this->ReferenceVolumeNodeID, this);
+		this->Scene->AddReferencedNodeID(this->FixedVolumeNodeID, this);
 	}
 }
 
@@ -367,25 +367,25 @@ void vtkMRMLRegistrationQualityNode::SetAndObserveROINodeID(const char* id) {
 	}
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveFiducialNodeID(const char* id) {
-	if (this->FiducialNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->FiducialNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveFixedFiducialNodeID(const char* id) {
+	if (this->FixedFiducialNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->FixedFiducialNodeID, this);
 	}
-	this->SetFiducialNodeID(id);
+	this->SetFixedFiducialNodeID(id);
 
 	if (id) {
-		this->Scene->AddReferencedNodeID(this->FiducialNodeID, this);
+		this->Scene->AddReferencedNodeID(this->FixedFiducialNodeID, this);
 	}
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegistrationQualityNode::SetAndObserveInvFiducialNodeID(const char* id) {
-	if (this->InvFiducialNodeID) {
-		this->Scene->RemoveReferencedNodeID(this->InvFiducialNodeID, this);
+void vtkMRMLRegistrationQualityNode::SetAndObserveMovingFiducialNodeID(const char* id) {
+	if (this->MovingFiducialNodeID) {
+		this->Scene->RemoveReferencedNodeID(this->MovingFiducialNodeID, this);
 	}
-	this->SetInvFiducialNodeID(id);
+	this->SetMovingFiducialNodeID(id);
 
 	if (id) {
-		this->Scene->AddReferencedNodeID(this->InvFiducialNodeID, this);
+		this->Scene->AddReferencedNodeID(this->MovingFiducialNodeID, this);
 	}
 }
 //----------------------------------------------------------------------------
@@ -485,10 +485,10 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 			<< (this->InvVectorVolumeNodeID ? this->InvVectorVolumeNodeID : "NULL") << "\n";
 	os << indent << " TransformNodeID = "
 			<< (this->TransformNodeID ? this->TransformNodeID : "NULL") << "\n";
-	os << indent << " InvTransformNodeID = "
-			<< (this->InvTransformNodeID ? this->InvTransformNodeID : "NULL") << "\n";
+	os << indent << " MovingTransformNodeID = "
+			<< (this->MovingTransformNodeID ? this->MovingTransformNodeID : "NULL") << "\n";
 	os << indent << " ReferenceNodeID = "
-			<< (this->ReferenceVolumeNodeID ? this->ReferenceVolumeNodeID : "NULL") << "\n";
+			<< (this->FixedVolumeNodeID ? this->FixedVolumeNodeID : "NULL") << "\n";
 	os << indent << " WarpedNodeID = "
 			<< (this->WarpedVolumeNodeID ? this->WarpedVolumeNodeID : "NULL") << "\n";
 	os << indent << " SubjectHierarchyNodeID = "
@@ -498,10 +498,10 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 			<< (this->OutputDirectory ? this->OutputDirectory : "NULL") << "\n";
 	os << indent << " ROINodeID = "
 			<< (this->ROINodeID ? this->ROINodeID : "NULL") << "\n";
-	os << indent << " FiducialNodeID = "
-			<< (this->FiducialNodeID ? this->FiducialNodeID : "NULL") << "\n";
-	os << indent << " InvFiducialNodeID = "
-			<< (this->InvFiducialNodeID ? this->InvFiducialNodeID : "NULL") << "\n";
+	os << indent << " FixedFiducialNodeID = "
+			<< (this->FixedFiducialNodeID ? this->FixedFiducialNodeID : "NULL") << "\n";
+	os << indent << " MovingFiducialNodeID = "
+			<< (this->MovingFiducialNodeID ? this->MovingFiducialNodeID : "NULL") << "\n";
 // 	os << indent << " CheckerboardVolumeNodeID = "
 // 			<< (this->CheckerboardVolumeNodeID ? this->CheckerboardVolumeNodeID : "NULL") << "\n";
 	os << indent << " CheckerboardPattern = " << this->CheckerboardPattern << "\n";

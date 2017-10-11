@@ -33,6 +33,10 @@
 #include "qSlicerRegistrationQualityModule.h"
 #include "qSlicerRegistrationQualityModuleWidget.h"
 
+// SubjectHierarchy Plugins includes
+#include "qSlicerSubjectHierarchyPluginHandler.h"
+#include "qSlicerSubjectHierarchyRegistrationQualityPlugin.h"
+
 //-----------------------------------------------------------------------------
 Q_EXPORT_PLUGIN2(qSlicerRegistrationQualityModule, qSlicerRegistrationQualityModule);
 
@@ -76,7 +80,7 @@ QString qSlicerRegistrationQualityModule::acknowledgementText() const {
 //-----------------------------------------------------------------------------
 QStringList qSlicerRegistrationQualityModule::contributors() const {
 	QStringList moduleContributors;
-	moduleContributors << QString("Jens Woelfelschneider") << QString("Tobias Brandt") << QString("Daniel Richter") << QString("Kristjan Anderle");
+	moduleContributors << QString("Kristjan Anderle") << QString("Jens Woelfelschneider") << QString("Tobias Brandt") << QString("Daniel Richter");
 	return moduleContributors;
 }
 
@@ -87,7 +91,7 @@ QIcon qSlicerRegistrationQualityModule::icon() const {
 
 //-----------------------------------------------------------------------------
 QStringList qSlicerRegistrationQualityModule::categories() const {
-	return QStringList() << "Registration";
+	return QStringList() << "RegistrationQuality";
 }
 	
 //-----------------------------------------------------------------------------
@@ -98,37 +102,8 @@ QStringList qSlicerRegistrationQualityModule::dependencies() const {
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModule::setup() {
 	this->Superclass::setup();
-
-	  vtkSlicerRegistrationQualityLogic* registrationQualityLogic =
-    vtkSlicerRegistrationQualityLogic::SafeDownCast(this->logic());
-	qSlicerAbstractCoreModule* volumesModule = qSlicerCoreApplication::application()->
-		moduleManager()->module("Volumes");
-
-	if (volumesModule) {
-		vtkSlicerVolumesLogic* volumesLogic =
-		vtkSlicerVolumesLogic::SafeDownCast(volumesModule->logic());
-		registrationQualityLogic->SetVolumesLogic(volumesLogic);
-	} else {
-		qWarning() << "Volumes module is not found";
-	}
-	
-// 	
-	
-// 	 vtkSlicerRegistrationQualityLogic* registrationQualityLogic =
-//     vtkSlicerRegistrationQualityLogic::SafeDownCast(this->logic());
-// 	qSlicerAbstractCoreModule* dvhModule =
-// 	qSlicerCoreApplication::application()->moduleManager()->module("DoseVolumeHistogram");
-// 	
-//       if (dvhModule)
-// 	{
-// 	vtkSlicerVolumesLogic* dvhLogic = 
-// 	  vtkSlicerVolumesLogic::SafeDownCast(dvhModule->logic());
-// 	registrationQualityLogic->SetDoseVolumeHistogramLogic(dvhLogic);
-// 	}
-//       else
-// 	{
-// 	qWarning() << "Dose Volume Histogram module is not found";
-// 	}
+	// Register Subject Hierarchy core plugins
+       qSlicerSubjectHierarchyPluginHandler::instance()->registerPlugin(new qSlicerSubjectHierarchyRegistrationQualityPlugin());
 }
 
 //-----------------------------------------------------------------------------

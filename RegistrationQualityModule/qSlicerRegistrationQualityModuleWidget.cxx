@@ -314,90 +314,51 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
 	if (pNode && this->mrmlScene()) {
 		d->ParameterComboBox->setCurrentNode(pNode);
 
-		if (pNode->GetVectorVolumeNodeID()) {
-			d->InputFieldComboBox->setCurrentNode(pNode->GetVectorVolumeNodeID());
-		} else {
-			this->vectorVolumeChanged(d->InputFieldComboBox->currentNode());
-		}
-		if (pNode->GetInvVectorVolumeNodeID()) {
-			d->InputInvFieldComboBox->setCurrentNode(pNode->GetInvVectorVolumeNodeID());
-		} else {
-			this->invVectorVolumeChanged(d->InputInvFieldComboBox->currentNode());
-		}
-
-		if (pNode->GetReferenceVolumeNodeID()) {
-			d->InputReferenceComboBox->setCurrentNode(pNode->GetReferenceVolumeNodeID());
-		} else {
-			this->referenceVolumeChanged(d->InputReferenceComboBox->currentNode());
-		}
-
-		if (pNode->GetWarpedVolumeNodeID()) {
-			d->InputWarpedComboBox->setCurrentNode(pNode->GetWarpedVolumeNodeID());
-		} else {
-			this->warpedVolumeChanged(d->InputWarpedComboBox->currentNode());
-		}
-		
-		if (pNode->GetROINodeID()) {
-			d->ROIInputComboBox->setCurrentNode(pNode->GetROINodeID());
-                } else {
-                        this->ROIChanged(d->ROIInputComboBox->currentNode());
-                }
-
-		if (pNode->GetSubjectHierarchyNodeID()) {
-			d->InputSubjectComboBox->setCurrentNode(pNode->GetSubjectHierarchyNodeID());
-		} else {
-			this->subjectHierarchyChanged(d->InputSubjectComboBox->currentNode());
-		}
-
-		if (pNode->GetOutputModelNodeID()) {
-			d->OutputModelComboBox->setCurrentNode(pNode->GetOutputModelNodeID());
-                }else {
-                        this->outputModelChanged(d->OutputModelComboBox->currentNode());
-                }
-
-		if (pNode->GetFiducialNodeID()) {
-			d->FiducialInputComboBox->setCurrentNode(pNode->GetFiducialNodeID());
-		} else {
-			this->fiducialChanged(d->FiducialInputComboBox->currentNode());
-		}
-		
-		if (pNode->GetInvFiducialNodeID()) {
-			d->InvFiducialInputComboBox->setCurrentNode(pNode->GetInvFiducialNodeID());
-		} else {
-			this->invFiducialChanged(d->InvFiducialInputComboBox->currentNode());
-		}
-
-// 		if (pNode->GetCheckerboardNodeID()) {
-// 			d->OutputCheckerboardComboBox->setCurrentNode(pNode->GetCheckerboardNodeID());
+// 		if (pNode->GetVectorVolumeNodeID()) {
+// 			d->InputFieldComboBox->setCurrentNode(pNode->GetVectorVolumeNodeID());
 // 		} else {
-// 			this->checkerboardVolumeChanged(d->OutputCheckerboardComboBox->currentNode());
+// 			this->vectorVolumeChanged(d->InputFieldComboBox->currentNode());
 // 		}
-//
-// 		if (pNode->GetAbsoluteDiffNodeID()) {
-// 			d->AbsoluteDiffComboBox->setCurrentNode(pNode->GetAbsoluteDiffNodeID());
+// 		if (pNode->GetInvVectorVolumeNodeID()) {
+// 			d->InputInvFieldComboBox->setCurrentNode(pNode->GetInvVectorVolumeNodeID());
 // 		} else {
-// 			this->absoluteDiffVolumeChanged(d->AbsoluteDiffComboBox->currentNode());
+// 			this->invVectorVolumeChanged(d->InputInvFieldComboBox->currentNode());
 // 		}
-
-// 		pNode->SetFlickerOpacity(0);
-		d->absoluteDiffMeanSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[0]);
-		d->absoluteDiffSTDSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[1]);
-		
-		d->FiducialsMeanSpinBox->setValue(pNode->GetFiducialsStatistics()[0]);
-		d->FiducialsMaxSpinBox->setValue(pNode->GetFiducialsStatistics()[2]);
-		d->InvFiducialsMeanSpinBox->setValue(pNode->GetInvFiducialsStatistics()[0]);
-		d->InvFiducialsMaxSpinBox->setValue(pNode->GetInvFiducialsStatistics()[2]);
-
-		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
-		d->jacobianMeanSpinBox->setValue(pNode->GetJacobianStatistics()[0]);
-		d->jacobianSTDSpinBox->setValue(pNode->GetJacobianStatistics()[1]);
-// 		pNode->SetInverseConsistStatistics(0,0,0,0);
-
-		d->inverseConsistMeanSpinBox->setValue(pNode->GetInverseConsistStatistics()[0]);
-		d->inverseConsistSTDSpinBox->setValue(pNode->GetInverseConsistStatistics()[1]);
-
-		//Update Visualization Parameters
-		d->CheckerboardPattern->setValue(pNode->GetCheckerboardPattern());
+// 
+// 		if (pNode->GetFixedVolumeNodeID()) {
+// 			d->InputReferenceComboBox->setCurrentNode(pNode->GetFixedVolumeNodeID());
+// 		} else {
+// 			this->referenceVolumeChanged(d->InputReferenceComboBox->currentNode());
+// 		}
+// 
+// 		if (pNode->GetWarpedVolumeNodeID()) {
+// 			d->InputWarpedComboBox->setCurrentNode(pNode->GetWarpedVolumeNodeID());
+// 		} else {
+// 			this->warpedVolumeChanged(d->InputWarpedComboBox->currentNode());
+// 		}
+// 		
+// 		if (pNode->GetROINodeID()) {
+// 			d->ROIInputComboBox->setCurrentNode(pNode->GetROINodeID());
+//                 } else {
+//                         this->ROIChanged(d->ROIInputComboBox->currentNode());
+//                 }
+// 
+// 		if (pNode->GetFixedFiducialNodeID()) {
+// 			d->FiducialInputComboBox->setCurrentNode(pNode->GetFixedFiducialNodeID());
+// 		} else {
+// 			this->fiducialChanged(d->FiducialInputComboBox->currentNode());
+// 		}
+// 		
+// 		if (pNode->GetMovingFiducialNodeID()) {
+// 			d->InvFiducialInputComboBox->setCurrentNode(pNode->GetMovingFiducialNodeID());
+// 		} else {
+// 			this->invFiducialChanged(d->InvFiducialInputComboBox->currentNode());
+// 		}
+// 
+// 
+// 		d->movieBoxRed->setChecked(pNode->GetMovieBoxRedState());
+// 		//Update Visualization Parameters
+// 		d->CheckerboardPattern->setValue(pNode->GetCheckerboardPattern());
 	}
 	
 	d->updateScalarBarsFromSelectedColorTable();
@@ -418,99 +379,50 @@ void qSlicerRegistrationQualityModuleWidget::vectorVolumeChanged(vtkMRMLNode* no
 		return;
 	}
 
-	d->JacobianCheckBox->setEnabled(true);
-	d->InverseConsistCheckBox->setEnabled(true);
+	d->jacobianButton->setEnabled(true);
+	d->consistencyButton->setEnabled(true);
 
 	pNode->DisableModifiedEventOn();
 	if (node->IsA("vtkMRMLTransformNode")){
              pNode->SetAndObserveTransformNodeID(node->GetID());
              
-             //Convert transform to vector
-             if ( !pNode->GetVectorVolumeNodeID()){
-                vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
-                                          this->mrmlScene()->GetNodeByID(
-                                                node->GetID()));
-                if (transform) {
-                  vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
-                  if (vectorVolume){
-                    pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
-                  }
-                }
-                else{
-                  std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
-                }  
-             }
+//              //Convert transform to vector
+//              if ( !pNode->GetVectorVolumeNodeID()){
+//                 vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
+//                                           this->mrmlScene()->GetNodeByID(
+//                                                 node->GetID()));
+//                 if (transform) {
+//                   vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
+//                   if (vectorVolume){
+//                     pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
+//                   }
+//                 }
+//                 else{
+//                   std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
+//                 }  
+//              }
         }
 	else if (node->IsA("vtkMRMLVectorVolumeNode")){
 	  pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
 
-	  //Convert transform to vector
-          if ( !pNode->GetTransformNodeID() ){
-             vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
-                                             this->mrmlScene()->GetNodeByID(
-                                                   node->GetID()));
-             if (vectorVolume) {
-               vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
-               if( transform ){
-                 pNode->SetAndObserveTransformNodeID(transform->GetID());
-               }
-             }
-             else{
-               std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
-             }
-          }
+// 	  //Convert transform to vector
+//           if ( !pNode->GetTransformNodeID() ){
+//              vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
+//                                              this->mrmlScene()->GetNodeByID(
+//                                                    node->GetID()));
+//              if (vectorVolume) {
+//                vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
+//                if( transform ){
+//                  pNode->SetAndObserveTransformNodeID(transform->GetID());
+//                }
+//              }
+//              else{
+//                std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
+//              }
+//           }
 	}
 	pNode->DisableModifiedEventOff();
 	
-	// Calculate fiducial distance if possible
-	if ( pNode->GetFiducialNodeID() != NULL && pNode->GetInvFiducialNodeID() != NULL ){
-		this->fiducialCalculate(true);
-	}
-
-// 	double maxNorm = 0;
-
-	// What to do if there is more than one array? Would there be more than one array?
-// 	if (strcmp(node->GetClassName(), "vtkMRMLVectorVolumeNode") == 0) {
-// 		d->InputReferenceComboBox->setEnabled(false);
-// 		maxNorm = vtkMRMLVectorVolumeNode::SafeDownCast(node)->GetImageData()->GetPointData()->GetArray(0)->GetMaxNorm();
-// 	} else if (	strcmp(node->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
-// 				strcmp(node->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
-// 				strcmp(node->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
-// 		d->InputReferenceComboBox->setEnabled(true);
-//
-// 		vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetReferenceVolumeNodeID()));
-// 		if (referenceVolumeNode == NULL) {
-// 			return;
-// 		}
-//
-// 		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
-// 		QProgressDialog *convertProgress = new QProgressDialog(qSlicerApplication::application()->mainWindow());
-// 		convertProgress->setModal(true);
-// 		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
-// 		convertProgress->show();
-// 		convertProgress->setLabelText("Converting transform to vector volume...");
-//
-// 		convertProgress->setValue(20);
-// 		d->logic()->GenerateTransformField();
-//
-// 		convertProgress->setValue(80);
-// 		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
-//
-// 		convertProgress->setValue(100);
-// 		delete convertProgress;
-// 	}
-
-// 	pNode->SetGlyphThresholdMax(maxNorm);
-// 	d->InputGlyphThreshold->setMaximum(maxNorm);
-// 	d->InputGlyphThreshold->setMaximumValue(maxNorm);
-//
-// 	pNode->SetContourMax(maxNorm);
-// 	d->InputContourRange->setMaximum(maxNorm);
-// 	d->InputContourRange->setMaximumValue(maxNorm);
-//
-// 	pNode->SetGlyphSliceThresholdMax(maxNorm);
-// 	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
-// 	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
 }
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::invVectorVolumeChanged(vtkMRMLNode* node) {
@@ -522,53 +434,50 @@ void qSlicerRegistrationQualityModuleWidget::invVectorVolumeChanged(vtkMRMLNode*
 		return;
 	}
 
-	d->InverseConsistCheckBox->setEnabled(true);
+	d->consistencyButton->setEnabled(true);
 
 
 	pNode->DisableModifiedEventOn();
 	if (node->IsA("vtkMRMLTransformNode")){
-	  pNode->SetAndObserveInvTransformNodeID(node->GetID());
+	  pNode->SetAndObserveMovingTransformNodeID(node->GetID());
 	  	  
-	  //Convert transform to vector
-          if ( !pNode->GetVectorVolumeNodeID()){
-             vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
-                                       this->mrmlScene()->GetNodeByID(
-                                             node->GetID()));
-             if (transform) {
-               vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
-               if (vectorVolume){
-                 pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
-               }
-             }
-             else{
-               std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
-             }
-          }  
+// 	  //Convert transform to vector
+//           if ( !pNode->GetVectorVolumeNodeID()){
+//              vtkMRMLTransformNode *transform = vtkMRMLTransformNode::SafeDownCast(
+//                                        this->mrmlScene()->GetNodeByID(
+//                                              node->GetID()));
+//              if (transform) {
+//                vtkMRMLVectorVolumeNode *vectorVolume = d->logic()->CreateVectorFromTransform(transform);
+//                if (vectorVolume){
+//                  pNode->SetAndObserveVectorVolumeNodeID(vectorVolume->GetID());
+//                }
+//              }
+//              else{
+//                std::cerr << "Widget: Transform not set, no creation of vector volume." << pNode->GetTransformNodeID() << std::endl;
+//              }
+//           }  
 	}
 	else if (node->IsA("vtkMRMLVectorVolumeNode")){
 	  pNode->SetAndObserveInvVectorVolumeNodeID(node->GetID());
 	  
-	  //Convert transform to vector
-          if ( ! pNode->GetInvTransformNodeID() ) {
-             vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
-                                             this->mrmlScene()->GetNodeByID(
-                                                   node->GetID()));
-             if (vectorVolume) {
-               vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
-               if( transform ){
-                 pNode->SetAndObserveInvTransformNodeID(transform->GetID());
-               }
-             }
-             else{
-               std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
-             }
-          }
+// 	  //Convert transform to vector
+//           if ( ! pNode->GetMovingTransformNodeID() ) {
+//              vtkMRMLVectorVolumeNode *vectorVolume= vtkMRMLVectorVolumeNode::SafeDownCast(
+//                                              this->mrmlScene()->GetNodeByID(
+//                                                    node->GetID()));
+//              if (vectorVolume) {
+//                vtkMRMLGridTransformNode *transform = d->logic()->CreateTransformFromVector(vectorVolume);
+//                if( transform ){
+//                  pNode->SetAndObserveMovingTransformNodeID(transform->GetID());
+//                }
+//              }
+//              else{
+//                std::cerr << "Widget: Vector not set, no creation of transform." << pNode->GetTransformNodeID() << std::endl;
+//              }
+//           }
 	}
 	pNode->DisableModifiedEventOff();
 	// Calculate fiducial distance if possible
-	if ( pNode->GetFiducialNodeID() != NULL && pNode->GetInvFiducialNodeID() != NULL ){
-		this->fiducialCalculate(false);
-	}
 
 }
 //-----------------------------------------------------------------------------
@@ -588,7 +497,7 @@ void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode*
 	}
 
 	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveReferenceVolumeNodeID(node->GetID());
+	pNode->SetAndObserveFixedVolumeNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();
 
 	bool currentState;
@@ -600,50 +509,11 @@ void qSlicerRegistrationQualityModuleWidget::referenceVolumeChanged(vtkMRMLNode*
 	  currentState=true;
 	}
 
-	d->AbsoluteDiffCheckBox->setEnabled(currentState);
-	d->FalseColorCheckBox->setEnabled(currentState);
-	d->CheckerboardCheckBox->setEnabled(currentState);
+	d->AbsoluteDiffPushButton->setEnabled(currentState);
+	d->FalseColorPushButton->setEnabled(currentState);
+	d->CheckerboardPushButton->setEnabled(currentState);
 	d->MovieToggle->setEnabled(currentState);
 	d->FlickerToggle->setEnabled(currentState);
-
-// 	vtkSmartPointer<vtkMRMLTransformNode> vectorVolumeNode = vtkMRMLTransformNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetVectorVolumeNodeID()));
-// 	if (vectorVolumeNode == NULL) {
-// 		return;
-// 	}
-//
-// 	if ( strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLLinearTransformNode") == 0 ||
-// 		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLBSplineTransformNode") == 0 ||
-// 		 strcmp(vectorVolumeNode->GetClassName(), "vtkMRMLGridTransformNode") == 0) {
-//
-// 		//TODO: Remake progress dialog and add detail (update progress from actual steps occurring in logic)
-// 		QProgressDialog *convertProgress =  new QProgressDialog(qSlicerApplication::application()->mainWindow());
-// 		convertProgress->setModal(true);
-// 		convertProgress->setMinimumDuration(100); //will matter a bit more after progress dialog is remade
-// 		convertProgress->show();
-// 		convertProgress->setLabelText("Converting transform to vector volume...");
-//
-// 		convertProgress->setValue(20);
-// 		d->logic()->GenerateTransformField();
-//
-// 		convertProgress->setValue(80);
-// 		maxNorm = d->logic()->GetFieldMaxNorm() + 1;
-//
-// 		convertProgress->setValue(100);
-// 		delete convertProgress;
-// 	}
-//
-// 	pNode->SetGlyphThresholdMax(maxNorm);
-// 	d->InputGlyphThreshold->setMaximum(maxNorm);
-// 	d->InputGlyphThreshold->setMaximumValue(maxNorm);
-//
-// 	pNode->SetContourMax(maxNorm);
-// 	d->InputContourRange->setMaximum(maxNorm);
-// 	d->InputContourRange->setMaximumValue(maxNorm);
-//
-// 	pNode->SetGlyphSliceThresholdMax(maxNorm);
-// 	d->InputGlyphSliceThreshold->setMaximum(maxNorm);
-// 	d->InputGlyphSliceThreshold->setMaximumValue(maxNorm);
-
 }
 
 //-----------------------------------------------------------------------------
@@ -661,7 +531,7 @@ void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* no
 	pNode->DisableModifiedEventOff();
 
 	bool currentState;
-	vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetReferenceVolumeNodeID()));
+	vtkSmartPointer<vtkMRMLVolumeNode> referenceVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(pNode->GetFixedVolumeNodeID()));
 	if (referenceVolumeNode == NULL) {
 	    currentState=false;
 	}
@@ -669,31 +539,16 @@ void qSlicerRegistrationQualityModuleWidget::warpedVolumeChanged(vtkMRMLNode* no
 	  currentState=true;
 	}
 
-	d->AbsoluteDiffCheckBox->setEnabled(currentState);
-	d->FalseColorCheckBox->setEnabled(currentState);
-	d->CheckerboardCheckBox->setEnabled(currentState);
+	d->AbsoluteDiffPushButton->setEnabled(currentState);
+	d->FalseColorPushButton->setEnabled(currentState);
+	d->CheckerboardPushButton->setEnabled(currentState);
 	d->MovieToggle->setEnabled(currentState);
 	d->FlickerToggle->setEnabled(currentState);
 // 	vtkSlicerRegistrationQualityLogic *logic = d->logic();
 // 	logic->ImageDifference();
 }
 
-//-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::subjectHierarchyChanged(vtkMRMLNode* node) {
-	Q_D(qSlicerRegistrationQualityModuleWidget);
 
-	cout << "qSlicerRegistrationQualityModuleWidget::subjectHierarchyChanged()" << endl;
-
-	//TODO: Move into updatefrommrml?
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	if (!pNode || !this->mrmlScene() || !node) {
-		return;
-	}
-
-	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveSubjectHierarchyNodeID(node->GetID());
-	pNode->DisableModifiedEventOff();
-}
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::outputModelChanged(vtkMRMLNode* node) {
         Q_D(qSlicerRegistrationQualityModuleWidget);
@@ -753,15 +608,8 @@ void qSlicerRegistrationQualityModuleWidget::fiducialChanged(vtkMRMLNode* node) 
 	}
 
 	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveFiducialNodeID(node->GetID());
+	pNode->SetAndObserveFixedFiducialNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();
-	// Calculate fiducial distance if possible
-	if ( pNode->GetTransformNodeID() != NULL && pNode->GetInvFiducialNodeID() != NULL ){
-		this->fiducialCalculate(true);
-	}
-	if ( pNode->GetInvTransformNodeID() != NULL && pNode->GetInvFiducialNodeID() != NULL ){
-		this->fiducialCalculate(false);
-	}
 }
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::invFiducialChanged(vtkMRMLNode* node) {
@@ -774,15 +622,8 @@ void qSlicerRegistrationQualityModuleWidget::invFiducialChanged(vtkMRMLNode* nod
 	}
 
 	pNode->DisableModifiedEventOn();
-	pNode->SetAndObserveInvFiducialNodeID(node->GetID());
+	pNode->SetAndObserveMovingFiducialNodeID(node->GetID());
 	pNode->DisableModifiedEventOff();
-	// Calculate fiducial distance if possible
-	if ( pNode->GetTransformNodeID() != NULL && pNode->GetFiducialNodeID() != NULL ){
-		this->fiducialCalculate(true);
-	}
-	if ( pNode->GetInvTransformNodeID() != NULL && pNode->GetFiducialNodeID() != NULL ){
-		this->fiducialCalculate(false);
-	}
 }
 
 void qSlicerRegistrationQualityModuleWidget::setup() {
@@ -792,48 +633,39 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	d->StillErrorLabel->setVisible(false);
 
 	//new
-	d->subjectTreeView->setModel(d->logic()->getTreeViewModel());
-	d->subjectTreeView->header()->hide();
+// 	d->subjectTreeView->setModel(d->logic()->getTreeViewModel());
+// 	d->subjectTreeView->header()->hide();
 
-	contextMenu = new QMenu(d->subjectTreeView);
-	contextMenuShowAction = new QAction("Show",contextMenu);
-	contextMenu->addAction(contextMenuShowAction);
-	connect(contextMenu, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuClicked(QAction*)));
+// 	contextMenu = new QMenu(d->subjectTreeView);
+// 	contextMenuShowAction = new QAction("Show",contextMenu);
+// 	contextMenu->addAction(contextMenuShowAction);
+// 	connect(contextMenu, SIGNAL(triggered(QAction*)), this, SLOT(contextMenuClicked(QAction*)));
 
 	// Make the ComboBox only show "Registration" nodes.
 // 	d->InputSubjectComboBox->addAttribute("vtkMRMLSubjectHierarchyNode","*");
-	connect(d->InputSubjectComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(subjectHierarchyChanged(vtkMRMLNode*)));
+// 	connect(d->InputSubjectComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(subjectHierarchyChanged(vtkMRMLNode*)));
 
 
-	d->subjectTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(d->subjectTreeView, SIGNAL(customContextMenuRequested(QPoint const&)), this, SLOT(treeViewContextMenu(QPoint const&)));
+// 	d->subjectTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+// 	connect(d->subjectTreeView, SIGNAL(customContextMenuRequested(QPoint const&)), this, SLOT(treeViewContextMenu(QPoint const&)));
 
-	connect(d->loadPhaseButton, SIGNAL(clicked(bool)), this, SLOT(loadPhaseClicked(bool)));
+// 	connect(d->loadPhaseButton, SIGNAL(clicked(bool)), this, SLOT(loadPhaseClicked(bool)));
 
 	//end new
 
 	connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegistrationQualityParametersNode(vtkMRMLNode*)));
-	connect(d->InputFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(vectorVolumeChanged(vtkMRMLNode*)));
-	connect(d->InputInvFieldComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(invVectorVolumeChanged(vtkMRMLNode*)));
-	connect(d->InputReferenceComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(referenceVolumeChanged(vtkMRMLNode*)));
-	connect(d->InputWarpedComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(warpedVolumeChanged(vtkMRMLNode*)));
-	connect(d->ROIInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(ROIChanged(vtkMRMLNode*)));
-	connect(d->FiducialInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(fiducialChanged(vtkMRMLNode*)));
-	connect(d->InvFiducialInputComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(invFiducialChanged(vtkMRMLNode*)));
-//	connect(d->OutputCheckerboardComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(checkerboardVolumeChanged(vtkMRMLNode*)));
-//	connect(d->AbsoluteDiffComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(absoluteDiffVolumeChanged(vtkMRMLNode*)));
-	connect(d->OutputModelComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(outputModelChanged(vtkMRMLNode*)));
-
+	
 	connect(d->SaveScreenshotPushButton, SIGNAL(clicked()), this, SLOT(saveScreenshotClicked()));
 	connect(d->SaveOutputFilePushButton, SIGNAL(clicked()), this, SLOT(saveOutputFileClicked()));
 	
-	connect(d->FalseColorCheckBox, SIGNAL(clicked(bool)), this, SLOT (falseColorClicked(bool)));
-	connect(d->CheckerboardCheckBox, SIGNAL(clicked(bool)), this, SLOT (checkerboardClicked(bool)));
-	connect(d->AbsoluteDiffCheckBox, SIGNAL(clicked(bool)), this, SLOT (absoluteDiffClicked(bool)));
-	connect(d->JacobianCheckBox, SIGNAL(clicked(bool)), this, SLOT (jacobianClicked(bool)));
-	connect(d->InverseConsistCheckBox, SIGNAL(clicked(bool)), this, SLOT (inverseConsistClicked(bool)));
+	connect(d->FalseColorPushButton, SIGNAL(clicked()), this, SLOT (falseColorClicked()));
+	connect(d->CheckerboardPushButton, SIGNAL(clicked()), this, SLOT (checkerboardClicked()));
+	connect(d->AbsoluteDiffPushButton, SIGNAL(clicked()), this, SLOT (absoluteDiffClicked()));
+        connect(d->fiducialButton, SIGNAL(clicked()), this, SLOT (fiducialClicked()));
+	connect(d->jacobianButton, SIGNAL(clicked()), this, SLOT (jacobianClicked()));
+	connect(d->consistencyButton, SIGNAL(clicked()), this, SLOT (inverseConsistClicked()));
 
-	connect(d->CheckerboardPattern, SIGNAL(valueChanged(double)), this, SLOT(setCheckerboardPattern(double)));
+	connect(d->patternSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setCheckerboardPattern(int)));
 
 	connect(d->MovieToggle, SIGNAL(clicked()), this, SLOT (movieToggle()));
 	connect(d->movieBoxRed, SIGNAL(stateChanged(int)), this, SLOT (movieBoxRedStateChanged(int)));
@@ -842,13 +674,10 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 
 	connect(d->FlickerToggle, SIGNAL(clicked()), this, SLOT (flickerToggle()));
 	connect(flickerTimer, SIGNAL(timeout()), this, SLOT(flickerToggle1()));
-        connect(d->xmlFileInput, SIGNAL(editingFinished()), this, SLOT (xmlFileNameEdited()));
-        connect(d->loadXMLButton, SIGNAL(clicked()), this, SLOT (loadXMLClicked()));
-	connect( d->checkBox_ScalarBar2D, SIGNAL(toggled(bool)), this, SLOT( setScalarBar2DVisibility(bool) ) );
+// 	connect( d->checkBox_ScalarBar2D, SIGNAL(toggled(bool)), this, SLOT( setScalarBar2DVisibility(bool) ) );
 	
 	qSlicerApplication * app = qSlicerApplication::application();
 	if (app && app->layoutManager()){
-
 		QStringList sliceViewerNames = app->layoutManager()->sliceViewNames();
 		qMRMLSliceWidget* sliceViewerWidgetRed = app->layoutManager()->sliceWidget(sliceViewerNames[0]);
 		const qMRMLSliceView* sliceViewRed = sliceViewerWidgetRed->sliceView();
@@ -859,11 +688,9 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 		qMRMLSliceWidget* sliceViewerWidgetGreen = app->layoutManager()->sliceWidget(sliceViewerNames[2]);
 		const qMRMLSliceView* sliceViewGreen = sliceViewerWidgetGreen->sliceView();
 		d->ScalarBarWidget2DGreen->SetInteractor(sliceViewerWidgetGreen->interactorStyle()->GetInteractor());
-
-
-		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewRed, SLOT(scheduleRender()));
-		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewYellow, SLOT(scheduleRender()));
-		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewGreen, SLOT(scheduleRender()));
+// 		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewRed, SLOT(scheduleRender()));
+// 		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewYellow, SLOT(scheduleRender()));
+// 		connect(d->checkBox_ScalarBar2D, SIGNAL(stateChanged(int)), sliceViewGreen, SLOT(scheduleRender()));
 	}
 }
 
@@ -892,7 +719,7 @@ void qSlicerRegistrationQualityModuleWidget::saveScreenshotClicked() {
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
-		d->AbsoluteDiffCheckBox->toggle();
+		d->AbsoluteDiffPushButton->toggle();
 		cerr << e.what() << endl;
 		QApplication::restoreOverrideCursor();
 		return;
@@ -916,78 +743,32 @@ void qSlicerRegistrationQualityModuleWidget::saveOutputFileClicked() {
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
-		d->AbsoluteDiffCheckBox->toggle();
+		d->AbsoluteDiffPushButton->toggle();
 		cerr << e.what() << endl;
 		QApplication::restoreOverrideCursor();
 		return;
 	}
 	QApplication::restoreOverrideCursor();
 }
-
-// newNode
-
-void qSlicerRegistrationQualityModuleWidget::treeViewContextMenu(QPoint const& clickedPoint) {
-	Q_D(qSlicerRegistrationQualityModuleWidget);
-
-	cout << "Context Menu! x=" << clickedPoint.x() << " y=" << clickedPoint.y();
-	QModelIndex index = d->subjectTreeView->indexAt(clickedPoint);
-	cout << " data=" << index.data().toString().toStdString() << endl;
-
-	contextMenu->popup(d->subjectTreeView->mapToGlobal(clickedPoint));
-
-}
-// Image Checks
-//-----------------------------------------------------------------------------
-
-void qSlicerRegistrationQualityModuleWidget::contextMenuClicked(QAction*) {
-	Q_D(qSlicerRegistrationQualityModuleWidget);
-	cout << "Context Menu Action" << endl;
-	QModelIndex index = d->subjectTreeView->selectionModel()->currentIndex();
-	d->logic()->showNode(&index);
-}
-
-void qSlicerRegistrationQualityModuleWidget::loadPhaseClicked(bool) {
-	Q_D(qSlicerRegistrationQualityModuleWidget);
-	cout << "loadPhase" << endl;
-	QModelIndex index = d->subjectTreeView->selectionModel()->currentIndex();
-	d->logic()->showNode(&index);
-}
-
-// end new
-
 //-----------------------------------------------------------------------------
 // Absolute Difference
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
+void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked() {
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->CalculateDIRQAFrom(1,state);
+		d->logic()->CalculateDIRQAFrom(1);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
-		d->AbsoluteDiffCheckBox->toggle();
+		d->AbsoluteDiffPushButton->toggle();
 		cerr << e.what() << endl;
 		QApplication::restoreOverrideCursor();
 		return;
 	}
 	d->StillErrorLabel->setText("");
-	d->FalseColorCheckBox->setChecked(false);
-	d->CheckerboardCheckBox->setChecked(false);
-	
-	d->JacobianCheckBox->setChecked(false);
-	d->InverseConsistCheckBox->setChecked(false);
 
-	if (state){
-	  d->absoluteDiffMeanSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[0]);
-	  d->absoluteDiffSTDSpinBox->setValue(pNode->GetAbsoluteDiffStatistics()[1]);
-	  }
-	else{
-	  d->absoluteDiffMeanSpinBox->setValue(0);
-	  d->absoluteDiffSTDSpinBox->setValue(0);
-	  }
 	//Create legend:
 	this->updateWidgetFromMRML();
 	
@@ -997,18 +778,17 @@ void qSlicerRegistrationQualityModuleWidget::absoluteDiffClicked(bool state) {
 //-----------------------------------------------------------------------------
 // Fiducials distance
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::fiducialCalculate(bool reference) {
+void qSlicerRegistrationQualityModuleWidget::fiducialClicked() {
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 	
 	//Check if we want to calculate reference or inverse distance
-	int number;
-	if (reference) number = 4;
-	else number = 5;
+	int number = 4;
+// 	if (reference) number = 4;
+// 	else number = 5;
 
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->CalculateDIRQAFrom(number,true);
+		d->logic()->CalculateDIRQAFrom(number);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
@@ -1018,14 +798,6 @@ void qSlicerRegistrationQualityModuleWidget::fiducialCalculate(bool reference) {
 	}
 	d->StillErrorLabel->setText("");
 	
-	if ( reference ) {
-		d->FiducialsMeanSpinBox->setValue(pNode->GetFiducialsStatistics()[0]);
-		d->FiducialsMaxSpinBox->setValue(pNode->GetFiducialsStatistics()[2]);
-	} 
-	else{
-		d->InvFiducialsMeanSpinBox->setValue(pNode->GetInvFiducialsStatistics()[0]);
-		d->InvFiducialsMaxSpinBox->setValue(pNode->GetInvFiducialsStatistics()[2]);
-	}
 	
 	QApplication::restoreOverrideCursor();
 
@@ -1034,46 +806,47 @@ void qSlicerRegistrationQualityModuleWidget::fiducialCalculate(bool reference) {
 // False Color
 //-----------------------------------------------------------------------------
 
-void qSlicerRegistrationQualityModuleWidget::falseColorClicked(bool state) {
+void qSlicerRegistrationQualityModuleWidget::falseColorClicked() {
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
+        bool invertColor;
+        
+        if (d->ColorCheckBox->checkState() == 0) invertColor = false;
+        else invertColor = true;
 
 	try {
-		d->logic()->FalseColor(state);
+		d->logic()->FalseColor(invertColor);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
-		d->FalseColorCheckBox->toggle();
+		d->FalseColorPushButton->toggle();
 		cerr << e.what() << endl;
 		return;
 	}
 	d->StillErrorLabel->setText("");
-	d->InverseConsistCheckBox->setChecked(false);
-	d->CheckerboardCheckBox->setChecked(false);
-	d->AbsoluteDiffCheckBox->setChecked(false);
-	d->JacobianCheckBox->setChecked(false);
+	d->consistencyButton->setChecked(false);
+	d->CheckerboardPushButton->setChecked(false);
+	d->AbsoluteDiffPushButton->setChecked(false);
+	d->jacobianButton->setChecked(false);
 }
+
 //-----------------------------------------------------------------------------
 // Checkerboard
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::checkerboardClicked(bool state){
+void qSlicerRegistrationQualityModuleWidget::checkerboardClicked(){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
 // 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->Checkerboard(state);
+		d->logic()->Checkerboard();
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
-		d->CheckerboardCheckBox->toggle();
+		d->CheckerboardPushButton->toggle();
 		cerr << e.what() << endl;
 		QApplication::restoreOverrideCursor();
 		return;
 	}
 	d->StillErrorLabel->setText("");
-	d->FalseColorCheckBox->setChecked(false);
-	d->AbsoluteDiffCheckBox->setChecked(false);
-	d->JacobianCheckBox->setChecked(false);
-	d->InverseConsistCheckBox->setChecked(false);
 	QApplication::restoreOverrideCursor();
 }
 
@@ -1169,77 +942,48 @@ void qSlicerRegistrationQualityModuleWidget::movieBoxGreenStateChanged(int state
 //-----------------------------------------------------------------------------
 // Vector checks
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::jacobianClicked(bool state){
+void qSlicerRegistrationQualityModuleWidget::jacobianClicked(){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->CalculateDIRQAFrom(2,state);
+		d->logic()->CalculateDIRQAFrom(2);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
-		d->JacobianCheckBox->toggle();
+		d->jacobianButton->toggle();
 		cerr << e.what() << endl;
 		QApplication::restoreOverrideCursor();
 		return;
 	}
 	d->StillErrorLabel->setText("");
-	d->FalseColorCheckBox->setChecked(false);
-	d->CheckerboardCheckBox->setChecked(false);
-	d->AbsoluteDiffCheckBox->setChecked(false);
-	
-	d->InverseConsistCheckBox->setChecked(false);
 
-	if (state){
-	  d->jacobianMeanSpinBox->setValue(pNode->GetJacobianStatistics()[0]);
-	  d->jacobianSTDSpinBox->setValue(pNode->GetJacobianStatistics()[1]);
-	}
-	else{
-	  d->jacobianMeanSpinBox->setValue(0);
-	  d->jacobianSTDSpinBox->setValue(0);
-	}
 	this->updateWidgetFromMRML();
-// 	d->updateScalarBarsFromSelectedColorTable()
+
 	QApplication::restoreOverrideCursor();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::inverseConsistClicked(bool state){
+void qSlicerRegistrationQualityModuleWidget::inverseConsistClicked(){
 	Q_D(const qSlicerRegistrationQualityModuleWidget);
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
 
 	QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 	try {
-		d->logic()->CalculateDIRQAFrom(3,state);
+		d->logic()->CalculateDIRQAFrom(3);
 	} catch (std::runtime_error e) {
 		d->StillErrorLabel->setText(e.what());
 		d->StillErrorLabel->setVisible(true);
-		d->InverseConsistCheckBox->toggle();
+		d->consistencyButton->toggle();
 		cerr << e.what() << endl;
 		QApplication::restoreOverrideCursor();
 		return;
 	}
 	d->StillErrorLabel->setText("");
-	d->FalseColorCheckBox->setChecked(false);
-	d->CheckerboardCheckBox->setChecked(false);
-	d->AbsoluteDiffCheckBox->setChecked(false);
-	
-	d->JacobianCheckBox->setChecked(false);
 
-	if (state){
-	  d->inverseConsistMeanSpinBox->setValue(pNode->GetInverseConsistStatistics()[0]);
-	  d->inverseConsistSTDSpinBox->setValue(pNode->GetInverseConsistStatistics()[1]);
-	}
-	else{
-	  d->inverseConsistMeanSpinBox->setValue(0);
-	  d->inverseConsistSTDSpinBox->setValue(0);
-	}
 	this->updateWidgetFromMRML();
 	QApplication::restoreOverrideCursor();
 }
 
 //------------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(double checkboardPattern) {
+void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(int checkboardPattern) {
 	Q_D(qSlicerRegistrationQualityModuleWidget);
 
 	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
@@ -1302,43 +1046,33 @@ void qSlicerRegistrationQualityModuleWidget::setScalarBar2DVisibility(bool visib
   d->ScalarBarWidget2DYellow->SetEnabled(visible);
   d->ScalarBarWidget2DGreen->SetEnabled(visible);
 }
-void qSlicerRegistrationQualityModuleWidget::xmlFileNameEdited() {
-	Q_D(qSlicerRegistrationQualityModuleWidget);
+//-----------------------------------------------------------
+bool qSlicerRegistrationQualityModuleWidget::setEditedNode(
+  vtkMRMLNode* node, QString role /* = QString()*/, QString context /* = QString() */)
+{
+  Q_D(qSlicerRegistrationQualityModuleWidget);
+  Q_UNUSED(context);
 
-	cout << "Neuer Text: " << d->xmlFileInput->text().toStdString() << endl;
-
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	pNode->DisableModifiedEventOn();
-	pNode->SetXMLFileName(d->xmlFileInput->text().toStdString());
-	pNode->DisableModifiedEventOff();
-}
-
-void qSlicerRegistrationQualityModuleWidget::loadXMLClicked() {
-	Q_D(qSlicerRegistrationQualityModuleWidget);
-
-	vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-	if(pNode->GetXMLFileName() == "") {
-
-		QString fileName = QFileDialog::getOpenFileName( NULL,
-														 QString( tr( "Select Registration XML-File" ) ),
-														 QDir::homePath(),
-														 QString( tr( "XML-Files ( *.xml )" ) ) );
-		cout << fileName.toAscii().data() << endl;
-		if ( !fileName.isNull() ) {
-			d->xmlFileInput->setText(fileName);
-			pNode->SetXMLFileName(fileName.toAscii().data());
-		} else {
-			return;
-		}
-	}
-
-	try {
-		d->logic()->ReadRegistrationXML();
-	} catch (std::runtime_error e) {
-		d->StillErrorLabel->setText(e.what());
-		d->StillErrorLabel->setVisible(true);
-		cerr << e.what() << endl;
-		return;
-	}
-	d->StillErrorLabel->setText("");
+  if ( QString::compare(role, "fixedImage", Qt::CaseInsensitive) == 0 ){
+     this->referenceVolumeChanged(node);
+  }
+  else if ( QString::compare(role, "warpedImage", Qt::CaseInsensitive) == 0 ){
+     this->warpedVolumeChanged(node);
+  }
+  else if ( QString::compare(role, "fixedVectorField", Qt::CaseInsensitive) == 0 ){
+     this->vectorVolumeChanged(node);
+  }
+  else if ( QString::compare(role, "movingVectorField", Qt::CaseInsensitive) == 0 ){
+     this->invVectorVolumeChanged(node);
+  }
+  else if ( QString::compare(role, "fixedFiducials", Qt::CaseInsensitive) == 0 ){
+     this->fiducialChanged(node);
+  }
+  else if ( QString::compare(role, "movingFiducials", Qt::CaseInsensitive) == 0 ){
+     this->fiducialChanged(node);
+  }
+  else {
+     return false;
+  }
+  return true;
 }

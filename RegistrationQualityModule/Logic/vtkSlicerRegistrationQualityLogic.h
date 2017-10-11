@@ -5,12 +5,12 @@
 #include "vtkSlicerModuleLogic.h"
 
 // MRML includes
-#include <vtkMRMLSliceCompositeNode.h>
-#include <vtkMRMLScalarVolumeNode.h>
-#include <vtkMRMLVectorVolumeNode.h>
-#include <vtkMRMLGridTransformNode.h>
-#include <vtkMRMLAnnotationROINode.h>
-#include <vtkMRMLMarkupsFiducialNode.h>
+// #include <vtkMRMLSliceCompositeNode.h>
+// #include <vtkMRMLScalarVolumeNode.h>
+// #include <vtkMRMLVectorVolumeNode.h>
+// #include <vtkMRMLGridTransformNode.h>
+// #include <vtkMRMLAnnotationROINode.h>
+// #include <vtkMRMLMarkupsFiducialNode.h>
 // STD includes
 #include <cstdlib>
 
@@ -23,18 +23,26 @@
 #include "vtkSlicerRegistrationQualityModuleLogicExport.h"
 
 class vtkMRMLRegistrationQualityNode;
-// class vtkMRMLVectorVolumeNode;
-class vtkSlicerVolumesLogic;
+class vtkMRMLVectorVolumeNode;
+class vtkMRMLVolumeNode;
 // class vtkSlicerTransformLogic;
-class DIRQAImage;
+class vtkMRMLTransformNode;
+class vtkMRMLGridTransformNode;
+class vtkMRMLScalarVolumeNode;
+class vtkMRMLAnnotationROINode;
+class vtkMRMLMarkupsFiducialNode;
+// class DIRQAImage;
 class vtkMRMLSubjectHierarchyNode;
+class vtkMRMLSliceCompositeNode;
 class QStandardItemModel;
-class QModelIndex;
+class vtkMRMLSegmentationNode;
+// class QModelIndex;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkSlicerRegistrationQualityLogic :
+	
 	public vtkSlicerModuleLogic {
-
+   
 public:
 	static vtkSlicerRegistrationQualityLogic *New();
 	vtkTypeMacro(vtkSlicerRegistrationQualityLogic, vtkSlicerModuleLogic);
@@ -45,47 +53,45 @@ public:
 	 * Will either remake or account for scenario some other way
 	 */
 
-
 	void SaveScreenshot(const char*);
 	void SaveOutputFile();
-        void CalculateDIRQAFrom(int number, int state);
+        void CalculateDIRQAFrom(int number);
 	vtkMRMLScalarVolumeNode* AbsoluteDifference(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*, vtkMRMLAnnotationROINode* inputROI = NULL);
-	bool CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transofrm, double statisticValues[4],bool absoluteDifference=true);
-	bool checkRegistrationIndices(std::vector<vtkSmartPointer<DIRQAImage> >& images,
-								  std::vector<vtkSmartPointer<DIRQAImage> >& warped);
-	void associateImagesToPhase(std::vector<vtkSmartPointer<DIRQAImage> >& images,
-								std::vector<vtkSmartPointer<DIRQAImage> >& warped,
-								std::vector<vtkMRMLSubjectHierarchyNode*>& phaseNodes,
-								std::string shNodeTag);
-	void ReadRegistrationXML();
-	QStandardItemModel* getTreeViewModel();
+	bool CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transofrm, double *statisticValues);
+        bool CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLVectorVolumeNode *vectorNode, double *statisticValues);
+// 	bool checkRegistrationIndices(std::vector<vtkSmartPointer<DIRQAImage> >& images,
+// 								  std::vector<vtkSmartPointer<DIRQAImage> >& warped);
+// 	void associateImagesToPhase(std::vector<vtkSmartPointer<DIRQAImage> >& images,
+// 								std::vector<vtkSmartPointer<DIRQAImage> >& warped,
+// 								std::vector<vtkMRMLSubjectHierarchyNode*>& phaseNodes,
+// 								std::string shNodeTag);
+// 	void ReadRegistrationXML();
 	void FalseColor(int state);
 	void Flicker(int opacity);
 	void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
 	void Movie();
-	void Checkerboard(int state);
+	void Checkerboard();
 	void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
 	vtkMRMLScalarVolumeNode* Jacobian(vtkMRMLVectorVolumeNode *vectorVolume,vtkMRMLAnnotationROINode *inputROI = NULL);
 	vtkMRMLScalarVolumeNode* InverseConsist(vtkMRMLVectorVolumeNode *vectorVolume1,vtkMRMLVectorVolumeNode *vectorVolume2,vtkMRMLAnnotationROINode *inputROI=NULL);
 	void SetDefaultDisplay();
 	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double statisticValues[4]);
+        vtkMRMLVolumeNode* LoadVolumeFromFile( std::string filePath, std::string volumeName);
 
 	vtkMRMLGridTransformNode* CreateTransformFromVector(vtkMRMLVectorVolumeNode* vectorVolume);
 	vtkMRMLVectorVolumeNode* CreateVectorFromTransform(vtkMRMLTransformNode* transform);
 	
 	vtkMRMLScalarVolumeNode* GetWarpedFromMoving(vtkMRMLScalarVolumeNode *movingVolume, vtkMRMLTransformNode *transform);
+        vtkMRMLAnnotationROINode* CreateROIAroundSegment(vtkMRMLSegmentationNode* segmentationNode,std::string segmentStringID);
 	
-	vtkMRMLSubjectHierarchyNode* getPhaseByIndex(int index);
-	bool loadFromSHNode(vtkMRMLSubjectHierarchyNode* sHNode);
-	void showNode(QModelIndex* index);
+// 	vtkMRMLSubjectHierarchyNode* getPhaseByIndex(int index);
+// 	bool loadFromSHNode(vtkMRMLSubjectHierarchyNode* sHNode);
+// 	void showNode(QModelIndex* index);
 
 
 public:
 	void SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node);
 	vtkGetObjectMacro(RegistrationQualityNode, vtkMRMLRegistrationQualityNode);
-
-	void SetVolumesLogic(vtkSlicerVolumesLogic* logic);
-	vtkSlicerVolumesLogic* GetVolumesLogic();
 
 protected:
 	vtkSlicerRegistrationQualityLogic();

@@ -247,7 +247,8 @@ class RegistrationHierarchyWidget:
   def onCalcStatisticsButton(self):
     logic = RegistrationHierarchyLogic()
     labelMap = self.selectLabelMap.currentNode()
-    logic.calculateInvConStatistics(self.regHierarchy,labelMap)
+    #logic.calculateInvConStatistics(self.regHierarchy,labelMap)
+    logic.inverVectors(self.regHierarchy)
   
   def showMenu(self, pos):
     #index = self.columnView.selectionModel().currentIndex()
@@ -392,14 +393,64 @@ class RegistrationHierarchyLogic:
   def __init__(self):
     pass
 
+  def inverVectors(self,regHierarchy):
+     if not regHierarchy:
+       print "No registration Hierarchy"
+       return
+     nPhases = regHierarchy.GetNumberOfChildrenNodes()
+     if nPhases < 1:
+       print "No children nodes."
+       return
+       
+     math = vtk.vtkImageMathematics()
+     math.SetOperationToMultiplyByK()
+     math.SetConstantK(-1)
+     
+     newVectorDirectory = regHierarchy.GetAttribute("DIR" + NAME_VECTOR ) + "/ManualInvert"
+     
+     referenceNumber = regHierarchy.GetAttribute("ReferenceNumber")
+     
+     beginPhase = 0
+     #Loop through all phases:
+     for i in range(beginPhase,nPhases):
+      phaseHierarchyNode = regHierarchy.GetNthChildNode(i)   
+      phaseNumber = phaseHierarchyNode.GetAttribute('PhaseNumber')
+      phaseNode = self.getVolumeFromChild(phaseHierarchyNode,NAME_INVVECTOR)
+      
+      if phaseNode is None:
+         print "No node for " + str(i)
+         continue
+      
+      math.SetInputConnection(phaseNode.GetImageDataConnection())
+      math.Update()
+      
+      phaseNode.SetAndObserveImageData(math.GetOutput())
+      
+      oldString = referenceNumber + "_" + phaseNumber
+      newString = phaseNumber + "_" + referenceNumber
+      
+      if oldString.find(oldString) < 0:
+         print "Wrong name format " + phaseNode.GetName()
+         continue
+      
+      newName = phaseNode.GetName().replace(oldString,newString)
+      
+      phaseNode.SetName(newName)
+
+      self.saveAsCbt(phaseNode,newVectorDirectory)
+      slicer.mrmlScene.RemoveNode(phaseNode)
+      
+     print "All vectors converted"
+  
   def automaticRegistration(self,regHierarchy, overwrite = True, resample = []):
     if not regHierarchy:
       print "No registration Hierarchy"
       return
 
     warpedOn = True
-    cbtOn = False
-    mhaOn = True
+    cbtOn = True
+    mhaOn = False
+    regModule = 'Demons'
     patientName = regHierarchy.GetAttribute("PatientName")
     
     refPhaseNode = self.getReferencePhaseFromHierarchy(regHierarchy)
@@ -480,26 +531,17 @@ class RegistrationHierarchyLogic:
       
       regParameters.movingNumber = phaseNumber
       regParameters.movingHierarchy = phaseHierarchyNode
-      
-      #for i in paramets
-        #regParameters.parameters = []
-      
-      
-      
-      
 
-      regParameters.register()
+      regParameters.register(regModule)
       slicer.mrmlScene.RemoveNode(phaseNode)
 
 
     #Remove all volumes from scene, to free memory 
     slicer.mrmlScene.RemoveNode(regParameters.warpVolume)
-    slicer.mrmlScene.RemoveNode(regParameters.vectorVolume)
+    slicer.mrmlScene.RemoveNode(regParameters.gridTransform)
     #slicer.mrmlScene.RemoveNode(refPhaseNode)
     
     self.createTrafo(regParameters.vectorDirectory,patientName,nPhases,int(referenceNumber))
-
-      
 
   def createTrafo(self,directoryPath,patientName,numberOfPhases,referencePhase):
     output_str = '!filetype trptrf\n'
@@ -1375,6 +1417,10 @@ class RegistrationHierarchyLogic:
 	  print "Can't load volume " + os.path.basename(filePath)
 	  return None
 	
+	
+	#TODO: Carefully!
+	volume.SetOrigin((0,0,0))
+	
 	#Find hierarchy
 	self.setParentNodeFromHierarchy(volume, hierarchyNode)
     else:
@@ -1423,87 +1469,10 @@ class RegistrationHierarchyLogic:
       return False
       
     print "Saving " + node.GetName()
-    #Special Case
-    if cbtOn:
-      #-----Convert transform node into vector node
-      if node.IsA('vtkMRMLGridTransformNode'):
-	print "Converting Transform Node to Vector Field"
-	trans = node.GetTransformFromParent()#.GetConcatenatedTransform(0)
-	#trans.Inverse()
-	#trans.Update()
-	im = trans.GetDisplacementGrid()
-	if im is None:
-	  print "Can't get image data. " + str(im)
-	  return
-	  
-	vectorNode = slicer.vtkMRMLVectorVolumeNode()
-	slicer.mrmlScene.AddNode( vectorNode )
-	vectorNode.SetAndObserveImageData( im )
-	vectorNode.SetName( node.GetName() )
-	vectorNode.SetSpacing( im.GetSpacing() )
-	
-	#vectorNode.SetOrigin( im.GetOrigin() )
-	
-	#Get Right Direction For Vector Volume
-	#matrix = vtk.vtkMatrix4x4()
-	matrix = trans.GetGridDirectionMatrix()
-        #matrix.DeepCopy((-1,0,0,0,0,-1,0,0,0,0,1,0,0,0,0,1))
-        vectorNode.SetIJKToRASDirectionMatrix(matrix)
-
-        if not resample == []:
-	  newVectorNode = self.resampleVolume(vectorNode,resample)
-	  slicer.mrmlScene.RemoveNode(vectorNode)
-	  vectorNode = newVectorNode
-
-      #----- Save vector node ----
-      spacing = vectorNode.GetSpacing()
-      #Changes values due to TRiP demands
-      vectorArray = slicer.util.array(vectorNode.GetID())
-      for i in range(0,3):
-        vectorArray[:,:,:,i] = vectorArray[:,:,:,i] / spacing[i]
-      vectorNode.GetImageData().Modified()
-      
-      scalarNode = slicer.vtkMRMLScalarVolumeNode()
-      slicer.mrmlScene.AddNode( scalarNode )
-      
-      storageNode = scalarNode.CreateDefaultStorageNode()
-      storageNode.SetUseCompression(0)
-      slicer.mrmlScene.AddNode( storageNode )
-      scalarNode.SetAndObserveStorageNodeID(  storageNode.GetID() )
-
-      scalarNode.SetOrigin(vectorNode.GetOrigin())
-      scalarNode.SetSpacing(spacing)
-
-      ijkToRAS = vtk.vtkMatrix4x4()
-      vectorNode.GetIJKToRASMatrix(ijkToRAS)
-      scalarNode.SetIJKToRASMatrix(ijkToRAS)
-
-      extract = vtk.vtkImageExtractComponents()
-      extract.SetInput(vectorNode.GetImageData())
-
-      names = [vectorNode.GetName() + "_x",vectorNode.GetName() + "_y",vectorNode.GetName() + "_z"]
-      
-      for i in range(0,3):
-        print "Saving vector field " + names[i]
-        scalarNode.SetName(names[i])
-        extract.SetComponents(i)
-        extract.Update()
-        scalarNode.SetAndObserveImageData( extract.GetOutput() )
-        filePath = directory + "/" + scalarNode.GetName() + ".nhdr"
-        if not slicer.util.saveNode(scalarNode,filePath):
-	  print "Cannot save " + filePath
-        
-      #-----Remove nodes to clear memory
-      slicer.mrmlScene.RemoveNode(vectorNode)
-      slicer.mrmlScene.RemoveNode(scalarNode)
-      
-      return True
-    
     if slicer.util.saveNode(node,filePath):
       #childNode.SetAttribute("FilePath",filePath)
       return True
 
-  
   def loadRoi(self, regHierarchy):
      annotationLogic = slicer.modules.annotations.logic()
      name = regHierarchy.GetAttribute('PatientName') + "_roi"
@@ -1519,6 +1488,65 @@ class RegistrationHierarchyLogic:
      else:
         return None
   
+  
+  def saveAsCbt(self,nodeToBeSaved, directoryPath, referenceVolumeNode = None):
+     
+     if nodeToBeSaved.IsA('vtkMRMLTransformNode'):
+        transformLogic = slicer.modules.transforms.logic()
+        if referenceVolumeNode is None:
+           print "No reference Volume."
+           return False
+           
+        vectorVolume = transformLogic.CreateDisplacementVolumeFromTransform(nodeToBeSaved,referenceVolumeNode,False)
+     elif nodeToBeSaved.IsA('vtkMRMLScalarVolumeNode') or nodeToBeSaved.IsA('vtkMRMLVectorVolumeNode'):
+        vectorVolume = nodeToBeSaved
+        
+     directions = ['x','y','z']
+
+     #Get Right Direction For Vector Volume
+     spacing = vectorVolume.GetSpacing()
+     matrix = vtk.vtkMatrix4x4()
+     vectorVolume.GetIJKToRASDirectionMatrix(matrix)
+          
+     scalarNode = slicer.vtkMRMLScalarVolumeNode()
+     slicer.mrmlScene.AddNode( scalarNode )
+      
+     storageNode = scalarNode.CreateDefaultStorageNode()
+     storageNode.SetUseCompression(0)
+     slicer.mrmlScene.AddNode( storageNode )
+     scalarNode.SetAndObserveStorageNodeID(  storageNode.GetID() )
+
+     scalarNode.SetIJKToRASMatrix(matrix)
+      
+     extract = vtk.vtkImageExtractComponents()
+     extract.SetInputConnection(vectorVolume.GetImageDataConnection())
+     math = vtk.vtkImageMathematics()
+     math.SetOperationToMultiplyByK()
+
+      #----- Save vector node ----
+     for i in range(0,3):
+       name = nodeToBeSaved.GetName() + '_' + directions[i]
+       print "Saving vector field " + name
+       scalarNode.SetName(name)
+       extract.SetComponents(i)
+       extract.Update()
+       math.SetInput1Data(extract.GetOutput())
+       math.SetConstantK(1.0/spacing[i])
+       math.Update()
+       scalarNode.SetAndObserveImageData( math.GetOutput() )
+       scalarNode.SetOrigin(vectorVolume.GetOrigin())
+       scalarNode.SetSpacing(spacing)
+       filePath = directoryPath + "/" + scalarNode.GetName() + ".nhdr"
+       if not slicer.util.saveNode(scalarNode,filePath):
+         print "Cannot save " + filePath
+     
+
+     #-----Remove nodes to clear memory
+     slicer.mrmlScene.RemoveNode(scalarNode)
+     if nodeToBeSaved.IsA('vtkMRMLTransformNode'):
+       slicer.mrmlScene.RemoveNode(vectorVolume)
+      
+     return True
   
   def resampleVolume(self,volumeNode,resample, parentNode = None):
       if not volumeNode:
@@ -1665,7 +1693,7 @@ class registrationParameters():
       self.parameters = {}
       self.warpVolume = None
       self.warpDirectory = ''
-      self.vectorVolume = None
+      self.gridTransform = None
       self.vectorDirectory = ''
       self.vf_F_name = ''
       self.mhaOn = False
@@ -1680,50 +1708,62 @@ class registrationParameters():
       self.warpVolume = warpVolume
       
     def setVectorVolume(self):
-      vectorVolume = slicer.vtkMRMLGridTransformNode()
-      slicer.mrmlScene.AddNode( vectorVolume )
-      storageNode = vectorVolume.CreateDefaultStorageNode()
+      gridTransform = slicer.vtkMRMLGridTransformNode()
+      slicer.mrmlScene.AddNode( gridTransform )
+      storageNode = gridTransform.CreateDefaultStorageNode()
       slicer.mrmlScene.AddNode ( storageNode )
-      vectorVolume.SetAndObserveStorageNodeID( storageNode.GetID() )
-      self.vectorVolume = vectorVolume
+      gridTransform.SetAndObserveStorageNodeID( storageNode.GetID() )
+      self.gridTransform = gridTransform
       
-    def register(self):
+    def register(self,regModule = 'Plastimatch'):
       if not self.referenceNode or not self.movingNode:
 	print "Not enough parameters"
 	return
 	
+      switchPhase = False
       registrationName = self.patientName + "_"  + self.movingNumber + "_" + self.referenceNumber
       if self.warpVolume:
 	self.warpVolume.SetName(registrationName+"_warped")
-      if self.vectorVolume:
-	self.vectorVolume.SetName(registrationName)
+      if self.gridTransform:
+	self.gridTransform.SetName(registrationName)
       if self.mhaOn:
 	self.vf_F_name = self.vectorDirectory + registrationName + "_vf.mha"
 
-      self.setParameters()
+      
       #run plastimatch registration
-      plmslcRegistration= slicer.modules.plastimatch_slicer_bspline
-      slicer.cli.run(plmslcRegistration, None, self.parameters, wait_for_completion=True)
+      if regModule == 'Plastimatch':
+         registrationModule = slicer.modules.plastimatch_slicer_bspline
+         self.setParametersPlastimatch(switchPhase)
+      elif regModule == 'Demons':
+         registrationModule = slicer.modules.brainsdemonwarp
+         self.setParametersDemons(switchPhase)
+      else:
+         print "Error, unknown registration type: " + regModule
+         return
+         
+      slicer.cli.run(registrationModule, None, self.parameters, wait_for_completion=True)
       #Resample if neccesary
       #TODO: Descripton in process.
       #self.resampleVolume()
       #save nodes
       self.saveNodes()
       #Switch
-      
+      switchPhase = True
       
       registrationName = self.patientName + "_"  + self.referenceNumber+ "_" + self.movingNumber
       if self.warpVolume:
 	self.warpVolume.SetName(registrationName+"_warped")
-      if self.vectorVolume:
-	self.vectorVolume.SetName(registrationName)
+      if self.gridTransform:
+	self.gridTransform.SetName(registrationName)
       if self.mhaOn:
 	self.vf_F_name = self.vectorDirectory + registrationName + "_vf.mha"
 
-      self.setParameters()
-      self.switchPhase()
+      if regModule == 'Plastimatch':
+         self.setParametersPlastimatch(switchPhase)
+      elif regModule == 'Demons':
+         self.setParametersDemons(switchPhase)
       
-      slicer.cli.run(plmslcRegistration, None, self.parameters, wait_for_completion=True)
+      slicer.cli.run(registrationModule, None, self.parameters, wait_for_completion=True)
       #Resample if neccesary
       #TODO: Descripton in process.
       #self.resampleVolume()
@@ -1745,7 +1785,7 @@ class registrationParameters():
 	if logic.saveAndWriteNode(self.warpVolume,self.movingHierarchy,name,filePath):
 	  print "Saved Warped Image " + self.warpVolume.GetName()
       
-      if self.vectorVolume:
+      if self.gridTransform:
 	if not self.vectorDirectory:
 	  print "No directory"
 	  return	  
@@ -1753,24 +1793,55 @@ class registrationParameters():
 	  name = NAME_VECTOR
 	else:
 	  name = NAME_INVVECTOR
-	filePath = self.vectorDirectory + self.vectorVolume.GetName() + "_x.ctx"
-	if logic.saveAndWriteNode(self.vectorVolume,self.movingHierarchy,name,filePath,True,self.resample):
-	  print "Saved vector field."
-      
-    
-    def switchPhase(self):
-      if not self.parameters:
-	print "No parameters"
-	return
 	
-      self.parameters["plmslc_fixed_volume"] = self.movingNode.GetID()
-      self.parameters["plmslc_moving_volume"] = self.referenceNode.GetID()
+	if 0:
+	  filePath = self.vectorDirectory
+	  if logic.saveAsCbt(self.gridTransform,filePath,self.referenceNode):
+            print "Saved vector field."
+        else:
+          filePath = self.vectorDirectory + self.gridTransform.GetName() + ".mha"
+          if logic.saveAndWriteNode(self.gridTransform,self.movingHierarchy,name,filePath):
+            print "Saved Warped Image " + self.warpVolume.GetName()
 
-    def setParameters(self):
+
+    def setParametersDemons(self,switchPhase):
+      parameters = {}
+      if switchPhase:
+         parameters["movingVolume"] = self.referenceNode.GetID()
+         parameters["fixedVolume"] = self.movingNode.GetID()
+      else:
+         parameters["fixedVolume"]  = self.referenceNode.GetID()
+         parameters["movingVolume"] = self.movingNode.GetID()
+      
+      parameters["inputPixelType"] = "short"
+
+      if self.warpVolume:
+        parameters["outputVolume"] = self.warpVolume
+      else:
+        parameters["outputVolume"] = ''
+      if self.gridTransform:
+        parameters["outputDisplacementFieldVolume"] = self.gridTransform
+      else:
+        parameters["outputDisplacementFieldVolume"] = ''
+      
+      
+      parameters["registrationFilterType"] = 'Demons'
+      parameters["numberOfPyramidLevels"]  = '4'
+      parameters["minimumFixedPyramid"]    = '16,16,16'
+      parameters["arrayOfPyramidLevelIterations"]  = '300,50,30,20'
+      parameters["numberOfThreads"]  = '8'
+      
+      self.parameters = parameters
+    
+    def setParametersPlastimatch(self, switchPhase):
       parameters = {}
       
-      parameters["plmslc_fixed_volume"] = self.referenceNode.GetID()
-      parameters["plmslc_moving_volume"] = self.movingNode.GetID()
+      if switchPhase:
+         parameters["plmslc_fixed_volume"]  = self.movingNode.GetID()
+         parameters["plmslc_moving_volume"] = self.referenceNode.GetID()
+      else:
+         parameters["plmslc_fixed_volume"]  = self.referenceNode.GetID()
+         parameters["plmslc_moving_volume"] = self.movingNode.GetID()
 
       parameters["plmslc_fixed_fiducials"] = ''
       parameters["plmslc_moving_fiducials"] = ''
@@ -1781,41 +1852,41 @@ class registrationParameters():
 	parameters["plmslc_output_warped"] = self.warpVolume
       else:
 	parameters["plmslc_output_warped"] = ''
-      if self.vectorVolume:
-        parameters["plmslc_output_vf"] = self.vectorVolume
+      if self.gridTransform:
+        parameters["plmslc_output_vf"] = self.gridTransform
       else:
 	parameters["plmslc_output_vf"] = ''
       
-      if not self.vectorVolume and self.vf_F_name:
+      if not self.gridTransform and self.vf_F_name:
         parameters["plmslc_output_vf_f"] = self.vf_F_name
       else:
 	parameters["plmslc_output_vf_f"] = self.vf_F_name
       
       parameters["enable_stage_0"] = False
       
-      parameters["stage_1_resolution"] = '4,4,2'
+      parameters["stage_1_resolution"] = '4,4,4'
       parameters["stage_1_grid_size"] = '50'
-      parameters["stage_1_regularization"] = '0.005'
-      parameters["stage_1_its"] = '200'
+      parameters["stage_1_regularization"] = '0.001'
+      parameters["stage_1_its"] = '50'
       parameters["plmslc_output_warped_1"] = ''
       
       parameters["enable_stage_2"] = True
-      parameters["stage_2_resolution"] = '2,2,1'
-      parameters["stage_2_grid_size"] = '15'
-      parameters["stage_1_regularization"] = '0.005'
-      parameters["stage_2_its"] = '100'
+      parameters["stage_2_resolution"] = '3,3,3'
+      parameters["stage_2_grid_size"] = '35'
+      parameters["stage_1_regularization"] = '0.001'
+      parameters["stage_2_its"] = '50'
       parameters["plmslc_output_warped_2"] = ''
 	
-      parameters["enable_stage_3"] = False
+      parameters["enable_stage_3"] = True
       parameters["stage_3_resolution"] = '1,1,1'
       parameters["stage_3_grid_size"] = '15'
-      parameters["stage_1_regularization"] = '0.005'
-      parameters["stage_3_its"] = '100'
+      parameters["stage_1_regularization"] = '0.001'
+      parameters["stage_3_its"] = '50'
       parameters["plmslc_output_warped_3"] = ''
       self.parameters = parameters
       
     def resampleVolume(self):
-      if not self.vectorVolume or not self.vectorVolume.IsA('vtkMRMLVectorVolumeNode'):
+      if not self.gridTransform or not self.gridTransform.IsA('vtkMRMLVectorVolumeNode'):
         print "No vector volume for resampling."
         return
       
@@ -1827,7 +1898,7 @@ class registrationParameters():
         print "Too many values for resampling."
         return
       
-      oldVectorVolume = self.vectorVolume
+      oldVectorVolume = self.gridTransform
       
       #Create new vector volume
       newVectorVolume = slicer.vtkMRMLVectorVolumeNode()
@@ -1861,7 +1932,7 @@ class registrationParameters():
       clNode = slicer.cli.run(resampleScalarVolume, None, parameters, wait_for_completion=True)
       
       #Remove old vector node and set new:
-      self.vectorVolume = newVectorVolume
+      self.gridTransform = newVectorVolume
       slicer.mrmlScene.RemoveNode(oldVectorVolume)
       
     

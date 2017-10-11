@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.9)
 
-project(SlicerDIRQA)
+set(EXTENSION_NAME SlicerDIRQA)
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_NAME "RegistrationQualityExtension")
@@ -12,18 +12,14 @@ set(EXTENSION_ICONURL "http://viewvc.slicer.org/viewvc.cgi/Slicer4/trunk/Extensi
 set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/4/42/Slicer-r19441-LoadableExtensionTemplate-screenshot.png")
 
 #-----------------------------------------------------------------------------
+project(SlicerDIRQA)
 find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
-
-#-----------------------------------------------------------------------------
-include_directories(tinyxml)
-add_subdirectory(tinyxml)
 
 add_subdirectory(RegistrationQualityModule)
 add_subdirectory(AbsoluteDifference)
 add_subdirectory(JacobianFilter)
 add_subdirectory(InverseConsistency)
-add_subdirectory(AddVectorFields)
 
 #-----------------------------------------------------------------------------
 include(${Slicer_EXTENSION_CPACK})

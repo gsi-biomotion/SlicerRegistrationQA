@@ -23,6 +23,7 @@
 #include <vtkMRMLModelDisplayNode.h>
 #include <vtkMRMLScalarVolumeDisplayNode.h>
 #include <vtkMRMLAnnotationROINode.h>
+#include <vtkMRMLSegmentationNode.h>
 #include <vtkMRMLModelNode.h>
 #include <vtkMRMLColorTableNode.h>
 #include <vtkMRMLTransformNode.h>
@@ -50,6 +51,9 @@
 #include <vtkMRMLSubjectHierarchyNode.h>
 #include <vtkMRMLSubjectHierarchyConstants.h>
 
+// SlicerRT
+#include <vtkSlicerSegmentComparisonModuleLogic.h>
+
 // VTK includes
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
@@ -67,6 +71,8 @@
 #include <vtkMath.h>
 #include <vtkImageAccumulate.h>
 #include <vtkOrientedGridTransform.h>
+#include <vtkSegment.h>
+#include <vtkOrientedImageData.h>
 
 // CTK includes
 #include <ctkVTKWidgetsUtils.h>
@@ -77,21 +83,18 @@
 #include <math.h>
 #include <exception>
 
-#include <tinyxml.h>
-#include <DIRQAImage.h>
 #include <QStandardItemModel>
+
+
 
 
 class vtkSlicerRegistrationQualityLogic::vtkInternal {
 public:
 	vtkInternal();
-	vtkSlicerVolumesLogic* VolumesLogic;
 };
 
 //----------------------------------------------------------------------------
 vtkSlicerRegistrationQualityLogic::vtkInternal::vtkInternal() {
-	this->VolumesLogic = 0;
-//         this->TransformLogic = 0;
 }
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerRegistrationQualityLogic);
@@ -111,19 +114,9 @@ vtkSlicerRegistrationQualityLogic::~vtkSlicerRegistrationQualityLogic() {
 	delete subjectModel;
 }
 //----------------------------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::SetVolumesLogic(vtkSlicerVolumesLogic* logic) {
-	this->Internal->VolumesLogic = logic;
-}
-
-//----------------------------------------------------------------------------
-vtkSlicerVolumesLogic* vtkSlicerRegistrationQualityLogic::GetVolumesLogic() {
-	return this->Internal->VolumesLogic;
-}
-//----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::PrintSelf(ostream& os, vtkIndent indent) {
 	this->Superclass::PrintSelf(os, indent);
 }
-
 //----------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic
 ::SetAndObserveRegistrationQualityNode(vtkMRMLRegistrationQualityNode *node) {
@@ -241,10 +234,7 @@ void vtkSlicerRegistrationQualityLogic::SaveScreenshot(const char* description) 
 	//Get Image Data - copied from qMRMLScreenShotDialog
 	qSlicerApplication* app = qSlicerApplication::application();
 	qSlicerLayoutManager* layoutManager = app->layoutManager();
-	
-
-	QWidget* widget = 0;
-	widget = layoutManager->viewport();
+        
 	QImage screenShot = ctk::grabVTKWidget(layoutManager->viewport());
 	
 	// Rescale the image which gets saved
@@ -432,12 +422,8 @@ void vtkSlicerRegistrationQualityLogic::SaveOutputFile() {
 	std::cerr << "Output file save to: " << fileName << "" << std::endl;
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state){
+void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number){
   // 1. AbsoluteDifference, 2. Jacobian, 3. InverseConsistency, 4. Fiducial Distance, 5. Inverse Fiducial distance
-  if(!state) {
-    this->SetDefaultDisplay();
-    return;
-  }
   if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
 	    vtkErrorMacro("CalculateDIRQAFrom: Invalid scene or parameter set node!");
 	    return;   
@@ -450,10 +436,11 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
   
   // Color table node id:
   char colorTableNodeID[64];
+  double *statisticValues;
   // All logic need reference Volume and ROI (if exists)
   vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
+				this->RegistrationQualityNode->GetFixedVolumeNodeID()));
   vtkMRMLAnnotationROINode *inputROI = vtkMRMLAnnotationROINode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetROINodeID()));
@@ -480,7 +467,6 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
       this->RegistrationQualityNode->DisableModifiedEventOn();
       this->RegistrationQualityNode->SetAbsoluteDiffVolumeNodeID(absoluteDiffVolume->GetID());
       // Get mean and std from squared difference volume
-      double statisticValues[4];
       this->CalculateStatistics(absoluteDiffVolume,statisticValues);     
       this->RegistrationQualityNode->SetAbsoluteDiffStatistics( statisticValues );
       this->RegistrationQualityNode->DisableModifiedEventOff();     
@@ -514,7 +500,6 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
       }
       this->RegistrationQualityNode->DisableModifiedEventOn();
       this->RegistrationQualityNode->SetJacobianVolumeNodeID(jacobianVolume->GetID());      
-      double statisticValues[4]; // 1. Mean 2. STD 3. Max 4. Min
       this->CalculateStatistics(jacobianVolume,statisticValues);
       this->RegistrationQualityNode->SetJacobianStatistics( statisticValues );
       this->RegistrationQualityNode->DisableModifiedEventOff();
@@ -554,7 +539,6 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
       }
       this->RegistrationQualityNode->DisableModifiedEventOn();
       this->RegistrationQualityNode->SetInverseConsistVolumeNodeID(inverseConsistVolume->GetID());
-      double statisticValues[4]; // 1. Mean 2. STD 3. Max 4. Min
       this->CalculateStatistics(inverseConsistVolume,statisticValues);
       this->RegistrationQualityNode->SetInverseConsistStatistics( statisticValues );
       this->RegistrationQualityNode->DisableModifiedEventOff();     
@@ -570,13 +554,12 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
     this->SetForegroundImage(referenceVolume,inverseConsistVolume,0.5);
   }
   else if( number == 4 || number ==5 ){
-	 double statisticValues[4]; // 1. Mean 2. STD 3. Max 4. Min
         vtkMRMLMarkupsFiducialNode *referenceFiducals = vtkMRMLMarkupsFiducialNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetFiducialNodeID()));
+				this->RegistrationQualityNode->GetFixedFiducialNodeID()));
         vtkMRMLMarkupsFiducialNode *movingFiducials = vtkMRMLMarkupsFiducialNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetInvFiducialNodeID()));
+				this->RegistrationQualityNode->GetMovingFiducialNodeID()));
         vtkMRMLTransformNode *transform;
         if (number == 4){
 		transform = vtkMRMLTransformNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(
@@ -588,7 +571,7 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number,int state)
         }
         else if (number == 5){
 		transform = vtkMRMLTransformNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetInvTransformNodeID()));
+				this->RegistrationQualityNode->GetMovingTransformNodeID()));
 		if (!this->CalculateFiducialsDistance(movingFiducials, referenceFiducals, transform, statisticValues) ){
 			vtkErrorMacro("CalculateDIRQAFrom: Cannot calculate inverse Fiducal distance!");
 			return;
@@ -621,21 +604,23 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::AbsoluteDifference(v
 		return NULL;
 	}
 
-	if(!this->Internal->VolumesLogic){
-		std::cerr << "AbsoluteDifference: ERROR: failed to get hold of Volumes logic" << std::endl;
-		return NULL;
-	}
+// 	if(!this->Internal->VolumesLogic){
+// 		std::cerr << "AbsoluteDifference: ERROR: failed to get hold of Volumes logic" << std::endl;
+// 		return NULL;
+// 	}
 
-	vtkMRMLScalarVolumeNode *outputVolume = NULL;
-	vtkMRMLScalarVolumeNode *svnode = vtkMRMLScalarVolumeNode::SafeDownCast(referenceVolume);
+	vtkSmartPointer<vtkMRMLScalarVolumeNode> outputVolume = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
+	vtkSmartPointer<vtkMRMLScalarVolumeNode> svnode;
+	svnode = vtkMRMLScalarVolumeNode::SafeDownCast(referenceVolume);
 	std::string outSS;
 	std::string Name("-absoluteDifference");
 
 	outSS = (referenceVolume->GetName() + Name);
 	outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
-	    
+	
+        vtkNew<vtkSlicerVolumesLogic> VolumesLogic;
 	if(svnode){
-	      outputVolume = this->Internal->VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.c_str());
+	      outputVolume = VolumesLogic->CloneVolume(this->GetMRMLScene(), referenceVolume, outSS.c_str());
 	  
 	}
 	else{
@@ -683,7 +668,24 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::AbsoluteDifference(v
 	return outputVolume;
 }
 //---------------------------------------------------------------------------
-bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transform, double statisticValues[4], bool absoluteDifference/*=true*/) {
+bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLVectorVolumeNode *vectorNode, double *statisticValues) {
+   if (!this->GetMRMLScene() ) {
+            vtkErrorMacro("CalculateFiducialsDistance: Invalid scene or parameter set node!");
+            throw std::runtime_error("Internal Error, see command line!");
+   }
+   vtkSmartPointer<vtkMRMLTransformNode> transform;
+   transform = this->CreateTransformFromVector(vectorNode);
+   if ( this->CalculateFiducialsDistance(referenceFiducals,movingFiducials,transform,statisticValues)){
+      this->GetMRMLScene()->RemoveNode(transform);
+      return true;
+   }
+   else{
+      this->GetMRMLScene()->RemoveNode(transform);
+      return false;
+   }
+}
+//---------------------------------------------------------------------------
+bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transform, double *statisticValues) {
 
 	if (!this->GetMRMLScene() ) {
 	    vtkErrorMacro("CalculateFiducialsDistance: Invalid scene or parameter set node!");
@@ -694,13 +696,14 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 		throw std::runtime_error("Internal Error, see command line!");
 	}
 	
+	
 	int fiducialNumber = referenceFiducals->GetNumberOfFiducials();
 	double sumDistance = 0;
 	double maxDistance = 0;
 	double minDistance = 0;
 	double distanceDiff;
-        double distanceBefore;
-        double distanceAfter;
+        double distanceBefore = 0;
+        double distanceAfter = 0;
 	
 	if (fiducialNumber < 1 ||  movingFiducials->GetNumberOfFiducials() < 1 ){
 		vtkErrorMacro("CalculateFiducialsDistance: Need more then 1 fiducial!");
@@ -713,29 +716,23 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 	}
 	
 	// Copy Moving fiducials so we can apply transformation
-	vtkMRMLMarkupsFiducialNode* warpedFiducials = NULL;
+	vtkSmartPointer<vtkMRMLMarkupsFiducialNode> warpedFiducials = vtkSmartPointer<vtkMRMLMarkupsFiducialNode>::New();
 	vtkMRMLScene *scene = this->GetMRMLScene();	  
-	vtkNew<vtkMRMLMarkupsFiducialNode> warpedFiducialsNew;
 	vtkNew<vtkMRMLMarkupsDisplayNode> wFDisplayNode;
 	vtkNew<vtkMRMLMarkupsFiducialStorageNode> wFStorageNode;
 	scene->AddNode(wFDisplayNode.GetPointer());
 	scene->AddNode(wFStorageNode.GetPointer());
-	warpedFiducialsNew->SetAndObserveDisplayNodeID(wFDisplayNode->GetID());
-	warpedFiducialsNew->SetAndObserveStorageNodeID(wFStorageNode->GetID());
-	scene->AddNode(warpedFiducialsNew.GetPointer());
-	warpedFiducials = warpedFiducialsNew.GetPointer();
+	warpedFiducials->SetAndObserveDisplayNodeID(wFDisplayNode->GetID());
+	warpedFiducials->SetAndObserveStorageNodeID(wFStorageNode->GetID());
+	scene->AddNode(warpedFiducials);
 	
 	//Apply Transform to movingFiducials
 	warpedFiducials->Copy(movingFiducials);
 	warpedFiducials->SetAndObserveTransformNodeID( transform->GetID() );
         
         //Harden Transform
-        vtkSlicerTransformLogic* transformModuleLogic = vtkSlicerTransformLogic::New();
-        if (! transformModuleLogic->hardenTransform(warpedFiducials)){
-           vtkErrorMacro("CalculateFiducialsDistance: Can't harden transform!");
-           throw std::runtime_error("Internal Error, see command line!");
-        }
-	
+        warpedFiducials->HardenTransform();
+
 	//Rename copied fiducials
 	std::string outSS;
 	std::string Name("-warped");
@@ -757,16 +754,14 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 		referenceFiducals->GetNthFiducialWorldCoordinates(i,referencePosition);
 		movingFiducials->GetNthFiducialWorldCoordinates(i,movingPosition);
 		warpedFiducials->GetNthFiducialWorldCoordinates(i,warpedPosition);
-		distanceDiff = 0;
                 distanceBefore = 0;
                 distanceAfter = 0;
+		distanceDiff = 0;
 		for (int j=0; j<3; j++) {
 			//Calculate absolute difference in mm
-			distanceBefore += fabs(referencePosition[j] - movingPosition[j]);
-                        distanceAfter += fabs(referencePosition[j] - warpedPosition[j]);
-                }
-			if (absoluteDifference) 	distanceDiff = distanceBefore - distanceAfter;
-			
+			distanceBefore += (referencePosition[j] - movingPosition[j])*(referencePosition[j] - movingPosition[j]);
+                        distanceAfter += (referencePosition[j] - warpedPosition[j])*(referencePosition[j] - warpedPosition[j]);
+                }	
 		
 		if ( i == 0  ){
 				maxDistance = distanceDiff;
@@ -779,434 +774,17 @@ bool vtkSlicerRegistrationQualityLogic::CalculateFiducialsDistance(vtkMRMLMarkup
 
 		sumDistance += distanceDiff;
 // 		std::cerr << "Fiducial: " << i <<"/" << fiducialNumber << "," << " with distance: " << distanceDiff <<   std::endl;
-                std::cerr << "Fiducial: " << i <<"/" << fiducialNumber << "" << " before: " << distanceBefore << " after: " << distanceAfter <<  std::endl;
+                statisticValues[2*i] = sqrt(distanceBefore);
+                statisticValues[2*i+1] = sqrt(distanceAfter);
+                std::cerr << "Fiducial: " << i <<"/" << fiducialNumber << "" << " before: " << statisticValues[2*i] << " after: " << statisticValues[2*i+1] <<  std::endl;
        
 	}
-	statisticValues[0] = sumDistance / (  fiducialNumber);
-	statisticValues[1] = 0;
-	statisticValues[2] = maxDistance;
-	statisticValues[3] = minDistance;
+// 	statisticValues[0] = sumDistance / (  fiducialNumber);
+// 	statisticValues[1] = 0;
+// 	statisticValues[2] = maxDistance;
+// 	statisticValues[3] = minDistance;
 	return true;
 }
-
-vtkMRMLSubjectHierarchyNode* vtkSlicerRegistrationQualityLogic::getPhaseByIndex(int index) {
-	if(!RegistrationQualityNode->GetSubjectHierarchyNodeID()) {
-		cout << "Error: No SubjectHierarchyNodeID" << endl;
-		return NULL;
-	}
-	vtkMRMLSubjectHierarchyNode* shNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
-		GetMRMLScene()->GetNodeByID(RegistrationQualityNode->GetSubjectHierarchyNodeID()));
-
-	if(!shNode) {
-		cout << "Error: Invalid RegistrationNode" << endl;
-		return NULL;
-	}
-
-	cout << "looking for index " << index << endl;
-	for(int i=0; i<=index;i++) {
-		cout << "trying node " << i << endl;
-		vtkMRMLSubjectHierarchyNode* childNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(shNode->GetNthChildNode(index));
-		if(childNode) {
-			cout << "node " << i << " exists" << endl;
-			const char* attr = childNode->GetAttribute("index");
-			if(attr && atoi(attr) == index) {
-				cout << "node " << i << " has correct index: " << attr << endl;
-				return childNode;
-			}
-		}
-	}
-
-	return NULL;
-
-}
-
-bool vtkSlicerRegistrationQualityLogic::loadFromSHNode(vtkMRMLSubjectHierarchyNode* sHNode) {
-	if(!sHNode) {
-		cout << "Error: Cannot load from nullpointer" << endl;
-		return false;
-	}
-
-	const char* filename = sHNode->GetAttribute("filename");
-	const char* tag = sHNode->GetAttribute("tag");
-	cout << "Image: " << sHNode->GetID() << " file=" << (filename!=NULL?filename:"invalid") << endl;
-
-	if(filename && tag && !sHNode->GetAssociatedNodeID()) {
-		vtkMRMLVolumeNode* imageNode = Internal->VolumesLogic->AddArchetypeVolume(filename, tag, 0, NULL);
-
-		if(imageNode) {
-			sHNode->SetAssociatedNodeID(imageNode->GetID());
-			cout << "New volume successfully loaded!" << endl;
-		} else {
-			cout << "Volume could not be loaded!" << endl;
-			return false;
-		}
-	}
-	return true;
-}
-	
-void vtkSlicerRegistrationQualityLogic::showNode(QModelIndex* index) {
-
-	if(!index->isValid()) {
-		cout << "vtkSlicerRegistrationQualityLogic::showNode: Invalid QModelIndex" << endl;
-		return;
-	}
-
-	if(index->parent().isValid()) {
-		cout << "vtkSlicerRegistrationQualityLogic::showNode: Parent index should not be valid for phase node" << endl;
-		return;
-	}
-
-	vtkMRMLSubjectHierarchyNode* node = vtkMRMLSubjectHierarchyNode::SafeDownCast(static_cast<vtkObjectBase*>(
-		getTreeViewModel()->itemFromIndex(*index)->data().value<void*>()));
-	if(!node) {
-		cout << "node is null" << endl;
-		return;
-	}
-
-	cout << "NodeID: " << node->GetID() << endl;
-
-	vtkMRMLSubjectHierarchyNode* imageSHNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(node,"Image");
-	if(imageSHNode) {
-		loadFromSHNode(imageSHNode);
-	} else {
-		cout << "no child with name \"Image\"" << endl;
-	}
-
-	vtkMRMLSubjectHierarchyNode* warpedSHNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(node,"Warped");
-	if(warpedSHNode) {
-		loadFromSHNode(warpedSHNode);
-	} else {
-		cout << "no child with name \"Warped\"" << endl;
-	}
-
-	vtkMRMLSubjectHierarchyNode* vectorSHNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(node,"Vector");
-	if(vectorSHNode) {
-		loadFromSHNode(vectorSHNode);
-	} else {
-		cout << "no child with name \"Vector\"" << endl;
-	}
-
-	const char* refIndex = node->GetAttribute("reference");
-	if(!refIndex) {
-		cout << "Error: No reference phase" << endl;
-	}
-	vtkMRMLSubjectHierarchyNode* refNode = getPhaseByIndex(atoi(refIndex));
-	if(refNode) {
-		vtkMRMLSubjectHierarchyNode* refImageNode = vtkMRMLSubjectHierarchyNode::GetChildWithName(refNode,"Image");
-		if(refImageNode) {
-			loadFromSHNode(refImageNode);
-		} else {
-			cout << "no child with name \"Image\" in reference node" << endl;
-		}
-	} else {
-		cout << "Error: Reference Node doesn't exist?" << endl;
-	}
-
-}
-
-bool vtkSlicerRegistrationQualityLogic::checkRegistrationIndices(
-	std::vector<vtkSmartPointer<DIRQAImage> >& images,
-	std::vector<vtkSmartPointer<DIRQAImage> >& warped) {
-
-	// Check images for consistent reference-phase-indices
-	std::sort(warped.begin(), warped.end(), DIRQAImage::compareOnFixedIndex);
-	//images have to be and warped-reference-phases are sorted based on the same index
-	// --> easier lookup of corresponding images
-	std::vector<vtkSmartPointer<DIRQAImage> >::iterator correspondingImage = images.begin();
-	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
-
-		while(correspondingImage!=images.end()) {
-			if((*correspondingImage)->getIndex() != (*it)->getFixedIndex()) {
-				++correspondingImage;
-			} else {
-				break;
-			}
-		}
-
-		if(correspondingImage==images.end()) {
-			cout << "Error: Reference-image for " << **it << " does not exist." << endl;
-			return false;
-		} else {
-			cout << "Info: Reference-image for " << **it << " exists." << endl;
-		}
-	}
-// 	cout << "Info: Reference-images for all warped-images are OK." << endl;
-
-	// Check warped-images for consistent indices (Not two warped versions of the same image/phase)
-	// Corresponding image must exist
-	std::sort(warped.begin(), warped.end(), DIRQAImage::compareOnIndex);
-	int oldIndex=-1;
-	//images and warped are sorted based on the same index --> easier lookup of corresponding images
-	correspondingImage = images.begin();
-	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
-		int newIndex = (*it)->getIndex();
-		if(newIndex-oldIndex <= 0) {
-			cout << "Error: Warped-image-indices must be unique and >=0." << endl;
-			return false;
-		}
-
-		while(correspondingImage!=images.end()) {
-			if((*correspondingImage)->getIndex() != (*it)->getIndex()) {
-				++correspondingImage;
-			} else {
-				break;
-			}
-		}
-
-		if(correspondingImage==images.end()) {
-			cout << "Error: No corresponding image for " << **it << "." << endl;
-			return false;
-		} else {
-			cout << "Info: Corresponding image for " << **it << " exists." << endl;
-		}
-		oldIndex = newIndex;
-	}
-// 	cout << "Info: Warped-image-indices are OK." << endl;
-	return true;
-}
-
-void vtkSlicerRegistrationQualityLogic::associateImagesToPhase(
-	std::vector<vtkSmartPointer<DIRQAImage> >& images,
-	std::vector<vtkSmartPointer<DIRQAImage> >& warped,
-	std::vector<vtkMRMLSubjectHierarchyNode*>& phaseNodes,
-	std::string shNodeTag) {
-
-	if (!GetMRMLScene() || !RegistrationQualityNode) {
-		vtkErrorMacro("associateImagesToPhase: Invalid scene or parameter set node!");
-		return;
-	}
-
-	uint32_t imageIndex = 0;
-
-	// Associate warped images to corresponding phase-SH-nodes
-	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
-
-		// Find corresponding image-index
-		while(imageIndex < images.size()) {
-			if(images.at(imageIndex)->getIndex() != (*it)->getIndex()) {
-				imageIndex++;
-			} else {
-				break;
-			}
-		}
-		if(imageIndex >= images.size()) {
-			throw std::logic_error("Error: This cannot happen! I just checked it.");
-		}
-
-		// phaseNodes has same order (and size) as images
-		vtkMRMLSubjectHierarchyNode* currentWarpedImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
-			GetMRMLScene(), phaseNodes.at(imageIndex), NULL, shNodeTag.c_str(), NULL);
-		currentWarpedImage->SetAttribute("filename",(*it)->getFileName().c_str());
-		currentWarpedImage->SetAttribute("tag",(*it)->getTag().c_str());
-		currentWarpedImage->SetAttribute("DIRQAWarped",""); // TODO set for Vector, ... accordingly
-
-		char refIndex[21]; // enough for 64bit numbers + \0
-		sprintf(refIndex,"%d",(*it)->getFixedIndex());
-		const char* reference = phaseNodes.at(imageIndex)->GetAttribute("reference");
-
-// 		currentWarpedImage->SetAttribute("reference",refIndex); // set image attribute
-		if(reference) { // set phase attribute
-			if(atoi(reference) != (*it)->getFixedIndex()) {
-				throw std::runtime_error("Error: Inconsistent reference phase within phase.");
-			} else {
-				cout << "ref phase already set" << endl;
-			}
-		} else {
-			phaseNodes.at(imageIndex)->SetAttribute("reference",refIndex);
-			cout << "setting ref phase" << endl;
-		}
-		currentWarpedImage = currentWarpedImage!=NULL?NULL:currentWarpedImage;
-	}
-}
-
-void appendSHNodeToQItem(vtkMRMLSubjectHierarchyNode* node, QStandardItem* item) {
-	if(!item || !node) return;
-
-	for(int i=0; i<(node->GetNumberOfChildrenNodes()); ++i) {
-		vtkMRMLSubjectHierarchyNode* childNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node->GetNthChildNode(i));
-		if(!childNode) {
-			cout << "Error: SHNode is NULL!" << endl;
-			continue;
-		}
-		QStandardItem* newItem = new QStandardItem();
-		newItem->setText(childNode->GetNameWithoutPostfix().c_str());
-		newItem->setData(QVariant::fromValue(static_cast<void*>(childNode)));
-		appendSHNodeToQItem(childNode, newItem);
-		item->appendRow(newItem);
-	}
-}
-
-void vtkSlicerRegistrationQualityLogic::ReadRegistrationXML(/*vtkMRMLScene* scene*/) {
-
-// 	TiXmlDocument doc("/home/brandtts/steeringfile.xml");
-	std::string xmlFileName = RegistrationQualityNode->GetXMLFileName();
-	if(xmlFileName == "") {
-		throw std::runtime_error("Please enter path to proper XML file!");
-	}
-
-	TiXmlDocument doc(xmlFileName.c_str());
-	if(!doc.LoadFile()) {
-		cout << "Fehler beim Laden" << endl;
-		throw std::runtime_error("Unable to read XML-File");
-	}/* else {
-		// 		dump(&doc);
-	}*/
-
-	vtkMRMLScene* scene = GetMRMLScene();
-
-	if (!scene || !RegistrationQualityNode) {
-		vtkErrorMacro("ReadRegistrationXML: Invalid scene or parameter set node!");
-		return;
-	}
-
-	// First accumulate all "images" etc. from file
-	std::vector<vtkSmartPointer<DIRQAImage> > images;
-	std::vector<vtkSmartPointer<DIRQAImage> > warped;
-	std::vector<vtkSmartPointer<DIRQAImage> > vector;
-
-	//Create SH-Node
-// 	qSlicerSubjectHierarchyDefaultPlugin* shDefaultPlugin = qSlicerSubjectHierarchyPluginHandler::instance()->defaultPlugin();
-// 	vtkMRMLSubjectHierarchyNode* regSHNode = shDefaultPlugin->createChildNode(NULL,"Registration");
-
-	// Maps strings ("image", ...) to enum-values (IMAGE, ...)
-	DIRQAImage::initHashMap();
-
-	TiXmlNode *child=doc.FirstChild("dirqafile"); //TODO check NULL
-	if(!child) {
-		cout << "XML-File has wrong format" << endl;
-		throw std::runtime_error("Unable to read XML-File");
-	}
-
-	child=child->FirstChild(/*"image"*/);
-	while(child!=0) {
-// 		cout << "--constructor--" << endl;
-		vtkSmartPointer<DIRQAImage> di = vtkSmartPointer<DIRQAImage>::New();
-		di->readFromXML(*child);
-		// 		di->load(Internal->VolumesLogic);
-// 		if(di->getImageType()==DIRQAImage::IMAGE) {
-// 			vtkMRMLSubjectHierarchyNode* phaseSHNode = shDefaultPlugin->createChildNode(regSHNode,di->getTag().c_str());
-// 			vtkMRMLSubjectHierarchyNode* imageSHNode = shDefaultPlugin->createChildNode(phaseSHNode,"Image");
-//
-// 		}
-		switch(di->getImageType()) {
-			case DIRQAImage::IMAGE:
-				images.push_back(di);
-				break;
-			case DIRQAImage::WARPED:
-				warped.push_back(di);
-				break;
-			case DIRQAImage::VECTOR:
-				vector.push_back(di);
-				break;
-			default:
-				cout << "Currently not supported!" << endl;
-				di->Delete();
-				break;
-		}
-
-
-		child=child->NextSibling(/*"image"*/);
-	}
-
-	// Report all "images" read from file
-	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = images.begin(); it!=images.end(); ++it) {
-		cout << "|" << **it << "|" << endl;
-	}
-	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = warped.begin(); it!=warped.end(); ++it) {
-		cout << "|" << **it << "|" << endl;
-	}
-	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = vector.begin(); it!=vector.end(); ++it) {
-		cout << "|" << **it << "|" << endl;
-	}
-
-	if(images.empty()) {
-		cout << "No images found in xml-file. Nothing to do.";
-		return;
-	}
-
-	{
-		// Check images for consistent indices
-		std::sort(images.begin(), images.end(), DIRQAImage::compareOnIndex);
-		int oldIndex=-1;
-		for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = images.begin(); it!=images.end(); ++it) {
-			int newIndex = (*it)->getIndex();
-			if(newIndex-oldIndex <= 0) {
-				cout << "Error: Image-indices must be unique and >=0." << endl;
-				return;
-			}
-			oldIndex = newIndex;
-		}
-		if( (uint32_t) (images.back()->getIndex() - images.front()->getIndex()) >= images.size()) {
-			cout << "Warning: Image-indices are not contigous." << endl;
-		} else {
-			cout << "Info: Image-indices are OK." << endl;
-		}
-	}
-
-	if(checkRegistrationIndices(images, warped)) {
-		cout << "Info: Warped-image-indices are OK." << endl;
-	} else {
-		return;
-	}
-
-	if(checkRegistrationIndices(images, vector)) {
-		cout << "Info: Vector-image-indices are OK." << endl;
-	} else {
-		return;
-	}
-
-	// Create main SubjectHierarchyNode
-	// Don't need SmartPointers here (Nodes are created within the scene)
-	vtkMRMLSubjectHierarchyNode* registrationSHNode = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
-		scene, NULL, "Subject", "Registration", NULL);
-
-	// Set SubjectHierarchy "node type" (used for the NodeComboBox)
-	registrationSHNode->SetAttribute("DIRQARegistration","");
-
-	// Each image defines one phase. Phase name like image tag
-	std::vector<vtkMRMLSubjectHierarchyNode*> phaseNodes;
-	for(std::vector<vtkSmartPointer<DIRQAImage> >::iterator it = images.begin(); it!=images.end(); ++it) {
-		vtkMRMLSubjectHierarchyNode* currentPhase = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
-			scene, registrationSHNode, "Study",
-			(*it)->getTag().c_str(), NULL
-		);
-		phaseNodes.push_back(currentPhase);
-
-		vtkMRMLSubjectHierarchyNode* currentImage = vtkMRMLSubjectHierarchyNode::CreateSubjectHierarchyNode(
-			scene, currentPhase, NULL, "Image", NULL);
-
-		// Set SubjectHierarchy "node types"
-		currentPhase->SetAttribute("DIRQAPhase","");
-		currentImage->SetAttribute("DIRQAImage","");
-
-		char index[21]; // enough for 64bit numbers + \0
-		sprintf(index,"%d",(*it)->getIndex());
-		currentPhase->SetAttribute("index",index);
-
-// 		(*it)->load(Internal->VolumesLogic); //TODO set path to load later
-// 		currentImage->SetAssociatedNodeID((*it)->getNodeID().c_str());
-		currentImage->SetAttribute("filename",(*it)->getFileName().c_str());
-		currentImage->SetAttribute("tag",(*it)->getTag().c_str());
-		currentImage = currentImage!=NULL?NULL:currentImage;
-	}
-
-	associateImagesToPhase(images, warped, phaseNodes, "Warped");
-	associateImagesToPhase(images, vector, phaseNodes, "Vector");
-
-	cout << "registrationSHNode->GetID() = " << registrationSHNode->GetID() << endl;
-	this->RegistrationQualityNode->SetAndObserveSubjectHierarchyNodeID(registrationSHNode->GetID());
-
-	subjectModel->clear();
-	QStandardItem* item = subjectModel->invisibleRootItem();
-	appendSHNodeToQItem(registrationSHNode, item);
-// 	subjectModel->appendRow(item);
-
-}
-
-QStandardItemModel* vtkSlicerRegistrationQualityLogic::getTreeViewModel() {
-	return subjectModel;
-}
-
 //--- Image Checks -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
@@ -1218,7 +796,7 @@ void vtkSlicerRegistrationQualityLogic::FalseColor(int state) {
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
+				this->RegistrationQualityNode->GetFixedVolumeNodeID()));
 
 	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
@@ -1259,7 +837,7 @@ void vtkSlicerRegistrationQualityLogic::Flicker(int opacity) {
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
+				this->RegistrationQualityNode->GetFixedVolumeNodeID()));
 
 	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
@@ -1383,7 +961,7 @@ void vtkSlicerRegistrationQualityLogic::Movie() {
 	}
 }
 //----------------------------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
+void vtkSlicerRegistrationQualityLogic::Checkerboard() {
 	//   Calling checkerboardfilter cli. Logic has been copied and modified from CropVolumeLogic onApply.
 	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
 		vtkErrorMacro("Invalid scene or parameter set node!");
@@ -1391,26 +969,20 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 	}
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
+				this->RegistrationQualityNode->GetFixedVolumeNodeID()));
 	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
 				this->RegistrationQualityNode->GetWarpedVolumeNodeID()));
 
-	if (!state) {
-	      	this->SetDefaultDisplay();
-		return;
-	}
 
 	if (!referenceVolume || !warpedVolume) {
 		throw std::runtime_error("Reference or warped volume not set!");
 	}
+	
+	//Go to default display, so that we have normal colors 
+	this->SetDefaultDisplay();
 
 	if (!this->RegistrationQualityNode->GetCheckerboardVolumeNodeID()) {
-		if(!this->Internal->VolumesLogic) {
-			vtkErrorMacro("Failed to get hold of Volumes logic!");
-			throw std::runtime_error("Internal Error, see command line!");
-		}
-
 		int PatternValue = this->RegistrationQualityNode->GetCheckerboardPattern();
 		std::string outSS;
 		std::string Name("-CheckerboardPattern_");
@@ -1419,7 +991,9 @@ void vtkSlicerRegistrationQualityLogic::Checkerboard(int state) {
 		outSS = referenceVolume->GetName() + Name + strPattern.str();
 		outSS = this->GetMRMLScene()->GenerateUniqueName(outSS);
 		
-		vtkMRMLScalarVolumeNode *outputVolume = this->Internal->VolumesLogic->CloneVolume(
+		vtkNew<vtkSlicerVolumesLogic> VolumesLogic;
+                
+                vtkMRMLScalarVolumeNode *outputVolume = VolumesLogic->CloneVolume(
 			this->GetMRMLScene(), referenceVolume, outSS.c_str());
 		if (!outputVolume) {
 			vtkErrorMacro("Could not create Checkerboard volume!");
@@ -1471,16 +1045,14 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::Jacobian(vtkMRMLVect
 	if (!vectorVolume ) {
 		throw std::runtime_error("Vector field not set!");
 	}
-	vtkMRMLScalarVolumeNode* outputVolume = NULL;
+	vtkSmartPointer<vtkMRMLScalarVolumeNode> outputVolume = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
 	// Create new scalar volume
-	vtkNew<vtkMRMLScalarVolumeNode> outputVolumeNew;
 	vtkNew<vtkMRMLScalarVolumeDisplayNode> sDisplayNode;
 	sDisplayNode->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
 	this->GetMRMLScene()->AddNode(sDisplayNode.GetPointer());
-	outputVolumeNew->SetAndObserveDisplayNodeID(sDisplayNode->GetID());
-	outputVolumeNew->SetAndObserveStorageNodeID(NULL);
-	this->GetMRMLScene()->AddNode(outputVolumeNew.GetPointer());
-	outputVolume = outputVolumeNew.GetPointer();
+	outputVolume->SetAndObserveDisplayNodeID(sDisplayNode->GetID());
+	outputVolume->SetAndObserveStorageNodeID(NULL);
+	this->GetMRMLScene()->AddNode(outputVolume);
 	
 	if(!outputVolume){
 	  throw std::runtime_error("Can't create output volume!");
@@ -1539,16 +1111,15 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::InverseConsist(vtkMR
 	    throw std::runtime_error("Volumes not set!");
 	}
 	
-	vtkMRMLScalarVolumeNode* outputVolume = NULL;
 	// Create new scalar volume
-	vtkNew<vtkMRMLScalarVolumeNode> outputVolumeNew;
+	vtkSmartPointer<vtkMRMLScalarVolumeNode> outputVolume = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
 	vtkNew<vtkMRMLScalarVolumeDisplayNode> sDisplayNode;
 	sDisplayNode->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
 	this->GetMRMLScene()->AddNode(sDisplayNode.GetPointer());
-	outputVolumeNew->SetAndObserveDisplayNodeID(sDisplayNode->GetID());
-	outputVolumeNew->SetAndObserveStorageNodeID(NULL);
-	this->GetMRMLScene()->AddNode(outputVolumeNew.GetPointer());
-	outputVolume = outputVolumeNew.GetPointer();
+	outputVolume->SetAndObserveDisplayNodeID(sDisplayNode->GetID());
+	outputVolume->SetAndObserveStorageNodeID(NULL);
+	this->GetMRMLScene()->AddNode(outputVolume);
+
 	
 	if(!outputVolume){
 	  throw std::runtime_error("Can't create output volume!");
@@ -1609,16 +1180,14 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::GetWarpedFromMoving(
                 return NULL;
 	}
 	
-	vtkMRMLScalarVolumeNode* outputVolume = NULL;
 	// Create new scalar volume
-	vtkNew<vtkMRMLScalarVolumeNode> outputVolumeNew;
+	vtkSmartPointer<vtkMRMLScalarVolumeNode> outputVolume = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
 	vtkNew<vtkMRMLScalarVolumeDisplayNode> sDisplayNode;
 	sDisplayNode->SetAndObserveColorNodeID("vtkMRMLColorTableNodeGrey");
 	this->GetMRMLScene()->AddNode(sDisplayNode.GetPointer());
-	outputVolumeNew->SetAndObserveDisplayNodeID(sDisplayNode->GetID());
-	outputVolumeNew->SetAndObserveStorageNodeID(NULL);
-	this->GetMRMLScene()->AddNode(outputVolumeNew.GetPointer());
-	outputVolume = outputVolumeNew.GetPointer();
+	outputVolume->SetAndObserveDisplayNodeID(sDisplayNode->GetID());
+	outputVolume->SetAndObserveStorageNodeID(NULL);
+	this->GetMRMLScene()->AddNode(outputVolume);
 	
 	if(!outputVolume){
 	  throw std::runtime_error("Can't create output volume!");
@@ -1651,18 +1220,9 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQualityLogic::GetWarpedFromMoving(
 	outputVolume->SetAndObserveTransformNodeID( transform->GetID() );
         
         //Harden Transform
-        vtkSlicerTransformLogic* transformModuleLogic = vtkSlicerTransformLogic::New();
-        if (! transformModuleLogic->hardenTransform(outputVolume)){
-           vtkErrorMacro("getWarpedFromMoving: Can't harden transform!");
-           throw std::runtime_error("Internal Error, see command line!");
-           return NULL;
-        }
+        outputVolume->HardenTransform();
         
         return outputVolume;
-	
-	
-	
-	
 }
 //---Change Vector node to transform node-------------------------------------------------------------------------
 vtkMRMLGridTransformNode* vtkSlicerRegistrationQualityLogic::CreateTransformFromVector(vtkMRMLVectorVolumeNode* vectorVolume)
@@ -1698,53 +1258,7 @@ vtkMRMLGridTransformNode* vtkSlicerRegistrationQualityLogic::CreateTransformFrom
 	vtkNew<vtkMatrix4x4> gridDirectionMatrix_RAS;
 	vectorVolume->GetIJKToRASDirectionMatrix(gridDirectionMatrix_RAS.GetPointer());
         transformFromParent->SetGridDirectionMatrix(gridDirectionMatrix_RAS.GetPointer());
-	
-// 	gridImage_Ras->Update();
-// 	this->InvertXandY( gridImage_Ras.GetPointer() );
-
-// 	int dims[3];
-// 	gridImage_Ras->GetDimensions(dims);
-// // 	double* displacementVectors_Ras = reinterpret_cast<double*>(gridImage_Ras->GetScalarPointer());
-// // 	int allPoints = gridImage_Ras->GetNumberOfScalarComponents() * dims[2] * dims[1] * dims[0];
-// // 	int n = 0;
-// // 
-// 	for(int k=0;k<dims[2];k++)
-// 	{
-// 		for(int j=0;j<dims[1];j++)
-// 		{
-// 			for(int i=0;i<dims[0];i++)
-// 			{
-// 			  double ScalarComponent;
-// 			  
-// 			  ScalarComponent = gridImage_Ras->GetScalarComponentAsDouble(i,j,k,0);
-// 			  gridImage_Ras->SetScalarComponentFromDouble(i,j,k,0,-ScalarComponent);
-// 			  
-// 			  ScalarComponent = gridImage_Ras->GetScalarComponentAsDouble(i,j,k,1);
-// 			  gridImage_Ras->SetScalarComponentFromDouble(i,j,k,1,-ScalarComponent);
-// 			}
-// 		}
-// 	}
-				
-// 	while ( n < allPoints)
-// 	{
-// 		if ( !displacementVectors_Ras[n]) {
-// 			std::cerr << "Point " << n << "/" << allPoints << std::endl;
-// 			n = allPoints;
-// 			break;
-// 		}
-// 		displacementVectors_Ras[n] = -displacementVectors_Ras[n];
-// 		n++;
-// 		if ( !displacementVectors_Ras[n] ) {
-// 			std::cerr << "Point " << n << "/" << allPoints << std::endl;
-// 			n = allPoints;
-// 			break;
-// 		}
-// 		displacementVectors_Ras[n] = -displacementVectors_Ras[n];	
-// 		n++;
-// 		n++;
-// 		
-// 	}
-	
+		
 	#if (VTK_MAJOR_VERSION <= 5)
 	  transformFromParent->SetDisplacementGrid( gridImage_Ras.GetPointer() );
 	#else
@@ -1769,9 +1283,6 @@ vtkMRMLGridTransformNode* vtkSlicerRegistrationQualityLogic::CreateTransformFrom
 	transform->SetName( name.c_str() );
 	
 	this->GetMRMLScene()->AddNode(transform.GetPointer());
-	
-	
-	
 	return transform.GetPointer();
 	  
 }
@@ -1797,7 +1308,8 @@ vtkMRMLVectorVolumeNode* vtkSlicerRegistrationQualityLogic::CreateVectorFromTran
 	
 	
 	//Create Grid transform	
-	vtkOrientedGridTransform* transformFromParent = vtkOrientedGridTransform::SafeDownCast(
+	vtkSmartPointer<vtkOrientedGridTransform> transformFromParent;
+        transformFromParent = vtkOrientedGridTransform::SafeDownCast(
 							transform->GetTransformFromParent());
 	
 	if (!transformFromParent) {
@@ -1846,6 +1358,71 @@ vtkMRMLVectorVolumeNode* vtkSlicerRegistrationQualityLogic::CreateVectorFromTran
 	this->GetMRMLScene()->AddNode(vectorVolume.GetPointer());
 	
 	return vectorVolume.GetPointer();
+}
+//--- Create a ROI around a segment -----------------------------------------------------------
+vtkMRMLAnnotationROINode* vtkSlicerRegistrationQualityLogic::CreateROIAroundSegment(vtkMRMLSegmentationNode* segmentationNode,std::string segmentStringID){
+   vtkSmartPointer<vtkSegment> segment;
+   segment = segmentationNode->GetSegmentation()->GetSegment(segmentStringID);
+   
+   vtkSmartPointer<vtkOrientedImageData> binaryLabelmap;
+   binaryLabelmap = vtkOrientedImageData::
+      SafeDownCast(segment->GetRepresentation("Binary labelmap"));
+   
+   if ( binaryLabelmap == NULL ){
+      qCritical() << Q_FUNC_INFO << ": Can't load binary labelmap.";
+      return NULL;
+   }
+
+   int *dims = binaryLabelmap->GetDimensions();
+   double *spacing = binaryLabelmap->GetSpacing();
+   double *origin = binaryLabelmap->GetOrigin();
+   double radius[3];
+   double center[3];
+  
+  
+   double dimsH[4];
+   dimsH[0] = dims[0] - 1;
+   dimsH[1] = dims[1] - 1;
+   dimsH[2] = dims[2] - 1;
+   dimsH[3] = 0.;
+
+   vtkNew<vtkMatrix4x4> ijkToRAS;
+   binaryLabelmap->GetDirectionMatrix(ijkToRAS.GetPointer());
+   double rasCorner[4];
+   ijkToRAS->MultiplyPoint(dimsH, rasCorner);
+   for (int i=0;i<3;i++){
+     radius[i] = rasCorner[i]*spacing[i]/2;
+     center[i] = origin[i] + radius[i];
+     radius[i] = fabs(radius[i]);
+     radius[i] += 10 * spacing[i]; //Add 10 voxels margin on each side
+   }
+   
+   /* create ROI and add radius first, center second */
+   vtkSmartPointer<vtkMRMLScene> scene; 
+   scene = this->GetMRMLScene();
+   vtkSmartPointer< vtkMRMLAnnotationROINode > ROINode = vtkSmartPointer< vtkMRMLAnnotationROINode >::New();
+   std::string ROIName = scene->GenerateUniqueName( segmentStringID + "_ROI");
+   scene->AddNode(ROINode);
+   ROINode->SetName(ROIName.c_str());
+   
+   ROINode->CreateDefaultDisplayNodes();
+   
+   int retVal;
+   
+   retVal = ROINode->SetRadiusXYZ(radius);
+   if (!retVal){
+      qCritical() << Q_FUNC_INFO << ": Failed to set ROI Radius";
+      return NULL;
+   }
+   
+   retVal = ROINode->SetXYZ(center);
+   
+   if (!retVal){
+      qCritical() << Q_FUNC_INFO << ": Failed to set ROI center";
+      return NULL;
+   }
+   
+   return ROINode;
 }
 //--- Invert X and Y in image Data -----------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::InvertXandY(vtkImageData* imageData){
@@ -1928,7 +1505,7 @@ void vtkSlicerRegistrationQualityLogic::SetDefaultDisplay() {
 	}
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegistrationQualityNode->GetReferenceVolumeNodeID()));
+				this->RegistrationQualityNode->GetFixedVolumeNodeID()));
 	
 	
 	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
@@ -1966,6 +1543,21 @@ void vtkSlicerRegistrationQualityLogic::CalculateStatistics(vtkMRMLScalarVolumeN
 	statisticValues[3]= StatImage->GetMin()[0];
 }
 
+//---Load volume node from fileName
+vtkMRMLVolumeNode* vtkSlicerRegistrationQualityLogic::LoadVolumeFromFile( std::string filePath, std::string volumeName){
+   
+   vtkNew<vtkSlicerVolumesLogic> VolumesLogic;
+   vtkMRMLVolumeNode* volume =
+    VolumesLogic->AddArchetypeVolume(filePath.c_str(), volumeName.c_str(), 0);
+    
+   if (!volume){
+      throw std::runtime_error("LoadVolumeFromFile: Can't load volume!");
+      return NULL;
+   }
+   
+   return volume;
+   
+}
 
 //---Change backroung image and set opacity-----------------------------------
 void vtkSlicerRegistrationQualityLogic

@@ -25,7 +25,7 @@
       <index>1</index>
       <description><![CDATA[Input2 vector field]]></description>
     </image>
-    <image >
+    <image type="vector">
       <name>outputVolume</name>
       <label>Output Volume</label>
       <channel>output</channel>

@@ -5,18 +5,17 @@ set(KIT ${PROJECT_NAME})
 set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_LOGIC_EXPORT")
 
 set(${KIT}_INCLUDE_DIRECTORIES
-  ../../tinyxml
-  )
+  /u/kanderle/Software/Slicer/SlicerRt/src/SegmentComparison/Logic
+  /u/kanderle/Software/Slicer/SlicerRT-build/inner-build/SegmentComparison/Logic
+  /u/kanderle/Software/Slicer/SlicerRT-build/inner-build/lib/Slicer-4.7/qt-loadable-modules/
+)
+
 
 set(${KIT}_SRCS
   vtkSlicer${MODULE_NAME}Logic.cxx
   vtkSlicer${MODULE_NAME}Logic.h
   vtkMRMLRegistrationQualityNode.cxx
   vtkMRMLRegistrationQualityNode.h
-  vtkMRMLRegistrationQualityInputNode.cxx
-  vtkMRMLRegistrationQualityInputNode.h
-  DIRQAImage.cxx
-  DIRQAImage.h
 )
 
 set(${KIT}_TARGET_LIBRARIES
@@ -25,8 +24,8 @@ set(${KIT}_TARGET_LIBRARIES
   vtkSlicerVolumesModuleLogic
   vtkSlicerAnnotationsModuleMRML
   qSlicerVolumesSubjectHierarchyPlugins
+  vtkSlicerSegmentComparisonModuleLogic
   vtkSlicerSubjectHierarchyModuleLogic
-  tinyXML
   )
 
 #-----------------------------------------------------------------------------

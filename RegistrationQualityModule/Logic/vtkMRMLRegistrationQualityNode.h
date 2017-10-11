@@ -36,13 +36,13 @@ public:
 	vtkGetStringMacro(TransformNodeID);
 	void SetAndObserveTransformNodeID(const char* id);
 
-	vtkSetStringMacro(InvTransformNodeID);
-	vtkGetStringMacro(InvTransformNodeID);
-	void SetAndObserveInvTransformNodeID(const char* id);
+	vtkSetStringMacro(MovingTransformNodeID);
+	vtkGetStringMacro(MovingTransformNodeID);
+	void SetAndObserveMovingTransformNodeID(const char* id);
 
-	vtkSetStringMacro(ReferenceVolumeNodeID);
-	vtkGetStringMacro(ReferenceVolumeNodeID);
-	void SetAndObserveReferenceVolumeNodeID(const char* id);
+	vtkSetStringMacro(FixedVolumeNodeID);
+	vtkGetStringMacro(FixedVolumeNodeID);
+	void SetAndObserveFixedVolumeNodeID(const char* id);
 
 	vtkSetStringMacro(WarpedVolumeNodeID);
 	vtkGetStringMacro(WarpedVolumeNodeID);
@@ -56,13 +56,13 @@ public:
 	vtkGetStringMacro (ROINodeID);
 	void SetAndObserveROINodeID(const char* id);
 	
-	vtkSetStringMacro(FiducialNodeID);
-	vtkGetStringMacro (FiducialNodeID);
-	void SetAndObserveFiducialNodeID(const char* id);
+	vtkSetStringMacro(FixedFiducialNodeID);
+	vtkGetStringMacro (FixedFiducialNodeID);
+	void SetAndObserveFixedFiducialNodeID(const char* id);
 	
-	vtkSetStringMacro(InvFiducialNodeID);
-	vtkGetStringMacro (InvFiducialNodeID);
-	void SetAndObserveInvFiducialNodeID(const char* id);
+	vtkSetStringMacro(MovingFiducialNodeID);
+	vtkGetStringMacro (MovingFiducialNodeID);
+	void SetAndObserveMovingFiducialNodeID(const char* id);
 
 	/// Get color table node
 	vtkMRMLColorTableNode* GetColorTableNode();
@@ -115,15 +115,6 @@ public:
 			MovieRun ^= 1<<2;
 			Modified();
 		}
-	}
-
-	virtual void SetXMLFileName(std::string file) {
-		xmlFileName = file;
-		Modified();
-	}
-
-	virtual std::string GetXMLFileName() {
-		return xmlFileName;
 	}
 
 	// Checkerboard parameters
@@ -180,13 +171,13 @@ protected:
 	char* VectorVolumeNodeID;
 	char* InvVectorVolumeNodeID;
 	char* TransformNodeID;
-	char* InvTransformNodeID;
-	char* ReferenceVolumeNodeID;
+	char* MovingTransformNodeID;
+	char* FixedVolumeNodeID;
 	char* WarpedVolumeNodeID;
 	char* OutputDirectory;
 	char* ROINodeID;
-	char* FiducialNodeID;
-	char* InvFiducialNodeID;
+	char* FixedFiducialNodeID;
+	char* MovingFiducialNodeID;
 
 	char* OutputModelNodeID;
 	char* SubjectHierarchyNodeID;
@@ -197,8 +188,6 @@ protected:
 	int MovieBoxYellowState;
 	int MovieBoxGreenState;
 	int MovieRun;
-
-	std::string xmlFileName;
 
 	char* CheckerboardVolumeNodeID;
 	int CheckerboardPattern;
