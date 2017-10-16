@@ -125,6 +125,11 @@ public:
          *  the QA be performed.
          */
         void ChangeRegistrationDirectionToBackward(bool backward);
+        
+        /** Update registration quality node based on item attributes in
+         *  given subject hierarchy node
+         */
+        void UpdateNodeFromSHNode(vtkIdType itemID);
 
 
 public:

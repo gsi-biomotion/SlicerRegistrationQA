@@ -15,6 +15,8 @@ set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/4/42/Slic
 project(SlicerDIRQA)
 find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
+# set(SLICERRT_SRC "")
+# set(SLICERRT_BUILD "")
 
 add_subdirectory(RegistrationQualityModule)
 add_subdirectory(AbsoluteDifference)

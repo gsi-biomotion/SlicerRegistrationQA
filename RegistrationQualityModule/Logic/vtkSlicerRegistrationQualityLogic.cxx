@@ -510,10 +510,10 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number){
       // Get mean and std from abs difference volume and write it in table
       this->CalculateStatistics(absoluteDiffVolume,statisticValues);
       if ( pNode->GetBackwardRegistration() ){
-         this->UpdateTableWithStatisticalValues(statisticValues, 12);
+         this->UpdateTableWithStatisticalValues(statisticValues, 13);
       }
       else{
-         this->UpdateTableWithStatisticalValues(statisticValues, 11);
+         this->UpdateTableWithStatisticalValues(statisticValues, 12);
       }
 
     }
@@ -547,10 +547,10 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number){
       pNode->SetAndObserveJacobianVolumeNodeID(jacobianVolume->GetID());      
       this->CalculateStatistics(jacobianVolume,statisticValues);
       if ( pNode->GetBackwardRegistration() ){
-         this->UpdateTableWithStatisticalValues(statisticValues, 14);
+         this->UpdateTableWithStatisticalValues(statisticValues, 15);
       }
       else{
-         this->UpdateTableWithStatisticalValues(statisticValues, 13);
+         this->UpdateTableWithStatisticalValues(statisticValues, 14);
       }
 
       
@@ -590,7 +590,7 @@ void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number){
       pNode->SetAndObserveInverseConsistVolumeNodeID(inverseConsistVolume->GetID());
       
       this->CalculateStatistics(inverseConsistVolume,statisticValues);
-      this->UpdateTableWithStatisticalValues(statisticValues, 15);
+      this->UpdateTableWithStatisticalValues(statisticValues, 16);
 
 
    
@@ -1884,13 +1884,13 @@ vtkMRMLTableNode* vtkSlicerRegistrationQualityLogic::CreateDefaultRegQATable() {
    zero->InsertNextValue("Moving Contour");//7
    zero->InsertNextValue("Fixed Fiducial");//8
    zero->InsertNextValue("Moving Fiducial");//9
-   zero->InsertNextValue("Measure:");//10
-   zero->InsertNextValue("AbsDiff (for)");//11
-   zero->InsertNextValue("AbsDiff (back)");//12
-   zero->InsertNextValue("Jacobian (for)");//13
-   zero->InsertNextValue("Jacobian (back)");//14
-   zero->InsertNextValue("InvConsist (for)");//15
-   zero->InsertNextValue("InvConsist (back)");//16
+   zero->InsertNextValue("ROI");//10
+   zero->InsertNextValue("Measure:");//11
+   zero->InsertNextValue("AbsDiff (for)");//12
+   zero->InsertNextValue("AbsDiff (back)");//13
+   zero->InsertNextValue("Jacobian (for)");//14
+   zero->InsertNextValue("Jacobian (back)");//15
+   zero->InsertNextValue("InvConsist ");//16
    zero->InsertNextValue("");//17
    zero->InsertNextValue("Contour (for)");//18
    zero->InsertNextValue("Contour (back)");//19
@@ -1900,23 +1900,23 @@ vtkMRMLTableNode* vtkSlicerRegistrationQualityLogic::CreateDefaultRegQATable() {
    vtkAbstractArray* second = tableNode->AddColumn();
    vtkAbstractArray* third = tableNode->AddColumn();
    vtkAbstractArray* fourth = tableNode->AddColumn();
-   if (! tableNode->SetCellText(10,1,"Max")){
+   if (! tableNode->SetCellText(11,1,"Max")){
       vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
       return NULL;
    }
-   if (! tableNode->SetCellText(10,2,"Min")){
+   if (! tableNode->SetCellText(11,2,"Min")){
       vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
       return NULL;
    }
-   if (! tableNode->SetCellText(10,3,"Mean")){
+   if (! tableNode->SetCellText(11,3,"Mean")){
       vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
       return NULL;
    }
-   if (! tableNode->SetCellText(10,4,"STD")){
+   if (! tableNode->SetCellText(11,4,"STD")){
       vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
       return NULL;
    }
-   if (! tableNode->SetCellText(20,1,"Distance Before")){
+   if (! tableNode->SetCellText(21,1,"Distance Before")){
       vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
       return NULL;
    }
@@ -1936,7 +1936,7 @@ vtkMRMLTableNode* vtkSlicerRegistrationQualityLogic::CreateDefaultRegQATable() {
       vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
       return NULL;
    }
-   if (! tableNode->SetCellText(17,4,"Dice Coeff. After")){
+   if (! tableNode->SetCellText(18,4,"Dice Coeff. After")){
       vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
       return NULL;
    }
@@ -1985,6 +1985,10 @@ void vtkSlicerRegistrationQualityLogic::UpdateRegQATable() {
    node = this->GetMRMLScene()->GetNodeByID(pNode->GetFiducialNodeID());
    if ( node ){
       table->SetValue(8, 1, vtkVariant(node->GetName()));
+   }
+   node = this->GetMRMLScene()->GetNodeByID(pNode->GetROINodeID());
+   if ( node ){
+      table->SetValue(10, 1, vtkVariant(node->GetName()));
    }
    
    //repeat for all moving
@@ -2084,4 +2088,13 @@ void vtkSlicerRegistrationQualityLogic::UpdateTableWithFiducialValues(vtkMRMLMar
       table->SetValue(row,2,vtkVariant(statisticValues[2*i+1]));
    }
    tableNode->Modified();
+}
+
+void vtkSlicerRegistrationQualityLogic::UpdateNodeFromSHNode(vtkIdType itemID){
+   if ( !this->RegistrationQualityNode || this->GetMRMLScene() ) {
+      vtkErrorMacro("UpdateNodeFromSHNode: Invalid parameter set node!");
+      throw std::runtime_error("Internal Error, see command line!");
+      
+      
+   }
 }
