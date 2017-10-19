@@ -33,6 +33,7 @@ FIXEDIMAGEID = "FixedImage" + ITEMID
 MOVINGIMAGEID = "MovingImage" + ITEMID
 TRIPVF = "TRiP_vf"
 BACKWARD = "BackwardReg"
+IMAGE = "Image"
 
 #Node names:
 NAME_DEFABS = "DefaultAbsoluteDifference"
@@ -355,23 +356,32 @@ class ReadRegistrationNodeKALogic:
            continue
       
       #Special check, so we have 4DCT files
-      if not fileName[index-3] == "_":
-         print "Not part of 4DCT " + fileName
-         continue
+      #if not fileName[index-3] == "_":
+         #print "Not part of 4DCT " + fileName
+         #continue
       
       #Try to find out, which phase do we have
-      phase = fileName[index-2:index]
-      try:
-         int(phase)
-      except ValueError:
-         print "No phase: " + phase
-         continue
+      if 0:
+         phase = fileName[index-2:index]
+         try:
+            int(phase)
+         except ValueError:
+            print "No phase: " + phase
+            continue
+      else:
+         phase = "UNKNOWN"
      
       #Create New phase in subject hierarchy
       filePrefix, fileExtension = os.path.splitext(fileName)
       ctItemID = self.createChild(ctDIRItemID,filePrefix)
       shNode.SetItemAttribute(ctItemID, FILEPATH, dirPaths.ctDirectory + fileName)
       shNode.SetItemAttribute(ctItemID, PHASENUMBER, phase)
+      shNode.SetItemAttribute(ctItemID, REGISTRATION_TYPE, IMAGE)
+      #Default is a moving phase
+      shNode.SetItemAttribute(ctItemID, INVERSE, "1")
+      
+      if filePrefix.find("Plan") > -1:
+         shNode.SetItemAttribute(ctItemID, INVERSE,"")
 
       phaseDictID[phase] = ctItemID
 
@@ -380,6 +390,7 @@ class ReadRegistrationNodeKALogic:
          shNode.SetItemAttribute(patientItemID,'ReferenceImageItemID',str(ctItemID))
          phaseDictID['refPhaseID'] = ctItemID
          shNode.SetItemAttribute(patientItemID,REFERENCENUMBER,str(phaseDictID['refPhaseID']))
+         shNode.RemoveItemAttribute(ctItemID, INVERSE)
      
     #Find warped images and vector fields
     for i in range(2):
@@ -415,6 +426,8 @@ class ReadRegistrationNodeKALogic:
                itemID = self.createChild(modDictID[modList[i]],filePrefix)
                shNode.SetItemAttribute(itemID,REGISTRATION_TYPE,modList[i])
                shNode.SetItemAttribute(itemID,FILEPATH, dirList[i] + file)
+               if filePrefix.find("plan_refPhase") > -1:
+                  shNode.SetItemAttribute(ctItemID, INVERSE,"1")
             n += 1
             #if n > 4:
                #break
@@ -430,10 +443,10 @@ class ReadRegistrationNodeKALogic:
        for fileName in os.listdir(dirPaths.fiducialsDirectory):
           filePrefix, fileExtension = os.path.splitext(fileName)
           if fileExtension.lower() == '.fcsv':
-            if fileName.find('TPlan') > -1:
-               phase = 'plan'
-               
+            if fileName.find('TPlan') or fileName.find('T00') > -1:
+               phase = 'UNKNOWN'
             else:
+               continue
                phaseStr = fileName[1]
                try:
                   int(phaseStr)
@@ -444,13 +457,15 @@ class ReadRegistrationNodeKALogic:
                shNode.SetItemAttribute(itemID,FIXEDIMAGEID,str(phaseDictID[phase]))
                
             itemID = self.createChild(fiducialsDIRItemID,filePrefix)
+            if fileName.find('T00') > -1:
+               shNode.SetItemAttribute(itemID,INVERSE,"1")
             shNode.SetItemAttribute(itemID,REGISTRATION_TYPE,FIDUCIAL)
             shNode.SetItemAttribute(itemID,FILEPATH, dirPaths.fiducialsDirectory + fileName)
             
        
     shNode.SetItemExpanded(modDictID[WARPED_IMAGE],False)
     shNode.SetItemExpanded(modDictID[VECTOR_FIELD],False)
-    shNode.SetItemExpanded(ctItemID,False)
+    shNode.SetItemExpanded(ctDIRItemID,False)
     shNode.SetItemExpanded(fiducialsDIRItemID,False)
 
 
@@ -561,7 +576,7 @@ class ReadRegistrationNodeKALogic:
                   if content[n].split()[0] == check:
                      n += 1
                      #if check == ABSOLUTEDIFFERENCE or check == INVABSOLUTEDIFFERENCE or check == NAME_DEFABS:
-		       #continue
+                       #continue
                      if check == VECTOR_FIELD or check == INVVECTOR_FIELD:
                        for j in range(3):
                           for k in range(4):
@@ -574,11 +589,11 @@ class ReadRegistrationNodeKALogic:
                        n -= 1
 
                      else:
-		        if check == ("Abs"+VECTOR_FIELD):
-			  node = phaseItemID.GetItemChildWithName(phaseItemID, VECTOR_FIELD)
-			elif check == ("Abs"+INVVECTOR_FIELD):
-			  node = phaseItemID.GetItemChildWithName(phaseItemID, INVVECTOR_FIELD)
-			else:
+                        if check == ("Abs"+VECTOR_FIELD):
+                          node = phaseItemID.GetItemChildWithName(phaseItemID, VECTOR_FIELD)
+                        elif check == ("Abs"+INVVECTOR_FIELD):
+                          node = phaseItemID.GetItemChildWithName(phaseItemID, INVVECTOR_FIELD)
+                        else:
                           node = self.createChild(phaseItemID, check)
                         for k in range(4):
                            statistics[k] = float(content[n+k].split()[1])
@@ -691,7 +706,8 @@ class RegistrationHierarchyHelp():
          patientDirectory = '/u/kanderle/AIXd/Data/FC/' + patName + '/'
          self.name = patName
          self.patDirectory  = patientDirectory
-         self.ctDirectory   = patientDirectory + 'CTX/'
+         #self.ctDirectory   = patientDirectory + 'CTX/'
+         self.ctDirectory = patientDirectory + 'RegQA/'
          self.doseDirectory = patientDirectory + 'Dose/'
          self.contourFile   = patientDirectory + 'Contour/4D/ByTRiPTrafo/' + patName + "_00.binfo"
          #self.vectorDirectory = patientDirectory + 'Registration/4D/'

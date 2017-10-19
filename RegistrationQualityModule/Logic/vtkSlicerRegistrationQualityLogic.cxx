@@ -52,6 +52,7 @@
 #include <vtkMRMLSubjectHierarchyNode.h>
 #include <vtkMRMLSubjectHierarchyConstants.h>
 #include <vtkMRMLTableNode.h>
+#include <vtkMRMLTableStorageNode.h>
 
 // SlicerRT
 #include <vtkSlicerSegmentComparisonModuleLogic.h>
@@ -91,7 +92,40 @@
 
 #include <QStandardItemModel>
 
-
+// constants
+const std::string vtkSlicerRegistrationQualityLogic::ITEMID = "_itemID";
+const std::string vtkSlicerRegistrationQualityLogic::INVERSE = "Inverse";
+const std::string vtkSlicerRegistrationQualityLogic::IMAGE = "Image";
+const std::string vtkSlicerRegistrationQualityLogic::WARPED_IMAGE = "WarpedImage";
+const std::string vtkSlicerRegistrationQualityLogic::VECTOR_FIELD = "VectorField";
+const std::string vtkSlicerRegistrationQualityLogic::ABSOLUTEDIFFERENCE = "AbsDiff";
+const std::string vtkSlicerRegistrationQualityLogic::JACOBIAN = "Jacobian";
+const std::string vtkSlicerRegistrationQualityLogic::INVERSECONSISTENCY = "InvConsist";
+const std::string vtkSlicerRegistrationQualityLogic::REFIMAGEID = "ReferenceImageItemID";
+const std::string vtkSlicerRegistrationQualityLogic::REGISTRATION_TYPE = "RegistrationType";
+const std::string vtkSlicerRegistrationQualityLogic::PHASENUMBER = "PhaseNumber";
+const std::string vtkSlicerRegistrationQualityLogic::PHASETYPE= "Phase";
+const std::string vtkSlicerRegistrationQualityLogic::CT= "CT";
+const std::string vtkSlicerRegistrationQualityLogic::ROI= "ROI";
+const std::string vtkSlicerRegistrationQualityLogic::ROIITEMID= "ROI" + ITEMID;
+const std::string vtkSlicerRegistrationQualityLogic::DIR = "DIR";
+const std::string vtkSlicerRegistrationQualityLogic::FILEPATH = "FilePath";
+const std::string vtkSlicerRegistrationQualityLogic::FIXEDIMAGEID = "FixedImage" + ITEMID;
+const std::string vtkSlicerRegistrationQualityLogic::MOVINGIMAGEID = "MovingImage" + ITEMID;
+const std::string vtkSlicerRegistrationQualityLogic::NODEITEMID = "Node" + ITEMID;
+const std::string vtkSlicerRegistrationQualityLogic::VECTORITEMID = VECTOR_FIELD + ITEMID;
+const std::string vtkSlicerRegistrationQualityLogic::ABSDIFFNODEITEMID = ABSOLUTEDIFFERENCE + ITEMID;
+const std::string vtkSlicerRegistrationQualityLogic::JACOBIANITEMID = JACOBIAN + ITEMID;
+const std::string vtkSlicerRegistrationQualityLogic::INVERSECONSISTENCYITEMID = INVERSECONSISTENCY + ITEMID;
+const std::string vtkSlicerRegistrationQualityLogic::TABLE = "_table";
+const std::string vtkSlicerRegistrationQualityLogic::ABSDIFFTABLE = ABSOLUTEDIFFERENCE + TABLE;
+const std::string vtkSlicerRegistrationQualityLogic::JACOBIANTABLE = JACOBIAN + TABLE;
+const std::string vtkSlicerRegistrationQualityLogic::INVCONSISTTABLE = INVERSECONSISTENCY + TABLE;
+const std::string vtkSlicerRegistrationQualityLogic::FIDUCIAL = "Fiducial";
+const std::string vtkSlicerRegistrationQualityLogic::FIDUCIALTABLE = FIDUCIAL + TABLE;
+const std::string vtkSlicerRegistrationQualityLogic::REFERENCENUMBER = "ReferenceNumber";
+const std::string vtkSlicerRegistrationQualityLogic::TRIPVF = "TRiP_vf";
+const std::string vtkSlicerRegistrationQualityLogic::BACKWARD = "BackwardReg";
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerRegistrationQualityLogic);
 
@@ -1870,6 +1904,11 @@ vtkMRMLTableNode* vtkSlicerRegistrationQualityLogic::CreateDefaultRegQATable() {
    tableNode->SetName(tableNodeName.c_str());
    this->GetMRMLScene()->AddNode(tableNode);
    
+   vtkSmartPointer<vtkMRMLTableStorageNode> tableStorageNode = vtkMRMLTableStorageNode::SafeDownCast(
+      tableNode->CreateDefaultStorageNode());
+   this->GetMRMLScene()->AddNode(tableStorageNode);
+   tableNode->SetAndObserveStorageNodeID(tableStorageNode->GetID());
+   
    tableNode->SetUseColumnNameAsColumnHeader(false);
    
    vtkStringArray* zero = vtkStringArray::SafeDownCast(tableNode->AddColumn());
@@ -1916,7 +1955,7 @@ vtkMRMLTableNode* vtkSlicerRegistrationQualityLogic::CreateDefaultRegQATable() {
       vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
       return NULL;
    }
-   if (! tableNode->SetCellText(21,1,"Distance Before")){
+   if (! tableNode->SetCellText(20,1,"Distance Before")){
       vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
       return NULL;
    }
@@ -1936,7 +1975,7 @@ vtkMRMLTableNode* vtkSlicerRegistrationQualityLogic::CreateDefaultRegQATable() {
       vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
       return NULL;
    }
-   if (! tableNode->SetCellText(18,4,"Dice Coeff. After")){
+   if (! tableNode->SetCellText(17,4,"Dice Coeff. After")){
       vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
       return NULL;
    }
@@ -2091,10 +2130,58 @@ void vtkSlicerRegistrationQualityLogic::UpdateTableWithFiducialValues(vtkMRMLMar
 }
 
 void vtkSlicerRegistrationQualityLogic::UpdateNodeFromSHNode(vtkIdType itemID){
-   if ( !this->RegistrationQualityNode || this->GetMRMLScene() ) {
+   if ( !this->RegistrationQualityNode || !this->GetMRMLScene() ) {
       vtkErrorMacro("UpdateNodeFromSHNode: Invalid parameter set node!");
-      throw std::runtime_error("Internal Error, see command line!");
-      
-      
+      return;
    }
+   
+   vtkMRMLRegistrationQualityNode* pNode;
+   
+   vtkSmartPointer<vtkMRMLSubjectHierarchyNode> shNode;
+   shNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
+         this->GetMRMLScene()->GetNodeByID("vtkMRMLSubjectHierarchyNode"));
+   
+   if (!shNode)
+   {
+      qCritical() << Q_FUNC_INFO << ": Failed to access subject hierarchy node";
+      return;
+   }
+   
+   std::string regType = shNode->GetItemAttribute(itemID,
+         vtkSlicerRegistrationQualityLogic::REGISTRATION_TYPE.c_str());
+   std::string inverse = shNode->GetItemAttribute(itemID,
+         vtkSlicerRegistrationQualityLogic::INVERSE.c_str());
+   vtkMRMLNode* node = shNode->GetItemDataNode(itemID);
+   
+   if ( ! node ){
+      return;
+   }
+   
+   if ( regType.empty() ){
+      return;
+   }
+   
+   if ( inverse.empty() ){
+      pNode = this->RegistrationQualityNode;
+   }
+   else{
+      pNode = this->RegistrationQualityNode->GetBackwardRegQAParameters();
+   }
+   
+   if ( ! pNode ) {
+      return;
+   }
+   
+   if ( regType.compare(vtkSlicerRegistrationQualityLogic::IMAGE) == 0) pNode->SetAndObserveVolumeNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQualityLogic::WARPED_IMAGE) == 0) pNode->SetAndObserveWarpedVolumeNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQualityLogic::VECTOR_FIELD) == 0) pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQualityLogic::FIDUCIAL) == 0) pNode->SetAndObserveFiducialNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQualityLogic::ROI) == 0) pNode->SetAndObserveROINodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQualityLogic::ABSOLUTEDIFFERENCE) == 0) pNode->SetAndObserveAbsoluteDiffVolumeNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQualityLogic::JACOBIAN) == 0) pNode->SetAndObserveJacobianVolumeNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQualityLogic::INVERSECONSISTENCY) == 0) pNode->SetAndObserveInverseConsistVolumeNodeID(node->GetID());
+   //TODO:
+//    else if ( regType.compare(vtkSlicerRegistrationQualityLogic::CONTOUR) == 0) pNode->SetAndObserveAbsoluteDiffVolumeNodeID(node->GetID());
+
+
 }

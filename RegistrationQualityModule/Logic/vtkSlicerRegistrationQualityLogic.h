@@ -39,7 +39,43 @@ class vtkMRMLSegmentationNode;
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkSlicerRegistrationQualityLogic :
 	
 	public vtkSlicerModuleLogic {
-   
+public:
+   public:
+   /** Constants used **/
+   static const char* SLICERREGQA_EXTENSION_NAME;
+   static const std::string INVERSE;
+   static const std::string WARPED_IMAGE;
+   static const std::string VECTOR_FIELD;
+   static const std::string ABSOLUTEDIFFERENCE;
+   static const std::string JACOBIAN;
+   static const std::string INVERSECONSISTENCY;
+   static const std::string REFIMAGEID;
+   static const std::string REGISTRATION_TYPE;
+   static const std::string PHASENUMBER;
+   static const std::string PHASETYPE;
+   static const std::string CT;
+   static const std::string ROI;
+   static const std::string ROIITEMID;
+   static const std::string ITEMID;
+   static const std::string DIR;
+   static const std::string FILEPATH;
+   static const std::string FIXEDIMAGEID;
+   static const std::string MOVINGIMAGEID;
+   static const std::string VECTORITEMID;
+   static const std::string NODEITEMID;
+   static const std::string ABSDIFFNODEITEMID;
+   static const std::string JACOBIANITEMID;
+   static const std::string INVERSECONSISTENCYITEMID;
+   static const std::string TABLE;
+   static const std::string ABSDIFFTABLE;
+   static const std::string JACOBIANTABLE;
+   static const std::string INVCONSISTTABLE;
+   static const std::string FIDUCIAL;
+   static const std::string FIDUCIALTABLE;
+   static const std::string REFERENCENUMBER;
+   static const std::string TRIPVF;
+   static const std::string BACKWARD;
+   static const std::string IMAGE;
 public:
 	static vtkSlicerRegistrationQualityLogic *New();
 	vtkTypeMacro(vtkSlicerRegistrationQualityLogic, vtkSlicerModuleLogic);

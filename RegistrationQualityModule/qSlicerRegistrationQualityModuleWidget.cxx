@@ -1063,6 +1063,9 @@ bool qSlicerRegistrationQualityModuleWidget::setEditedNode(
   else if ( QString::compare(role, "movingSegmentID", Qt::CaseInsensitive) == 0 ){
      this->MovingSegmentIDChanged(context);
   }
+//   else if ( QString::compare(role, "itemID", Qt::CaseInsensitive) == 0 ){
+//      d->logic()->UpdateNodeFromSHNode(context);
+//   }
   else {
      return false;
   }
