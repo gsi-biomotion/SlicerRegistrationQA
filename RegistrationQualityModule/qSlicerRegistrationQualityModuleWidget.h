@@ -65,14 +65,15 @@ protected slots:
         void movieBoxYellowStateChanged(int state);
         void movieBoxGreenStateChanged(int state);
         void ROIaroundSegmentClicked();
-        void RegistrationDirectionChanged(int state);
+        void RegistrationDirectionChanged();
         void saveScreenshotClicked();
         void saveOutputFileClicked();
 
         // Image Checks
         void absoluteDiffClicked();
         void fiducialClicked();
-        void falseColorClicked();
+        void falseColor1Clicked();
+        void falseColor2Clicked();
         void checkerboardClicked();
         void movieToggle();
         void flickerToggle();

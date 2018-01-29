@@ -34,6 +34,7 @@ class vtkMRMLAnnotationROINode;
 class vtkMRMLMarkupsFiducialNode;
 class vtkMRMLScalarVolumeNode;
 class vtkMRMLTableNode;
+class vtkMRMLRegistrationQualityNode;
 //BTX
 /// \ingroup Slicer_QtModules_SubjectHierarchy_Plugins
 class Q_SLICER_REGISTRATIONQUALITY_SUBJECT_HIERARCHY_PLUGINS_EXPORT qSlicerSubjectHierarchyRegistrationQualityPlugin : public qSlicerSubjectHierarchyAbstractPlugin
@@ -99,6 +100,8 @@ protected slots:
   
   /// Load volume from filename
   void loadFromFilenameForCurrentID();
+  void loadFromFilenameForItemID(vtkIdType itemID);
+//   void assignNodeToRegQANode(vtkMRMLNode* node, vtkMRMLRegistrationQualityNode* regQANode, std::string regType, bool inverse);
   vtkMRMLVolumeNode* loadVolumeFromItemId(vtkIdType itemID);
   void calcuateDIRQAForCurrentNode();
   void calcuateDIRQAForID(vtkIdType itemID, bool removeNodes);
@@ -106,6 +109,7 @@ protected slots:
   void updateRegNodeForID(vtkIdType itemID);
   vtkMRMLAnnotationROINode* loadROI(vtkIdType itemID);
   vtkMRMLMarkupsFiducialNode* loadMarkups(vtkIdType itemID);
+  vtkMRMLRegistrationQualityNode* loadRegQANode(vtkIdType itemID);
   void calculateAbsoluteDifference(vtkIdType itemID, bool removeNodes);
   void calculateJacobian(vtkIdType itemID, bool removeNodes);
   void calculateInverseConsistency(vtkIdType itemID, bool removeNodes);
@@ -113,11 +117,14 @@ protected slots:
   vtkIdType findInverseVectorID(vtkIdType itemID);
 //   void calculateStatistics(vtkMRMLScalarVolumeNode* scalarNode, double statisticValues[4]);
   void removeNode(vtkMRMLNode* node);
+  void removeNode(vtkIdType itemID);
   void writeInTable(vtkIdType itemID,char const* tableName, double* statisticValues, vtkMRMLMarkupsFiducialNode* fiducalsNode = NULL);
   vtkMRMLTableNode* createTable(vtkIdType itemID,char const* tableName, bool fiducalsTable = false);
   
   /// Functions to add appropriate nodes to RegQA module
-  void ScalarImageSelected(const char* name);
+  void InputSelected(std::string name, bool backward,vtkIdType itemID, vtkMRMLNode* associatedNode);
+  void InputSelected(std::string name, bool backward);
+  void loadContourSelected(bool backward);
   
   void fixedImageSelected();
   void movingImageSelected();
@@ -134,7 +141,7 @@ protected slots:
   void setNodeInRegQA(vtkMRMLNode* node, QString role, QString context = "");
 
 protected:  
-  vtkIdType m_SelectSegment;
+  QString m_RegQAParametersID;
 protected:
   QScopedPointer<qSlicerSubjectHierarchyRegistrationQualityPluginPrivate> d_ptr;
   

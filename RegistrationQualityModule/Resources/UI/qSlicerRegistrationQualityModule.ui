@@ -76,12 +76,10 @@
       </property>
       <item>
        <widget class="QFrame" name="inputFrame">
-        <property name="sizePolicy">
-        </property>
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>100</height>
+          <height>200</height>
          </size>
         </property>
         <layout class="QVBoxLayout" name="classicLayout">
@@ -106,15 +104,18 @@
               <property name="text">
                <string>Create ROI around segments</string>
               </property>
+              <property name="toolTip">
+               <string>Creates region of intrest around the fixed or fixed and moving segments in the current node.</string>
+              </property>
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QCheckBox" name="BackwardCheckBox">
+             <widget class="QPushButton" name="BackwardButton">
               <property name="toolTip">
-               <string>Check if you want to inspect backward registration.</string>
+               <string>Toggle between forward and backward registration.</string>
               </property>
               <property name="text">
-               <string>Backward Registration</string>
+               <string>Change to Back. Reg.</string>
               </property>
              </widget>
             </item>
@@ -135,27 +136,34 @@
      <property name="autoRepeatInterval">
       <number>100</number>
      </property>
-     <layout class="QVBoxLayout" name="gridLayout_2">
-      <item>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
        <widget class="QGroupBox" name="StillGroupBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="title">
          <string>Still Overlays</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_8">
          <item row="0" column="0">
-          <widget class="QPushButton" name="FalseColorPushButton">
+          <widget class="QPushButton" name="FalseColor1PushButton">
            <property name="text">
-            <string>Image Overlay</string>
+            <string>Overlay Warped Image</string>
+           </property>
+           <property name="toolTip">
+            <string>Overlay reference and warped image.</string>
            </property>
           </widget>
          </item>
          <item row="0" column="1">
+          <widget class="QPushButton" name="FalseColor2PushButton">
+           <property name="text">
+            <string>Overlay Moving Image</string>
+           </property>
+           <property name="toolTip">
+            <string>Overlay reference and moving image.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
           <widget class="QCheckBox" name="ColorCheckBox">
            <property name="toolTip">
             <string>Display overlay with volumes in contrast colors</string>
@@ -165,20 +173,24 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QPushButton" name="AbsoluteDiffPushButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-             <horstretch>50</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="MatchCheckBox">
+           <property name="toolTip">
+            <string>Matches window and level of overlayed image (moving/warped) to the reference one.</string>
            </property>
+           <property name="text">
+            <string>Match Window/Level</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QPushButton" name="AbsoluteDiffPushButton">
            <property name="text">
             <string>Absolute Difference</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="3" colspan="3">
+         <item row="4" column="3" colspan="3">
           <widget class="QLabel" name="StillErrorLabel">
            <property name="palette">
             <palette>
@@ -189,7 +201,7 @@
                  <red>255</red>
                  <green>0</green>
                  <blue>0</blue>
-                </color>
+                </color>1
                </brush>
               </colorrole>
              </active>
@@ -228,21 +240,15 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="2" column="0">
           <widget class="QPushButton" name="CheckerboardPushButton">
            <property name="text">
             <string>Checkerboard</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
+         <item row="2" column="1">
           <widget class="QGroupBox" name="paternBox">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <layout class="QGridLayout" name="paternLayout">
             <item row="0" column="0">
              <widget class="QLabel" name="CheckerboardLabel">
@@ -270,26 +276,14 @@
         </layout>
        </widget>
       </item>
-      <item>
+      <item row="0" column="1">
        <widget class="QGroupBox" name="movieGroupBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="title">
          <string>Dynamic Overlays</string>
         </property>
         <layout class="QGridLayout" name="movieFormLayout">
          <item row="0" column="0">
           <widget class="ctkCheckBox" name="movieBoxRed">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <property name="text">
             <string/>
            </property>
@@ -301,12 +295,6 @@
          </item>
          <item row="0" column="1">
           <widget class="ctkCheckBox" name="movieBoxYellow">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <property name="text">
             <string/>
            </property>
@@ -318,12 +306,6 @@
          </item>
          <item row="0" column="2">
           <widget class="ctkCheckBox" name="movieBoxGreen">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <property name="text">
             <string/>
            </property>
@@ -333,36 +315,15 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="3" colspan="2">
+         <item row="1" column="0" colspan="3">
           <widget class="QPushButton" name="MovieToggle">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-             <horstretch>50</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <property name="text">
             <string>Start</string>
            </property>
-           <property name="iconSize">
-            <size>
-             <width>48</width>
-             <height>48</height>
-            </size>
-           </property>
-           <property name="Enabled" stdset="0">
-            <bool>false</bool>
-           </property>
           </widget>
          </item>
-         <item row="0" column="5">
+         <item row="2" column="0" colspan="3">
           <widget class="QPushButton" name="FlickerToggle">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-             <horstretch>50</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <property name="text">
             <string>Flicker</string>
            </property>
@@ -380,14 +341,8 @@
         </layout>
        </widget>
       </item>
-      <item>
+      <item row="1" column="0" colspan="2">
        <widget class="QGroupBox" name="Quantitative">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="title">
          <string>Quantitative Measures</string>
         </property>
@@ -437,8 +392,6 @@
       <layout class="QVBoxLayout" name="gridLayout_Table">
       <item>
        <widget class="qMRMLTableView" name="MRMLTableView">
-        <property name="sizePolicy">
-        </property>
         <property name="minimumSize">
          <size>
           <width>0</width>

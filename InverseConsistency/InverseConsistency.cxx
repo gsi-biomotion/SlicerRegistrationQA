@@ -7,6 +7,7 @@
 #include <itkVectorLinearInterpolateImageFunction.h>
 #include <itkContinuousIndex.h>
 #include "itkRegionOfInterestImageFilter.h"
+#include "itkDivideImageFilter.h"
 #include "itkPoint.h"
 #include "itkIndex.h"
 
@@ -39,7 +40,7 @@ namespace
 		typedef itk::ImageFileWriter<OutputImageType> WriterType;
 		typedef itk::VectorLinearInterpolateImageFunction<InputImageType, double> InterpolateType;
 		typedef itk::ImageRegionIterator<OutputImageType> IteratorType;
-		typedef itk::RegionOfInterestImageFilter< InputImageType, InputImageType > RegionFilterType;
+                typedef itk::DivideImageFilter< OutputImageType, OutputImageType, OutputImageType > DivideFilterType;
 
 		typename ReaderType::Pointer reader1 = ReaderType::New();
 		itk::PluginFilterWatcher watchReader1(reader1, "Read Volume 1", CLPProcessInformation);
@@ -167,25 +168,37 @@ namespace
 			imageIterator.Set(distance);
 			++imageIterator;
 		}
-
-		//   std::cout << "Filter:" << std::endl;
-		//   typename FilterType::Pointer filter = FilterType::New();
-		//   filter->SetInput1( reader1->GetOutput() );
-		//   filter->SetInput2( reader2->GetOutput() );
-		//   filter->Update();
-		//   itk::PluginFilterWatcher watchFilter(filter, "Adding two vector fields.",
-		//                                        CLPProcessInformation);
-		//   std::cout << "Writer:" << std::endl;
 		typename WriterType::Pointer writer = WriterType::New();
+                itk::PluginFilterWatcher watchWriter(writer,"Write Volume",CLPProcessInformation);
+                writer->SetFileName( outputVolume.c_str() );
 
-		itk::PluginFilterWatcher watchWriter(writer,"Write Volume",CLPProcessInformation);
-		writer->SetFileName( outputVolume.c_str() );
-		writer->SetInput( outputImage );
+		// Normalize output volume, if specifed
+		if (normalize) {
+                   typename DivideFilterType::Pointer divideFilter = DivideFilterType::New();
+                   // Find maximum spacing first
+                   double maxSpacing = -1;
+                   for( int i=0;i<3;i++){
+                      if ( maxSpacing < sp[i] ){
+                         maxSpacing = sp[i];
+                      }
+                   }
+                   if ( maxSpacing > 0 ) {
+                      divideFilter->SetInput( outputImage );
+                      divideFilter->SetConstant( maxSpacing );
+                      divideFilter->Update();
+                   }
+                   else{
+                        std::cerr << "Can't get spacing values" << std::endl;
+                        return EXIT_FAILURE;
+                   }
+                   writer->SetInput( divideFilter->GetOutput() );
+                }
+                else{
+                   writer->SetInput( outputImage );
+                }
+                
 		writer->SetUseCompression(1);
 		writer->Update();
-
-		std::cout << "Finished" << std::endl;
-
 		return EXIT_SUCCESS;
 	}
 

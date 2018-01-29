@@ -2,7 +2,7 @@
 import os
 import unittest
 from __main__ import vtk, qt, ctk, slicer
-
+from slicer.ScriptedLoadableModule import *
 
 
 #
@@ -34,6 +34,7 @@ MOVINGIMAGEID = "MovingImage" + ITEMID
 TRIPVF = "TRiP_vf"
 BACKWARD = "BackwardReg"
 IMAGE = "Image"
+REGQANODEID = "RegQualityNodeID"
 
 #Node names:
 NAME_DEFABS = "DefaultAbsoluteDifference"
@@ -53,9 +54,10 @@ REGQAITEM = 'RegQA'
 
 #Names for directories are just DIR + NAME_X. I.e. directory for CTs is stored under 'DIRCT' attribute
 
-class ReadRegistrationNode:
+class ReadRegistrationNode(ScriptedLoadableModule):
   def __init__(self, parent):
-    parent.title = "Read Registration Node KA" # TODO make this more human readable by adding spaces
+    ScriptedLoadableModule.__init__(self, parent)
+    parent.title = "Read Registration Node" # TODO make this more human readable by adding spaces
     parent.categories = ["RegistrationQuality"]
     parent.dependencies = []
     parent.contributors = ["Kristjan Anderle (GSI)"] # replace with "Firstname Lastname (Org)"
@@ -84,48 +86,50 @@ class ReadRegistrationNode:
 # qReadRegistrationNodeWidget
 #
 
-class ReadRegistrationNodeWidget:
-  def __init__(self, parent = None):
-    self.predefinedList = ["","FC","MDACC","PigStudy"]
-    if not parent:
-      self.parent = slicer.qMRMLWidget()
-      self.parent.setLayout(qt.QVBoxLayout())
-      self.parent.setMRMLScene(slicer.mrmlScene)
-    else:
-      self.parent = parent
-    self.layout = self.parent.layout()
-    if not parent:
-      self.setup()
-      self.parent.show()
+class ReadRegistrationNodeWidget(ScriptedLoadableModuleWidget):
+  #def __init__(self, parent = None):
+    #self.predefinedList = ["","FC","SingleFC","MDACC"]
+    #if not parent:
+      #self.parent = slicer.qMRMLWidget()
+      #self.parent.setLayout(qt.QVBoxLayout())
+      #self.parent.setMRMLScene(slicer.mrmlScene)
+    #else:
+      #self.parent = parent
+    #self.layout = self.parent.layout()
+    #if not parent:
+      #self.setup()
+      #self.parent.show()
 
   def setup(self):
+    ScriptedLoadableModuleWidget.setup(self)
     self.dirPaths = RegistrationHierarchyHelp()
+    self.predefinedList = ["","FC","SingleFC","MDACC"]
     # Instantiate and connect widgets ...
 
-    #
-    # Reload and Test area
-    #
-    reloadCollapsibleButton = ctk.ctkCollapsibleButton()
-    reloadCollapsibleButton.text = "Reload && Test"
-    self.layout.addWidget(reloadCollapsibleButton)
-    reloadFormLayout = qt.QFormLayout(reloadCollapsibleButton)
+    ##
+    ## Reload and Test area
+    ##
+    #reloadCollapsibleButton = ctk.ctkCollapsibleButton()
+    #reloadCollapsibleButton.text = "Reload && Test"
+    #self.layout.addWidget(reloadCollapsibleButton)
+    #reloadFormLayout = qt.QFormLayout(reloadCollapsibleButton)
 
-    # reload button
-    # (use this during development, but remove it when delivering
-    #  your module to users)
-    self.reloadButton = qt.QPushButton("Reload")
-    self.reloadButton.toolTip = "Reload this module."
-    self.reloadButton.name = "ReadRegistrationNode Reload"
-    reloadFormLayout.addWidget(self.reloadButton)
-    self.reloadButton.connect('clicked()', self.onReload)
+    ## reload button
+    ## (use this during development, but remove it when delivering
+    ##  your module to users)
+    #self.reloadButton = qt.QPushButton("Reload")
+    #self.reloadButton.toolTip = "Reload this module."
+    #self.reloadButton.name = "ReadRegistrationNode Reload"
+    #reloadFormLayout.addWidget(self.reloadButton)
+    #self.reloadButton.connect('clicked()', self.onReload)
 
-    # reload and test button
-    # (use this during development, but remove it when delivering
-    #  your module to users)
-    self.reloadAndTestButton = qt.QPushButton("Reload and Test")
-    self.reloadAndTestButton.toolTip = "Reload this module and then run the self tests."
-    reloadFormLayout.addWidget(self.reloadAndTestButton)
-    self.reloadAndTestButton.connect('clicked()', self.onReloadAndTest)
+    ## reload and test button
+    ## (use this during development, but remove it when delivering
+    ##  your module to users)
+    #self.reloadAndTestButton = qt.QPushButton("Reload and Test")
+    #self.reloadAndTestButton.toolTip = "Reload this module and then run the self tests."
+    #reloadFormLayout.addWidget(self.reloadAndTestButton)
+    #self.reloadAndTestButton.connect('clicked()', self.onReloadAndTest)
 
     #
     # Parameters Area
@@ -235,8 +239,12 @@ class ReadRegistrationNodeWidget:
      
   def onCreateHierarchyButton(self):
     self.updateDirpaths()
+    element = self.predefinedList[self.predefPatBox.currentIndex]
+    fourD = True
+    if element == "SingleFC":
+       fourD  = False
     logic = ReadRegistrationNodeLogic()
-    logic.registerAndDirqa(self.dirPaths)
+    logic.registerAndDirqa(self.dirPaths,fourD)
 
   def onReload(self,moduleName="ReadRegistrationNode"):
     """Generic reload method for any scripted module.
@@ -271,7 +279,7 @@ class ReadRegistrationNodeLogic:
   def __init__(self):
     pass
 
-  def registerAndDirqa(self,dirPaths):
+  def registerAndDirqa(self,dirPaths,fourD):
     patientName = dirPaths.name
     
     #Reference phase remains 00 throughout registration
@@ -289,6 +297,13 @@ class ReadRegistrationNodeLogic:
       patientItemID = shNode.CreateSubjectItem(sceneItemID, patientName);
       shNode.SetItemUID(patientItemID, 'DICOM', patientName);
 
+    #Create reg quality node
+    regQualityNode = slicer.vtkMRMLRegistrationQualityNode()
+    slicer.mrmlScene.AddNode( regQualityNode )
+    regQualityNode.SetName( patientName + 'regQualityNode')
+    if not regQualityNode is None:
+       shNode.SetItemAttribute( patientItemID, REGQANODEID, regQualityNode.GetID() )
+    
     dirList = [dirPaths.warpDirectory, dirPaths.vectorDirectory, dirPaths.roiFile]
     
     ctDIRItemID = self.createChild(patientItemID,CT)
@@ -302,16 +317,6 @@ class ReadRegistrationNodeLogic:
     fiducialsDIRItemID = self.createChild(patientItemID,'Fiducials')
     shNode.SetItemAttribute(fiducialsDIRItemID,FILEPATH,dirPaths.fiducialsDirectory)
     shNode.SetItemAttribute(patientItemID,FIDUCIAL + ITEMID,str(fiducialsDIRItemID))
-    
-    #binfoItemID = self.createChild(patientItemID,'Contour')
-    #shNode.SetItemAttribute(binfoItemID,FILEPATH,contourFile)
-    
-    
-    #registrationItemID = shNode.GetItemByUID('DICOM','Registration Node'+patientName)
-    #if not registrationItemID:    
-     #Create Registration node
-     #registrationItemID = shNode.CreateStudyItem(patientItemID,'Registration Node')
-     #shNode.SetItemUID(registrationItemID,'DICOM','Registration Node'+patientName)
      
      #Create directories
     modList = [WARPED_IMAGE, VECTOR_FIELD,ROI]
@@ -321,6 +326,8 @@ class ReadRegistrationNodeLogic:
       shNode.SetItemAttribute(itemID,FILEPATH,dirList[i])
       shNode.SetItemAttribute( patientItemID, modList[i] + ITEMID, str(itemID) )
       modDictID[modList[i]] = itemID
+      if modList[i] == ROI:
+         shNode.SetItemAttribute( itemID, REGISTRATION_TYPE, ROI )
     
      
     #DIRQA
@@ -346,12 +353,13 @@ class ReadRegistrationNodeLogic:
            continue
       
       #Special check, so we have 4DCT files
-      #if not fileName[index-3] == "_":
-         #print "Not part of 4DCT " + fileName
-         #continue
+      if fourD:
+         if not fileName[index-3] == "_":
+            print "Not part of 4DCT " + fileName
+            continue
       
       #Try to find out, which phase do we have
-      if 0:
+      if fourD:
          phase = fileName[index-2:index]
          try:
             int(phase)
@@ -367,18 +375,17 @@ class ReadRegistrationNodeLogic:
       shNode.SetItemAttribute(ctItemID, FILEPATH, dirPaths.ctDirectory + fileName)
       shNode.SetItemAttribute(ctItemID, PHASENUMBER, phase)
       shNode.SetItemAttribute(ctItemID, REGISTRATION_TYPE, IMAGE)
-      #Default is a moving phase
-      if fileName.find("Ref") > -1:
-         shNode.SetItemAttribute(ctItemID, INVERSE, "1")
-      
-      if fileName.find("Plan") > -1:
-         shNode.RemoveItemAttribute(ctItemID, INVERSE)
-
+      shNode.SetItemAttribute(ctItemID, INVERSE, "1")
+      referencePhase
+      #Which is the reference phase in a non 4D registration?
+      if not fourD:
+         if fileName.find("Plan") > -1:
+            shNode.RemoveItemAttribute(ctItemID, INVERSE)
 
       phaseDictID[phase] = ctItemID
 
       #Skip for reference phase
-      if phase == referencePhase:
+      if fourD and phase == referencePhase:
          shNode.SetItemAttribute(patientItemID,'ReferenceImageItemID',str(ctItemID))
          phaseDictID['refPhaseID'] = ctItemID
          shNode.SetItemAttribute(patientItemID,REFERENCENUMBER,str(phaseDictID['refPhaseID']))
@@ -386,7 +393,6 @@ class ReadRegistrationNodeLogic:
      
     #Find warped images and vector fields
     for i in range(2):
-      n = 0
       if i == 0:
          warpedImageOn = True
       else:
@@ -396,35 +402,32 @@ class ReadRegistrationNodeLogic:
       else:
          for file in os.listdir(dirList[i]):
             #Read 4D-CT registration case
-            fixedPhase, movingPhase = self.checkDirectoryFor4D(file, warpedImageOn)
-            if not fixedPhase == -1 and not movingPhase == -1:
-               #print file
-               filePrefix, fileExtension = os.path.splitext(file)
-               itemID = self.createChild(modDictID[modList[i]],filePrefix)
-               shNode.SetItemAttribute(itemID,REGISTRATION_TYPE,modList[i])
-               shNode.SetItemAttribute(itemID,FIXEDIMAGEID,str(phaseDictID[fixedPhase]))
-               shNode.SetItemAttribute(itemID,MOVINGIMAGEID,str(phaseDictID[movingPhase]))
-               shNode.SetItemAttribute(itemID,FILEPATH, dirList[i] + file)
-               if i == 1:
-                  shNode.SetItemAttribute(itemID,TRIPVF, "1")
-               if movingPhase == referencePhase:
-                  shNode.SetItemAttribute(itemID,INVERSE,"1")
-            
-            #Default case
-            fixedPhase, movingPhase = self.checkDirectoryForFiles(file, warpedImageOn)
-            if not fixedPhase == -1 and not movingPhase == -1:
-               #print file
-               filePrefix, fileExtension = os.path.splitext(file)
-               itemID = self.createChild(modDictID[modList[i]],filePrefix)
-               shNode.SetItemAttribute(itemID,REGISTRATION_TYPE,modList[i])
-               shNode.SetItemAttribute(itemID,FILEPATH, dirList[i] + file)
-               if file.find("plan_refPhase") > -1:
-                  shNode.SetItemAttribute(itemID, INVERSE,"1")
-            n += 1
-            #if n > 4:
-               #break
-         
-        
+            if fourD:
+               fixedPhase, movingPhase = self.checkDirectoryFor4D(file, warpedImageOn)
+               if not fixedPhase == -1 and not movingPhase == -1:
+                  #print file
+                  filePrefix, fileExtension = os.path.splitext(file)
+                  itemID = self.createChild(modDictID[modList[i]],filePrefix)
+                  shNode.SetItemAttribute(itemID,REGISTRATION_TYPE,modList[i])
+                  shNode.SetItemAttribute(itemID,FIXEDIMAGEID,str(phaseDictID[fixedPhase]))
+                  shNode.SetItemAttribute(itemID,MOVINGIMAGEID,str(phaseDictID[movingPhase]))
+                  shNode.SetItemAttribute(itemID,FILEPATH, dirList[i] + file)
+                  if file.find('_x.nrrd') > -1:
+                     shNode.SetItemAttribute(itemID,TRIPVF, "1")
+                  if movingPhase == referencePhase:
+                     shNode.SetItemAttribute(itemID,INVERSE,"1")
+            else:
+               #Default case
+               fixedPhase, movingPhase = self.checkDirectoryForFiles(file, warpedImageOn)
+               if not fixedPhase == -1 and not movingPhase == -1:
+                  #print file
+                  filePrefix, fileExtension = os.path.splitext(file)
+                  itemID = self.createChild(modDictID[modList[i]],filePrefix)
+                  shNode.SetItemAttribute(itemID,REGISTRATION_TYPE,modList[i])
+                  shNode.SetItemAttribute(itemID,FILEPATH, dirList[i] + file)
+                  if file.find("plan_refPhase") > -1:
+                     shNode.SetItemAttribute(itemID, INVERSE,"1")
+
        #self.checkDirqaDirectory(dirqaDirectory, regQAItemID, phase)
        #self.checkDirqaFile(dirqaFile, regQAItemID, phase)
 
@@ -435,10 +438,7 @@ class ReadRegistrationNodeLogic:
        for fileName in os.listdir(dirPaths.fiducialsDirectory):
           filePrefix, fileExtension = os.path.splitext(fileName)
           if fileExtension.lower() == '.fcsv':
-            if fileName.find('TPlan') > -1 or fileName.find('T00') > -1:
-               phase = 'UNKNOWN'
-            else:
-               continue
+            if fourD:
                phaseStr = fileName[1]
                try:
                   int(phaseStr)
@@ -447,9 +447,12 @@ class ReadRegistrationNodeLogic:
                   continue
                phase = '0' + phaseStr
                shNode.SetItemAttribute(itemID,FIXEDIMAGEID,str(phaseDictID[phase]))
+            else:
+               if fileName.find('T00') < 0 and fileName.find('Plan') < 0:
+                  continue
                
             itemID = self.createChild(fiducialsDIRItemID,filePrefix)
-            if fileName.find('T00') > -1:
+            if not fourD and fileName.find('T00') > -1:
                shNode.SetItemAttribute(itemID,INVERSE,"1")
             shNode.SetItemAttribute(itemID,REGISTRATION_TYPE,FIDUCIAL)
             shNode.SetItemAttribute(itemID,FILEPATH, dirPaths.fiducialsDirectory + fileName)
@@ -466,35 +469,37 @@ class ReadRegistrationNodeLogic:
      if warpedImageOn:
         index = file.find('_warped.nrrd')
         if index > -1:
-          #Find out warpedimage or invWarpedImage
-          fixedPhase = file[index-2:index] 
-          if file.find('fix') > -1:
-             movingPhase = file[index-8:index-6]
-          else:
-             movingPhase = file[index-5:index-3]
-          
+             #Find out warpedimage or invWarpedImage
+             fixedPhase = file[index-2:index] 
+             if file.find('fix') > -1:
+                movingPhase = file[index-8:index-6]
+             else:
+                movingPhase = file[index-5:index-3]
      else:
         index1 = file.find('_vf.mha')
+        #index1 = -1
         index2 = file.find('_x.nrrd')
+        #index2 = -1
         #if file.find('cuda') < 0:
            #index2 = -1
         #index2 = -1
+        #if file.find('MI') > -1 and file.find('cuda') < 0 and file.find('122') > -1:
+           #return (-1,-1)
         if index1 > -1 or index2 > -1:
            if index1 > -1:
               index = index1
            else:
               index = index2
-
            fixedPhase = file[index-2:index]
            movingPhase = file[index-5:index-3]
-           
+              
            indexFix = file.find('fix')
            indexMov = file.find('mov')
            if indexFix > -1:
               fixedPhase = file[indexFix+3:indexFix+5]
            if indexMov > -1:
               movingPhase = file[indexMov+3:indexMov+5]
-              
+
      try:
          int(fixedPhase)
          int(movingPhase)
@@ -691,7 +696,24 @@ class RegistrationHierarchyHelp():
    def createFromTemplate(self,case, name = ""):
       if case == "FC":
          if name == "":
-            patName = patName = 'Lung006'
+            patName = 'Lung001'
+         else:
+            patName = name
+         
+         patientDirectory = '/u/kanderle/AIXd/Data/FC/' + patName + '/'
+         self.name = patName
+         self.patDirectory  = patientDirectory
+         self.ctDirectory   = patientDirectory + 'CTX/'
+         self.doseDirectory = patientDirectory + 'Dose/'
+         self.contourFile   = patientDirectory + 'Contour/4D/ByTRiPTrafo/' + patName + "_00.binfo"
+         self.vectorDirectory = patientDirectory + 'Registration/4D/'
+         self.warpDirectory = self.vectorDirectory
+         self.fiducialsDirectory = patientDirectory + '4D/NRRD/'
+         self.roiFile = patientDirectory + 'Registration/' + "R.acsv"
+         self.referencePhase = "00"
+      elif case == "SingleFC":
+         if name == "":
+            patName = 'Lung006'
          else:
             patName = name
          
@@ -703,11 +725,31 @@ class RegistrationHierarchyHelp():
          self.doseDirectory = patientDirectory + 'Dose/'
          self.contourFile   = patientDirectory + 'Contour/4D/ByTRiPTrafo/' + patName + "_00.binfo"
          #self.vectorDirectory = patientDirectory + 'Registration/4D/'
-         self.vectorDirectory = patientDirectory + 'RegQA/BSpline/'
+         self.vectorDirectory = patientDirectory + 'RegQA/Demons/'
          self.warpDirectory = self.vectorDirectory
          self.fiducialsDirectory = patientDirectory + '4D/NRRD/'
          self.roiFile = patientDirectory + 'Registration/' + "R.acsv"
          self.referencePhase = "00"
+      elif case == "MDACC":
+         if name == "":
+            patName = 'Patient122'
+         else:
+            patName = name
+         patientDirectory = '/u/motion/AIXd/Data/PatientData/MDACC/' + patName + '/Pat' + patName[-3:] + 'wk0/4DSet01_original/'
+         self.name = patName
+         self.patDirectory  = patientDirectory
+         #self.ctDirectory   = patientDirectory + 'CTX/'
+         self.ctDirectory = patientDirectory + 'CTX/'
+         self.doseDirectory = patientDirectory + 'Dose/'
+         self.contourFile   = patientDirectory + 'Contour/4D/ByTRiPTrafo/' + patName + "_00.binfo"
+         #self.vectorDirectory = patientDirectory + 'Registration/4D/'
+         self.vectorDirectory = patientDirectory + 'Registration/ByPlastimatch/'
+         #self.vectorDirectory = patientDirectory + 'Registration/ByPlastimatch_New/'
+         self.warpDirectory = self.vectorDirectory
+         self.fiducialsDirectory = patientDirectory + '4D/NRRD/'
+         self.roiFile = patientDirectory + 'Registration/' + "R.acsv"
+         self.referencePhase = "05"
+         
       else:
          print "Unknown case" + case
          return

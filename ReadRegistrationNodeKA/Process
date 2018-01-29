@@ -1,9 +1,0 @@
-1. Resample problem. Right now we have transformation at the end of registration.
-We would need to change it to vector field and this we can then resample. That's why resample is not possible for now.
-
-
-4. Save scene at the end of registration.
-
-6. Reference phases can be unneceserily loaded multiple times.
-
-

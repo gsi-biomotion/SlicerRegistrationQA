@@ -149,7 +149,6 @@ void qSlicerRegistrationQualityModuleWidget::onEnter() {
 		if (node) {
 			pNode = vtkMRMLRegistrationQualityNode::SafeDownCast(node);
 			d->logic()->SetAndObserveRegistrationQualityNode(pNode);
-			return;
 		} else {
 			vtkSmartPointer<vtkMRMLRegistrationQualityNode> newNode = vtkSmartPointer<vtkMRMLRegistrationQualityNode>::New();
 			this->mrmlScene()->AddNode(newNode);
@@ -178,35 +177,37 @@ void qSlicerRegistrationQualityModuleWidget::updateWidgetFromMRML() {
    vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
    if (pNode && this->mrmlScene()) {
       d->ParameterComboBox->setCurrentNode(pNode);
+      //Create backward RegQAParameters, if it isn't there yet
+      if ( pNode->GetBackwardRegQAParameters() == NULL ){
+         d->logic()->CreateBackwardParameters(pNode);
+      }
+      
       //Update Visualization Parameters
       d->patternSpinBox->setValue(pNode->GetCheckerboardPattern());
-      d->BackwardCheckBox->setChecked(pNode->GetBackwardRegistration());
-      d->logic()->ChangeRegistrationDirectionToBackward(pNode->GetBackwardRegistration());
+      
+      if (pNode->GetBackwardRegistration()){
+         d->BackwardButton->setText("Change to Forw. Reg.");
+      }
+      else{
+         d->BackwardButton->setText("Change to Back. Reg.");
+      }
       
       //Create table if necesarry
-      if ( ! pNode->GetRegQATableNode() ){
-         vtkSmartPointer<vtkMRMLTableNode> tableNode = d->logic()->CreateDefaultRegQATable();
+      vtkSmartPointer<vtkMRMLTableNode> tableNode = pNode->GetRegQATableNode();
+      if ( ! tableNode ){
+         tableNode = d->logic()->CreateDefaultRegQATable();
          if (tableNode == NULL){
             d->StillErrorLabel->setText("Can't create default RegQA table");
             return;
          }
          pNode->DisableModifiedEventOn();
          pNode->SetAndObserveRegQATableNode(tableNode);
-         d->MRMLTableView->setMRMLTableNode(tableNode);
-         d->MRMLTableView->hideRow(0);
+         pNode->GetBackwardRegQAParameters()->SetAndObserveRegQATableNode(tableNode);
+         pNode->DisableModifiedEventOff();
       }
-      //Create backward RegQAParameters, if it isn't there yet
-      if ( pNode->GetBackwardRegQAParameters() == NULL ){
-         vtkSmartPointer<vtkMRMLRegistrationQualityNode> backNode = 
-                        vtkSmartPointer<vtkMRMLRegistrationQualityNode>::New();
-         std::string outSS;
-         std::string addName("_backward");
-         outSS = pNode->GetName() + addName;
-         std::string nameNode = this->mrmlScene()->GenerateUniqueName(outSS);
-         backNode->SetName(nameNode.c_str());
-         this->mrmlScene()->AddNode(backNode);
-         pNode->SetAndObserveBackwardRegQAParameters(backNode);
-      }
+      
+      d->MRMLTableView->setMRMLTableNode(tableNode);
+      d->MRMLTableView->hideRow(0);
    }
 
    this->updateButtonsAndTable();
@@ -224,10 +225,24 @@ void qSlicerRegistrationQualityModuleWidget::updateButtonsAndTable() {
    bool currentScalarVolumeState = pNode->GetVolumeNodeID() && pNode->GetWarpedVolumeNodeID();
 // 
    d->AbsoluteDiffPushButton->setEnabled(currentScalarVolumeState);
-   d->FalseColorPushButton->setEnabled(currentScalarVolumeState);
+   d->FalseColor1PushButton->setEnabled(currentScalarVolumeState);
    d->CheckerboardPushButton->setEnabled(currentScalarVolumeState);
-   d->MovieToggle->setEnabled(currentScalarVolumeState);
    d->FlickerToggle->setEnabled(currentScalarVolumeState);
+   
+   if (pNode->GetVolumeNodeID() &&  pNode->GetBackwardRegQAParameters()->GetVolumeNodeID()){
+      d->FalseColor2PushButton->setEnabled(true);
+   }
+   else{
+      d->FalseColor2PushButton->setEnabled(false);
+   }
+   
+   if ( pNode->GetMovieRun() ) {
+      d->MovieToggle->setText("Stop Movie");
+   }
+   else{
+      d->MovieToggle->setText("Start Movie");
+   }
+
 // //    
    bool vector = pNode->GetVectorVolumeNodeID();
    d->jacobianButton->setEnabled(vector);
@@ -611,7 +626,8 @@ void qSlicerRegistrationQualityModuleWidget::fixedFiducialChanged(vtkMRMLNode* n
         if (!pNode || !this->mrmlScene() || !node) {
                 return;
         }
-
+        pNode->DisableModifiedEventOn();
+        
         if ( pNode->GetBackwardRegistration() ){
            pNode->GetBackwardRegQAParameters()->SetAndObserveFiducialNodeID(node->GetID());
         }
@@ -630,6 +646,7 @@ void qSlicerRegistrationQualityModuleWidget::movingFiducialChanged(vtkMRMLNode* 
         if (!pNode || !this->mrmlScene() || !node) {
                 return;
         }
+        pNode->DisableModifiedEventOn();
 
         if ( pNode->GetBackwardRegistration() ){
            pNode->SetAndObserveFiducialNodeID(node->GetID());
@@ -657,9 +674,10 @@ void qSlicerRegistrationQualityModuleWidget::setup() {
 	connect(d->SaveOutputFilePushButton, SIGNAL(clicked()), this, SLOT(saveOutputFileClicked()));
         
         connect(d->ROIaroundSegmentButton, SIGNAL(clicked()), this, SLOT (ROIaroundSegmentClicked()));
-        connect(d->BackwardCheckBox, SIGNAL(stateChanged(int)), this, SLOT (RegistrationDirectionChanged(int)));
+        connect(d->BackwardButton, SIGNAL(clicked()), this, SLOT (RegistrationDirectionChanged()));
 	
-	connect(d->FalseColorPushButton, SIGNAL(clicked()), this, SLOT (falseColorClicked()));
+	connect(d->FalseColor1PushButton, SIGNAL(clicked()), this, SLOT (falseColor1Clicked()));
+        connect(d->FalseColor2PushButton, SIGNAL(clicked()), this, SLOT (falseColor2Clicked()));
 	connect(d->CheckerboardPushButton, SIGNAL(clicked()), this, SLOT (checkerboardClicked()));
 	connect(d->AbsoluteDiffPushButton, SIGNAL(clicked()), this, SLOT (absoluteDiffClicked()));
         connect(d->fiducialButton, SIGNAL(clicked()), this, SLOT (fiducialClicked()));
@@ -688,22 +706,9 @@ void qSlicerRegistrationQualityModuleWidget::ROIaroundSegmentClicked() {
 //-----------------------------------------------------------------------------
 // Interchange forward and backward registration direction
 //-----------------------------------------------------------------------------
-void qSlicerRegistrationQualityModuleWidget::RegistrationDirectionChanged(int state) {
+void qSlicerRegistrationQualityModuleWidget::RegistrationDirectionChanged() {
    Q_D(const qSlicerRegistrationQualityModuleWidget);
-   vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
-   
-   // If we already have the right registration, don't do anything
-   if ( (pNode->GetBackwardRegistration() && state == 2) ||
-        (!pNode->GetBackwardRegistration() && state == 0) ){
-      return;
-   }
-   
-   if ( state == 0 ) {
-      d->logic()->ChangeRegistrationDirectionToBackward(false);
-   }
-   else if ( state == 2 ){
-      d->logic()->ChangeRegistrationDirectionToBackward(true);
-   }
+   d->logic()->UpdateRegistrationDirection();
    this->updateWidgetFromMRML();
 }
 //-----------------------------------------------------------------------------
@@ -812,22 +817,47 @@ void qSlicerRegistrationQualityModuleWidget::fiducialClicked() {
 
 }
 //-----------------------------------------------------------------------------
-// False Color
+// False Color 1
 //-----------------------------------------------------------------------------
 
-void qSlicerRegistrationQualityModuleWidget::falseColorClicked() {
+void qSlicerRegistrationQualityModuleWidget::falseColor1Clicked() {
         Q_D(const qSlicerRegistrationQualityModuleWidget);
-        bool invertColor;
+        bool invertColor, matchLevels;
         
         if (d->ColorCheckBox->checkState() == 0) invertColor = false;
         else invertColor = true;
-
+        if (d->MatchCheckBox->checkState() == 0) matchLevels = false;
+        else matchLevels = true;
         try {
-                d->logic()->FalseColor(invertColor);
+                d->logic()->FalseColor(invertColor, false, matchLevels);
         } catch (std::runtime_error e) {
                 d->StillErrorLabel->setText(e.what());
                 d->StillErrorLabel->setVisible(true);
-                d->FalseColorPushButton->toggle();
+                d->FalseColor1PushButton->toggle();
+                cerr << e.what() << endl;
+                return;
+        }
+        d->StillErrorLabel->setText("");
+}
+
+//-----------------------------------------------------------------------------
+// False Color 2
+//-----------------------------------------------------------------------------
+
+void qSlicerRegistrationQualityModuleWidget::falseColor2Clicked() {
+        Q_D(const qSlicerRegistrationQualityModuleWidget);
+        bool invertColor, matchLevels;
+        
+        if (d->ColorCheckBox->checkState() == 0) invertColor = false;
+        else invertColor = true;
+        if (d->MatchCheckBox->checkState() == 0) matchLevels = false;
+        else matchLevels = true;
+        try {
+                d->logic()->FalseColor(invertColor, true, matchLevels);
+        } catch (std::runtime_error e) {
+                d->StillErrorLabel->setText(e.what());
+                d->StillErrorLabel->setVisible(true);
+                d->FalseColor2PushButton->toggle();
                 cerr << e.what() << endl;
                 return;
         }
@@ -856,8 +886,6 @@ void qSlicerRegistrationQualityModuleWidget::checkerboardClicked(){
 }
 
 void qSlicerRegistrationQualityModuleWidget::flickerToggle(){
-        Q_D(const qSlicerRegistrationQualityModuleWidget);
-
         if(!flickerTimer->isActive()) {
 //              cerr << "Starting timer" << endl;
                 flickerToggle1();
@@ -897,13 +925,23 @@ void qSlicerRegistrationQualityModuleWidget::flickerToggle1(){
 void qSlicerRegistrationQualityModuleWidget::movieToggle(){
         Q_D(const qSlicerRegistrationQualityModuleWidget);
 
-        d->MovieToggle->setEnabled(false);
-        d->MovieToggle->setText("Stop");
+        vtkMRMLRegistrationQualityNode* pNode = d->logic()->GetRegistrationQualityNode();
+        
+        //Alternate between start and stop
+        pNode->DisableModifiedEventOn();
+        if ( pNode->GetMovieRun() ) {
+           d->MovieToggle->setText("Start Movie");
+           pNode->MovieRunOff();
+        }
+        else{
+           d->MovieToggle->setText("Stop Movie");
+           pNode->MovieRunOn();
+        }
+        pNode->DisableModifiedEventOff();
 
         vtkSlicerRegistrationQualityLogic *logic = d->logic();
         logic->Movie();
-        d->MovieToggle->setText("Start");
-        d->MovieToggle->setEnabled(true);
+        this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQualityModuleWidget::movieBoxRedStateChanged(int state) {
@@ -1022,8 +1060,10 @@ void qSlicerRegistrationQualityModuleWidget::setCheckerboardPattern(int checkboa
 bool qSlicerRegistrationQualityModuleWidget::setEditedNode(
   vtkMRMLNode* node, QString role /* = QString()*/, QString context /* = QString() */)
 {
-  Q_D(qSlicerRegistrationQualityModuleWidget);
-
+//   Q_D(qSlicerRegistrationQualityModuleWidget);
+  this->updateButtonsAndTable();
+  return true;
+/*
   if ( QString::compare(role, "fixedImage", Qt::CaseInsensitive) == 0 ){
      this->fixedVolumeChanged(node);
   }
@@ -1070,5 +1110,5 @@ bool qSlicerRegistrationQualityModuleWidget::setEditedNode(
      return false;
   }
   std::cerr << "Set: " << node->GetName() << " to " << role.toLatin1().constData() << " " << context.toLatin1().constData() << "\n";
-  return true;
+  return true;*/
 }

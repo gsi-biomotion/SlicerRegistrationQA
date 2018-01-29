@@ -31,9 +31,10 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->ROINodeID = NULL;
 	this->FiducialNodeID = NULL;
 	this->OutputModelNodeID = NULL;
-        
+
         this->BackwardRegistrationOff();
-        
+        this->MovieRunOff();
+
         this->SegmentID = NULL;
 
 	//Checkerboard Parameters
@@ -48,10 +49,10 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	
 	NumberOfScreenshots = 1;
 	
-	MovieBoxRedState = 0;
-	MovieBoxYellowState = 0;
-	MovieBoxGreenState = 0;
-	MovieRun = 0;
+	this->MovieBoxRedState = 0;
+	this->MovieBoxYellowState = 0;
+	this->MovieBoxGreenState = 0;
+
 
 }
 //----------------------------------------------------------------------------
@@ -89,6 +90,10 @@ bool vtkMRMLRegistrationQualityNode::ChangeFromBackwardToFoward(){
    this->FlickerOpacity = backNode->FlickerOpacity;
 
    this->SetInverseConsistVolumeNodeID(backNode->GetInverseConsistVolumeNodeID());
+   
+   this->MovieBoxRedState = backNode->MovieBoxRedState;
+   this->MovieBoxYellowState = backNode->MovieBoxYellowState;
+   this->MovieBoxGreenState = backNode->MovieBoxGreenState;
 
    this->DisableModifiedEventOff();
    this->InvokePendingModifiedEvent();
@@ -225,6 +230,10 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
 	this->SetAbsoluteDiffVolumeNodeID(node->GetAbsoluteDiffVolumeNodeID());
 //
 	this->SetJacobianVolumeNodeID(node->GetJacobianVolumeNodeID());
+        
+        this->MovieBoxRedState = node->MovieBoxRedState;
+        this->MovieBoxYellowState = node->MovieBoxYellowState;
+        this->MovieBoxGreenState = node->MovieBoxGreenState;
 
 	this->DisableModifiedEventOff();
 	this->InvokePendingModifiedEvent();

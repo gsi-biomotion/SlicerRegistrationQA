@@ -76,6 +76,7 @@ public:
    static const std::string TRIPVF;
    static const std::string BACKWARD;
    static const std::string IMAGE;
+   static const std::string REGQANODEID;
 public:
 	static vtkSlicerRegistrationQualityLogic *New();
 	vtkTypeMacro(vtkSlicerRegistrationQualityLogic, vtkSlicerModuleLogic);
@@ -87,7 +88,7 @@ public:
 	
         void CalculateContourStatistic();
 	
-	void FalseColor(bool falseColor);
+	void FalseColor(bool falseColor, bool movingImage, bool matchLevels);
 	void Flicker(int opacity);
 	
 	void Movie();
@@ -101,30 +102,27 @@ public:
         bool CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transofrm, double *statisticValues);
         bool CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLVectorVolumeNode *vectorNode, double *statisticValues);
 
-        /** Takes two scalar volumes and calls a CLI-module to calculate mean square error 
-         *  between them either on the whole volume or on the ROI, if specified.
+        /** Calculates Absolute Difference between reference and warped image from registration
+         *  quality node. Calculates statistic as well, if given 
          */
-        vtkMRMLScalarVolumeNode* AbsoluteDifference(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*, vtkMRMLAnnotationROINode* inputROI = NULL);
+        bool AbsoluteDifference(vtkMRMLRegistrationQualityNode* regQANode, double statisticValues[4]);
         
-        /** Takes vector field and calls a CLI-module to calculate jacobian determinant 
-         *  either on the whole vector volume or on the ROI, if specified.
+        /**Calculates Jacobian from registration quality parameter node.
+         * Calculates statistic as well, if given 
          */
-	vtkMRMLScalarVolumeNode* Jacobian(vtkMRMLVectorVolumeNode *vectorVolume,
-                                          vtkMRMLAnnotationROINode *inputROI = NULL);
+        bool Jacobian(vtkMRMLRegistrationQualityNode* regQANode, double statisticValues[4]);
         
-        /** Takes two vector fields and calls a CLI-module to calculate inverse
-         *  consistency between them. The calculation is done either on the 
-         *  whole vector volume or on the ROI, if specified.
-         *  If tableNode is given, basic statistic values are writen into it.
+        /** Calculates inverse consistency from registration quality parameter node.
+         * Calculates statistic as well, if given 
          */
-	vtkMRMLScalarVolumeNode* InverseConsist(vtkMRMLVectorVolumeNode *vectorVolume1,
-                                                vtkMRMLVectorVolumeNode *vectorVolume2,
-                                                vtkMRMLAnnotationROINode *inputROI=NULL);
+        bool InverseConsist(vtkMRMLRegistrationQualityNode* regQANode, double statisticValues[4]);
+        
+        
 	/** Set the background to fixed image, forground to warped image with opacity 0.5
          */
         void SetDefaultDisplay();
         
-	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double* statisticValues);
+	void CalculateStatistics(vtkMRMLScalarVolumeNode*, double statisticValues[4]);
         vtkMRMLVolumeNode* LoadVolumeFromFile( std::string filePath, std::string volumeName);
 
 	/** Change transform into vector volume
@@ -157,10 +155,14 @@ public:
          */
         void UpdateRegQATable();
         
+        /** Create default node for backward parameters
+         */
+        void CreateBackwardParameters(vtkMRMLRegistrationQualityNode* node);
+        
         /** Change in which direction (forward or backward) should
          *  the QA be performed.
          */
-        void ChangeRegistrationDirectionToBackward(bool backward);
+        void UpdateRegistrationDirection();
         
         /** Update registration quality node based on item attributes in
          *  given subject hierarchy node
@@ -189,10 +191,28 @@ protected:
         
 	void InvertXandY(vtkImageData* imageData);
         bool GetRadiusAndCenter(vtkSegment* segment, double radius[3], double center[3]);
-        void UpdateTableWithStatisticalValues(double* statisticValues, int row);
-        void UpdateTableWithFiducialValues(vtkMRMLMarkupsFiducialNode* fiducial, double* statisticValues);
+        void UpdateTableWithStatisticalValues(double statisticValues[4], int row);
+        void UpdateTableWithFiducialValues(vtkMRMLMarkupsFiducialNode* fiducial, double statisticValues[4]);
         void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
         void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
+        /** Takes two scalar volumes and calls a CLI-module to calculate mean square error 
+         *  between them either on the whole volume or on the ROI, if specified.
+         */
+        vtkMRMLScalarVolumeNode* CalculateAbsoluteDifference(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*, vtkMRMLAnnotationROINode* inputROI = NULL);
+        
+        /** Takes vector field and calls a CLI-module to calculate jacobian determinant 
+         *  either on the whole vector volume or on the ROI, if specified.
+         */
+        vtkMRMLScalarVolumeNode* CalculateJacobian(vtkMRMLVectorVolumeNode *vectorVolume,
+                                          vtkMRMLAnnotationROINode *inputROI = NULL);
+        /** Takes two vector fields and calls a CLI-module to calculate inverse
+         *  consistency between them. The calculation is done either on the 
+         *  whole vector volume or on the ROI, if specified.
+         *  If tableNode is given, basic statistic values are writen into it.
+         */
+        vtkMRMLScalarVolumeNode* CalculateInverseConsist(vtkMRMLVectorVolumeNode *vectorVolume1,
+                                                vtkMRMLVectorVolumeNode *vectorVolume2,
+                                                vtkMRMLAnnotationROINode *inputROI=NULL);
 
 protected:
 	/// Parameter set MRML node

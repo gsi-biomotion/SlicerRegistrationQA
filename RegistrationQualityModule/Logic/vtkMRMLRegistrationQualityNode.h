@@ -116,41 +116,48 @@ public:
         
         // Movie parameters
         vtkGetMacro(MovieBoxRedState, int);
+        vtkSetMacro(MovieBoxRedState, int);
         vtkGetMacro(MovieBoxYellowState, int);
+        vtkSetMacro(MovieBoxYellowState, int);
         vtkGetMacro(MovieBoxGreenState, int);
+        vtkSetMacro(MovieBoxGreenState, int);
 
         // No set for this one
-        vtkGetMacro(MovieRun, int);
+        /// Forward flag
+        vtkGetMacro(MovieRun, bool);
+        vtkSetMacro(MovieRun, bool);
+        vtkBooleanMacro(MovieRun, bool);
+//         vtkGetMacro(MovieRun, int);
 
-        virtual void SetMovieBoxRedState(int state) {
-                vtkDebugMacro(<< GetClassName() << " (" << this
-                                << "): setting MovieBoxRedState to " << state);
-                if(MovieBoxRedState != state) {
-                        MovieBoxRedState = state;
-                        MovieRun ^= 1<<0;
-                        Modified();
-                }
-        }
-
-        virtual void SetMovieBoxYellowState(int state) {
-                vtkDebugMacro(<< GetClassName() << " (" << this
-                                << "): setting MovieBoxYellowState to " << state);
-                if(MovieBoxYellowState != state) {
-                        MovieBoxYellowState = state;
-                        MovieRun ^= 1<<1;
-                        Modified();
-                }
-        }
-
-        virtual void SetMovieBoxGreenState(int state) {
-                vtkDebugMacro(<< GetClassName() << " (" << this
-                                << "): setting MovieBoxGreenState to " << state);
-                if(MovieBoxGreenState != state) {
-                        MovieBoxGreenState = state;
-                        MovieRun ^= 1<<2;
-                        Modified();
-                }
-        }
+//         virtual void SetMovieBoxRedState(int state) {
+//                 vtkDebugMacro(<< GetClassName() << " (" << this
+//                                 << "): setting MovieBoxRedState to " << state);
+//                 if(MovieBoxRedState != state) {
+//                         MovieBoxRedState = state;
+//                         MovieRun ^= 1<<0;
+//                         Modified();
+//                 }
+//         }
+// 
+//         virtual void SetMovieBoxYellowState(int state) {
+//                 vtkDebugMacro(<< GetClassName() << " (" << this
+//                                 << "): setting MovieBoxYellowState to " << state);
+//                 if(MovieBoxYellowState != state) {
+//                         MovieBoxYellowState = state;
+//                         MovieRun ^= 1<<1;
+//                         Modified();
+//                 }
+//         }
+// 
+//         virtual void SetMovieBoxGreenState(int state) {
+//                 vtkDebugMacro(<< GetClassName() << " (" << this
+//                                 << "): setting MovieBoxGreenState to " << state);
+//                 if(MovieBoxGreenState != state) {
+//                         MovieBoxGreenState = state;
+//                         MovieRun ^= 1<<2;
+//                         Modified();
+//                 }
+//         }
 
         
 protected:
@@ -173,10 +180,10 @@ protected:
 	char* OutputModelNodeID;
 	int NumberOfScreenshots;
 	
-	int MovieBoxRedState;
+	bool MovieRun;
+        int MovieBoxRedState;
 	int MovieBoxYellowState;
 	int MovieBoxGreenState;
-	int MovieRun;
 
 	char* CheckerboardVolumeNodeID;
 	int CheckerboardPattern;
@@ -188,6 +195,7 @@ protected:
 	char* JacobianVolumeNodeID;
 	char* InverseConsistVolumeNodeID;
         bool BackwardRegistration;
+        
 };
 
 #endif
