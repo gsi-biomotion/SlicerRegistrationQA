@@ -119,6 +119,7 @@ namespace
 		outputImage->Allocate();
 
 		const InputImageType::SpacingType& sp = fixedImage->GetSpacing();
+                const InputImageType::SpacingType& spMoving = movingImage->GetSpacing();
 		outputImage->SetSpacing( sp );
 
 		const InputImageType::PointType origin = fixedImage->GetOrigin();
@@ -175,11 +176,11 @@ namespace
 		// Normalize output volume, if specifed
 		if (normalize) {
                    typename DivideFilterType::Pointer divideFilter = DivideFilterType::New();
-                   // Find maximum spacing first
+                   // Find maximum spacing from either fixed or moving image
                    double maxSpacing = -1;
                    for( int i=0;i<3;i++){
-                      if ( maxSpacing < sp[i] ){
-                         maxSpacing = sp[i];
+                      if ( maxSpacing < sp[i] || maxSpacing < spMoving[i] ){
+                         sp[i] > spMoving[i] ? maxSpacing = sp[i] : maxSpacing = spMoving[i];
                       }
                    }
                    if ( maxSpacing > 0 ) {

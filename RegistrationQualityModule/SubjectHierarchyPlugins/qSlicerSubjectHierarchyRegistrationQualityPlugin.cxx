@@ -38,6 +38,7 @@
 #include <vtkMRMLSegmentationNode.h>
 #include <vtkMRMLTableNode.h>
 #include <vtkMRMLMarkupsFiducialNode.h>
+#include <vtkMRMLGridTransformNode.h>
 // #include "vtkMRMLMarkupsNode.h"
 #include "vtkSlicerRegistrationQualityLogic.h"
 #include "vtkMRMLRegistrationQualityNode.h"
@@ -218,24 +219,21 @@ void qSlicerSubjectHierarchyRegistrationQualityPluginPrivate::init()
   
   QAction* calculateDIRQAAction = new QAction("Calculate DIRQA",q);
   QObject::connect(calculateDIRQAAction, SIGNAL(triggered()), q, SLOT(calcuateDIRQAForCurrentNode()));
-  calculateDIRQAAction->setCheckable(true);
   calculateDIRQAAction->setActionGroup(this->DIRQAMenuActionGroup);
   calculateDIRQAAction->setData(QVariant("Calculate DIRQA"));
   this->DIRQAMenu->addAction(calculateDIRQAAction);
   
-  QAction* loadVolumeAction = new QAction("Load from File",q);
-  QObject::connect(loadVolumeAction, SIGNAL(triggered()), q, SLOT(loadFromFilenameForCurrentID()));
-  loadVolumeAction->setCheckable(true);
-  loadVolumeAction->setActionGroup(this->DIRQAMenuActionGroup);
-  loadVolumeAction->setData(QVariant("Load Volume from File"));
-  this->DIRQAMenu->addAction(loadVolumeAction);
+  QAction* loadAction = new QAction("Load from disk",q);
+  QObject::connect(loadAction, SIGNAL(triggered()), q, SLOT(updateRegNodeForCurrentNode()));
+  loadAction->setActionGroup(this->DIRQAMenuActionGroup);
+  loadAction->setData(QVariant("Load from disk"));
+  this->DIRQAMenu->addAction(loadAction);
   
-  QAction* updateVolumeAction = new QAction("Load and Update",q);
-  QObject::connect(updateVolumeAction, SIGNAL(triggered()), q, SLOT(updateRegNodeForCurrentNode()));
-  updateVolumeAction->setCheckable(true);
-  updateVolumeAction->setActionGroup(this->DIRQAMenuActionGroup);
-  updateVolumeAction->setData(QVariant("Load and Update"));
-  this->DIRQAMenu->addAction(updateVolumeAction);
+  QAction* convertAction = new QAction("Convert",q);
+  QObject::connect(convertAction, SIGNAL(triggered()), q, SLOT(convertCurrentNode()));
+  convertAction->setActionGroup(this->DIRQAMenuActionGroup);
+  convertAction->setData(QVariant("Convert"));
+  this->DIRQAMenu->addAction(convertAction);
 
   this->DIRQALogic = vtkSlicerRegistrationQualityLogic::New();
   vtkSmartPointer<vtkMRMLScene> scene; 
@@ -388,19 +386,6 @@ void qSlicerSubjectHierarchyRegistrationQualityPlugin::showContextMenuActionsFor
 //   }
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegistrationQualityPlugin::loadFromFilenameForCurrentID()
-{
-  Q_D(qSlicerSubjectHierarchyRegistrationQualityPlugin);
-  vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
-  if (!shNode)
-  {
-    qCritical() << Q_FUNC_INFO << ": Failed to access subject hierarchy node";
-    return;
-  }
-  vtkIdType currentItemID = qSlicerSubjectHierarchyPluginHandler::instance()->currentItem();
-  this->loadFromFilenameForItemID(currentItemID);
-}
-//---------------------------------------------------------------------------
 void qSlicerSubjectHierarchyRegistrationQualityPlugin::loadFromFilenameForItemID(vtkIdType itemID)
 {
    Q_D(qSlicerSubjectHierarchyRegistrationQualityPlugin);
@@ -464,6 +449,18 @@ void qSlicerSubjectHierarchyRegistrationQualityPlugin::updateRegNodeForCurrentNo
   }
   
   this->updateRegNodeForID(currentItemID);
+}
+//---------------------------------------------------------------------------
+void qSlicerSubjectHierarchyRegistrationQualityPlugin::convertCurrentNode(){
+   vtkIdType currentItemID = qSlicerSubjectHierarchyPluginHandler::instance()->currentItem();
+  
+  if (!currentItemID)
+  {
+    qCritical() << Q_FUNC_INFO << ": Invalid current item";
+    return;
+  }
+  
+  this->convertItemID(currentItemID);
 }
 //---------------------------------------------------------------------------
 void qSlicerSubjectHierarchyRegistrationQualityPlugin::calcuateDIRQAForID(vtkIdType itemID, bool removeNodes) {
@@ -1483,6 +1480,73 @@ vtkMRMLRegistrationQualityNode* qSlicerSubjectHierarchyRegistrationQualityPlugin
    
 }
 //---------------------------------------------------------------------------
+void qSlicerSubjectHierarchyRegistrationQualityPlugin::convertItemID(vtkIdType itemID){
+   Q_D(qSlicerSubjectHierarchyRegistrationQualityPlugin);
+   vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
+   if (!shNode)
+   {
+      qCritical() << Q_FUNC_INFO << ": Failed to access subject hierarchy node";
+      return;
+   }
+   if ( !itemID ) {
+      qCritical() << Q_FUNC_INFO << ": No item ID";
+      return;
+   }
+   
+   vtkMRMLNode* node = shNode->GetItemDataNode(itemID);
+   
+   if ( !node) {
+      qCritical() << Q_FUNC_INFO << ": No node for item";
+      return;
+   }
+   
+   vtkIdType parentID = shNode->GetItemParent(itemID);
+   
+   vtkMRMLRegistrationQualityNode* pNode = this->loadRegQANode(itemID);
+   //Check for backward
+   if ( shNode->HasItemAttribute(parentID,d->DIRQALogic->INVERSE) ){
+      pNode = pNode->GetBackwardRegQAParameters();
+   }
+   
+   if ( node->IsA("vtkMRMLVectorVolumeNode") ){
+      vtkSmartPointer<vtkMRMLGridTransformNode> transformNode;
+      transformNode = d->DIRQALogic->CreateTransformFromVector(vtkMRMLVectorVolumeNode::SafeDownCast(node));
+      if ( ! transformNode ){
+         qCritical() << Q_FUNC_INFO << ": Can't transform vector " << node->GetName() << " to transform";
+         return;
+      }
+      vtkIdType transformNodeItemID = shNode->GetItemByDataNode(vtkMRMLNode::SafeDownCast(transformNode));
+      std::stringstream newtransformNodeStringID;
+      newtransformNodeStringID <<  transformNodeItemID;
+      shNode->SetItemParent(transformNodeItemID, parentID);
+      shNode->SetItemAttribute( transformNodeItemID, d->DIRQALogic->REGISTRATION_TYPE.c_str(), 
+                              d->DIRQALogic->TRANSFORM.c_str());
+      shNode->SetItemAttribute( parentID, d->DIRQALogic->TRANSFORMITEMID, newtransformNodeStringID.str().c_str() );
+      
+      // Write in pNode, if exist
+      if ( pNode ){
+         pNode->SetTransformNodeID(transformNode->GetID());
+      }
+   }
+      
+   // TODO: Locate ref volume and load it
+   if ( node->IsA("vtkMRMLTransformNode") ){
+      vtkSmartPointer<vtkMRMLVolumeNode> vectorVolume;
+//       vectorVolume = d->DIRQALogic->CreateVectorFromTransform(node, RefVolume?);
+      if ( ! vectorVolume ){
+         qCritical() << Q_FUNC_INFO << ": Can't transform vector " << node->GetName() << " to transform";
+         return;
+      }
+      vtkIdType vectorVolumeItemID = shNode->GetItemByDataNode(vtkMRMLNode::SafeDownCast(vectorVolume));
+      std::stringstream newvectorVolumeStringID;
+      newvectorVolumeStringID <<  vectorVolumeItemID;
+      shNode->SetItemParent(vectorVolumeItemID, parentID);
+      shNode->SetItemAttribute( vectorVolumeItemID, d->DIRQALogic->REGISTRATION_TYPE.c_str(), 
+                              d->DIRQALogic->VECTOR_FIELD.c_str());
+      shNode->SetItemAttribute( parentID, d->DIRQALogic->VECTORITEMID, newvectorVolumeStringID.str().c_str() );
+   }
+}
+//---------------------------------------------------------------------------
 void qSlicerSubjectHierarchyRegistrationQualityPlugin::InputSelected(std::string name, bool backward, vtkIdType itemID, vtkMRMLNode* associatedNode)
 {
    Q_D(qSlicerSubjectHierarchyRegistrationQualityPlugin);
@@ -1583,7 +1647,6 @@ void qSlicerSubjectHierarchyRegistrationQualityPlugin::InputSelected(std::string
 //---------------------------------------------------------------------------
 void qSlicerSubjectHierarchyRegistrationQualityPlugin::InputSelected(std::string name, bool backward)
 {
-   Q_D(qSlicerSubjectHierarchyRegistrationQualityPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {

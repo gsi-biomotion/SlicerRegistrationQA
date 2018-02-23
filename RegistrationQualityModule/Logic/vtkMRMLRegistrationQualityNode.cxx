@@ -52,6 +52,9 @@ vtkMRMLRegistrationQualityNode::vtkMRMLRegistrationQualityNode() {
 	this->MovieBoxRedState = 0;
 	this->MovieBoxYellowState = 0;
 	this->MovieBoxGreenState = 0;
+        
+        this->VolumeColorNodeID = NULL;
+        this->WarpedColorNodeID = NULL;
 
 
 }
@@ -70,6 +73,8 @@ vtkMRMLRegistrationQualityNode::~vtkMRMLRegistrationQualityNode() {
 	this->SetAbsoluteDiffVolumeNodeID(NULL);
 	this->SetJacobianVolumeNodeID(NULL);
         this->SetInverseConsistVolumeNodeID(NULL);
+        this->SetVolumeColorNodeID(NULL);
+        this->SetWarpedColorNodeID(NULL);
 }
 //----------------------------------------------------------------------------
 bool vtkMRMLRegistrationQualityNode::ChangeFromBackwardToFoward(){
@@ -171,6 +176,14 @@ void vtkMRMLRegistrationQualityNode::ReadXMLAttributes(const char** atts) {
 			this->SetJacobianVolumeNodeID(attValue);
 			continue;
 		}
+		if (!strcmp(attName,"VolumeColorNodeID")) {
+                        this->SetVolumeColorNodeID(attValue);
+                        continue;
+                }
+                if (!strcmp(attName,"WarpedColorNodeID")) {
+                        this->SetWarpedColorNodeID(attValue);
+                        continue;
+                }
 	}
 
 	this->WriteXML(std::cout,1);
@@ -206,6 +219,10 @@ void vtkMRMLRegistrationQualityNode::WriteXML(ostream& of, int nIndent) {
 			<< (this->AbsoluteDiffVolumeNodeID ? this->AbsoluteDiffVolumeNodeID : "NULL") << "\"";
 	of << indent << " JacobianVolumeNodeID=\""
 			<< (this->JacobianVolumeNodeID ? this->JacobianVolumeNodeID : "NULL") << "\"";
+        of << indent << " VolumeColorNodeID=\""
+                        << (this->VolumeColorNodeID ? this->VolumeColorNodeID : "NULL") << "\"";
+        of << indent << " WarpedColorNodeID=\""
+                        << (this->WarpedColorNodeID ? this->WarpedColorNodeID : "NULL") << "\"";
 }
 
 //----------------------------------------------------------------------------
@@ -234,6 +251,9 @@ void vtkMRMLRegistrationQualityNode::Copy(vtkMRMLNode *anode) {
         this->MovieBoxRedState = node->MovieBoxRedState;
         this->MovieBoxYellowState = node->MovieBoxYellowState;
         this->MovieBoxGreenState = node->MovieBoxGreenState;
+        
+        this->SetVolumeColorNodeID(node->GetVolumeColorNodeID());
+        this->SetWarpedColorNodeID(node->GetWarpedColorNodeID());
 
 	this->DisableModifiedEventOff();
 	this->InvokePendingModifiedEvent();
@@ -449,5 +469,9 @@ void vtkMRMLRegistrationQualityNode::PrintSelf(ostream& os, vtkIndent indent){
 			<< (this->JacobianVolumeNodeID ? this->JacobianVolumeNodeID : "NULL") << "\n";
         os << indent << " InverseConsistVolumeNodeID = "
                         << (this->InverseConsistVolumeNodeID ? this->InverseConsistVolumeNodeID : "NULL") << "\n";
+        os << indent << " VolumeColorNodeID = "
+                        << (this->VolumeColorNodeID ? this->VolumeColorNodeID : "NULL") << "\n";
+        os << indent << " WarpedColorNodeID = "
+                        << (this->WarpedColorNodeID ? this->WarpedColorNodeID : "NULL") << "\n";
 }
 

@@ -19,26 +19,31 @@ project(SlicerDIRQA)
 find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
 
-find_package(SlicerRT REQUIRED)
+# find_package(SlicerRT REQUIRED)
 #-----------------------------------------------------------------------------
 
-set(DEPENDENCY_BUILD_DIRS "")
-if(CMAKE_CONFIGURATION_TYPES)
-  foreach(config ${CMAKE_CONFIGURATION_TYPES})
-    list(APPEND DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/${Slicer_QTLOADABLEMODULES_LIB_DIR}/${config}")
-    list(APPEND DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/${Slicer_CLIMODULES_LIB_DIR}/${config}")
-  endforeach()
-else()
-  set(DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/${Slicer_QTLOADABLEMODULES_LIB_DIR}")
-  set(DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/${Slicer_CLIMODULES_LIB_DIR}")
-endif()
-
-
+# set(DEPENDENCY_BUILD_DIRS "")
+# if(CMAKE_CONFIGURATION_TYPES)
+#   foreach(config ${CMAKE_CONFIGURATION_TYPES})
+# #     list(APPEND DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/inner-build/${Slicer_QTLOADABLEMODULES_LIB_DIR}/${config}")
+#     list(APPEND DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/inner-build/${Slicer_CLIMODULES_LIB_DIR}/${config}")
+#     list(APPEND DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/${SLICERRT_PLASTIMATCH_DIR}/${config}")
+#   endforeach()
+# else()
+# #   set(DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/inner-build/${Slicer_QTLOADABLEMODULES_LIB_DIR}")
+#   set(DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/inner-build/${Slicer_CLIMODULES_LIB_DIR}")
+#   set(DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/${SLICERRT_PLASTIMATCH_DIR}")
+# endif()
+# # Plastimatch_DIR
+# 
 set(DEPENDENCIES_ADDITIONAL_MODULE_PATHS
   ${DEPENDENCY_BUILD_DIRS}
-  ${SlicerRT_DIR}/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}
+  "${SlicerRT_DIR}/inner-build/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}"
+  "${SlicerRT_DIR}/Plastimatch-build"
 )
 
+message(STATUS "Plastimatch_DIR: " "${SlicerRT_DIR}/Plastimatch-build")
+message(STATUS "CLI Modules: " "${SlicerRT_DIR}/inner-build/${Slicer_CLIMODULES_LIB_DIR}" )
 
 add_subdirectory(RegistrationQualityModule)
 add_subdirectory(AbsoluteDifference)

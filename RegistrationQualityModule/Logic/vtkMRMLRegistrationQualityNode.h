@@ -63,7 +63,6 @@ public:
         /// Set  segment ID
         vtkSetStringMacro(SegmentID);
 
-        
         /// Contour data table node
         vtkMRMLTableNode* GetRegQATableNode();
         void SetAndObserveRegQATableNode(vtkMRMLTableNode* node);
@@ -123,41 +122,20 @@ public:
         vtkSetMacro(MovieBoxGreenState, int);
 
         // No set for this one
-        /// Forward flag
         vtkGetMacro(MovieRun, bool);
         vtkSetMacro(MovieRun, bool);
         vtkBooleanMacro(MovieRun, bool);
-//         vtkGetMacro(MovieRun, int);
+        
+        /// Get Volume Color node ID
+        vtkGetStringMacro(VolumeColorNodeID);
+        /// Se Volume Color node ID
+        vtkSetStringMacro(VolumeColorNodeID);
+        
+        /// Get Warped Color node ID
+        vtkGetStringMacro(WarpedColorNodeID);
+        /// Se Warped Color node ID
+        vtkSetStringMacro(WarpedColorNodeID);
 
-//         virtual void SetMovieBoxRedState(int state) {
-//                 vtkDebugMacro(<< GetClassName() << " (" << this
-//                                 << "): setting MovieBoxRedState to " << state);
-//                 if(MovieBoxRedState != state) {
-//                         MovieBoxRedState = state;
-//                         MovieRun ^= 1<<0;
-//                         Modified();
-//                 }
-//         }
-// 
-//         virtual void SetMovieBoxYellowState(int state) {
-//                 vtkDebugMacro(<< GetClassName() << " (" << this
-//                                 << "): setting MovieBoxYellowState to " << state);
-//                 if(MovieBoxYellowState != state) {
-//                         MovieBoxYellowState = state;
-//                         MovieRun ^= 1<<1;
-//                         Modified();
-//                 }
-//         }
-// 
-//         virtual void SetMovieBoxGreenState(int state) {
-//                 vtkDebugMacro(<< GetClassName() << " (" << this
-//                                 << "): setting MovieBoxGreenState to " << state);
-//                 if(MovieBoxGreenState != state) {
-//                         MovieBoxGreenState = state;
-//                         MovieRun ^= 1<<2;
-//                         Modified();
-//                 }
-//         }
 
         
 protected:
@@ -195,6 +173,9 @@ protected:
 	char* JacobianVolumeNodeID;
 	char* InverseConsistVolumeNodeID;
         bool BackwardRegistration;
+        
+        char* VolumeColorNodeID;
+        char* WarpedColorNodeID;
         
 };
 

@@ -99,7 +99,6 @@ protected slots:
   /// Add current segment as a basis for DIRQA
   
   /// Load volume from filename
-  void loadFromFilenameForCurrentID();
   void loadFromFilenameForItemID(vtkIdType itemID);
 //   void assignNodeToRegQANode(vtkMRMLNode* node, vtkMRMLRegistrationQualityNode* regQANode, std::string regType, bool inverse);
   vtkMRMLVolumeNode* loadVolumeFromItemId(vtkIdType itemID);
@@ -115,6 +114,11 @@ protected slots:
   void calculateInverseConsistency(vtkIdType itemID, bool removeNodes);
   void calculateFiducialDistance(vtkIdType itemID, bool removeNodes);
   vtkIdType findInverseVectorID(vtkIdType itemID);
+  
+  /// Convert between vector field and transform
+  void convertCurrentNode();
+  void convertItemID(vtkIdType itemID);
+  
 //   void calculateStatistics(vtkMRMLScalarVolumeNode* scalarNode, double statisticValues[4]);
   void removeNode(vtkMRMLNode* node);
   void removeNode(vtkIdType itemID);

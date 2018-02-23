@@ -46,6 +46,7 @@ public:
    static const std::string INVERSE;
    static const std::string WARPED_IMAGE;
    static const std::string VECTOR_FIELD;
+   static const std::string TRANSFORM;
    static const std::string ABSOLUTEDIFFERENCE;
    static const std::string JACOBIAN;
    static const std::string INVERSECONSISTENCY;
@@ -62,6 +63,7 @@ public:
    static const std::string FIXEDIMAGEID;
    static const std::string MOVINGIMAGEID;
    static const std::string VECTORITEMID;
+   static const std::string TRANSFORMITEMID;
    static const std::string NODEITEMID;
    static const std::string ABSDIFFNODEITEMID;
    static const std::string JACOBIANITEMID;
@@ -194,7 +196,7 @@ protected:
         void UpdateTableWithStatisticalValues(double statisticValues[4], int row);
         void UpdateTableWithFiducialValues(vtkMRMLMarkupsFiducialNode* fiducial, double statisticValues[4]);
         void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
-        void getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
+        bool getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax);
         /** Takes two scalar volumes and calls a CLI-module to calculate mean square error 
          *  between them either on the whole volume or on the ROI, if specified.
          */

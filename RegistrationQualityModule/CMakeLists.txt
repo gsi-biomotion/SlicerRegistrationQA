@@ -7,6 +7,13 @@ set(MODULE_TITLE "Registration Quality Module")
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
 #-----------------------------------------------------------------------------
+# find_package(Plastimatch QUIET PATHS ${Plastimatch_DIR} NO_DEFAULT_PATH)
+# if(NOT Plastimatch_FOUND)
+#   message("Plastimatch library is not found. RegistrationQuality module will not be built.")
+#   return()
+# endif() 
+
+#-----------------------------------------------------------------------------
 add_subdirectory(Logic)
 add_subdirectory(Widgets)
 add_subdirectory(SubjectHierarchyPlugins)
@@ -44,11 +51,9 @@ set(MODULE_UI_SRCS
 set(MODULE_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleLogic
   vtkSlicer${MODULE_NAME}ModuleWidgets
-  vtkSlicerVolumesModuleLogic
-#   vtkSlicerAnnotationsModuleLogic
+  qSlicer${MODULE_NAME}SubjectHierarchyPlugins
   vtkSlicerSubjectHierarchyModuleLogic
   qSlicerSubjectHierarchyModuleWidgets
-  qSlicer${MODULE_NAME}SubjectHierarchyPlugins
   )
 
 set(MODULE_RESOURCES

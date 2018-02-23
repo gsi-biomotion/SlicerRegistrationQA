@@ -941,6 +941,7 @@ void qSlicerRegistrationQualityModuleWidget::movieToggle(){
 
         vtkSlicerRegistrationQualityLogic *logic = d->logic();
         logic->Movie();
+        pNode->MovieRunOff();
         this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
