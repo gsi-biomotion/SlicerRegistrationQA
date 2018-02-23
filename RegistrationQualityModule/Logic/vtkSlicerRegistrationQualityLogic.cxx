@@ -366,156 +366,6 @@ void vtkSlicerRegistrationQualityLogic::SaveScreenshot(const char* description) 
 	this->RegistrationQualityNode->DisableModifiedEventOff();
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegistrationQualityLogic::SaveOutputFile() {
-	if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
-	    vtkErrorMacro("saveOutputFile: Invalid scene or parameter set node!");
-	    return;	    
-	}
-	
-// 	double statisticValues[4];
-// 	std::string color;
-// 	std::string directory = this->RegistrationQualityNode->GetOutputDirectory();
-// 	char fileName[512];
-// 	sprintf(fileName, "%s/OutputFile.html", directory.c_str() );
-// 	
-// 	std::ofstream outfile;
-// 	outfile.open(fileName, std::ios_base::out | std::ios_base::trunc);
-// 	
-// 	if ( !outfile ){
-// 		vtkErrorMacro("SaveOutputFile: Output file '" << fileName << "' cannot be opened!");
-// 		return;
-// 	}
-// 	
-// 	outfile << "<!DOCTYPE html>" << std::endl << "<html>" << std::endl 
-// 	<< "<head>" << std::endl << "<title>Registration Quality</title>" << std::endl 
-// 	<< "<meta charset=\"UTF-8\">" << std::endl << "</head>"	<< "<body>" << std::endl;
-// 	
-// 	outfile << "<h1>Registration Quality Output File</h1>" << std::endl;
-// 	
-// 	// --- Image Checks ---
-// 	outfile << "<h2>Image Checks</h2>" << std::endl;
-// 	//Set table
-// 	outfile << "<table style=\"width:60%\">" << std::endl
-// 	<< "<tr>" << std::endl
-// 	<< "<td> </td> <td> Mean </td> <td> STD </td> <td> Max </td> <td> Min </td>" << std::endl
-// 	<< "</tr>" << std::endl;
-// 	
-// 	//Absolute Difference
-// 	this->RegistrationQualityNode->GetAbsoluteDiffStatistics(statisticValues);
-// 	//Check values for color
-// 	if(statisticValues[0] < 100 && statisticValues[1] < 200) color = "green";
-// 	else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
-// 	else color = "red";
-// 	
-// 	outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
-// 	<< "<td>" << "Absolute Difference between reference and warped image in HU" << "</td>";
-// 	for(int i=0;i<4;i++) {	
-// 		outfile << "<td>" << statisticValues[i] << "</td>";
-// 	}
-// 	outfile << std::endl<< "</tr>" << std::endl;
-// 	
-// 	//TODO: Inverse Absolute Difference
-// 	
-// 	//Fiducials
-// 	this->RegistrationQualityNode->GetFiducialsStatistics(statisticValues);
-// 	//Check values for color
-// 	if(statisticValues[0] > 0 && statisticValues[1] > 0 && statisticValues[1] > 0) color = "green";
-// 	else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
-// 	else color = "red";
-// 	
-// 	outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
-// 	<< "<td>" << "Distance difference in fiducials after transformation in mm" << "</td>";
-// 	for(int i=0;i<4;i++) {	
-// 		outfile << "<td>" << statisticValues[i] << "</td>";
-// 	}
-// 	outfile << std::endl<< "</tr>" << std::endl;
-// 	
-// 	//Inverse Fiducials
-// 	this->RegistrationQualityNode->GetInvFiducialsStatistics(statisticValues);
-// 	//Check values for color
-// 	if(statisticValues[0] > 0 && statisticValues[1] > 0 && statisticValues[1] > 0) color = "green";
-// 	else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
-// 	else color = "red";
-// 	
-// 	outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
-// 	<< "<td>" << "Distance difference in fiducials after inverse transformation in mm" << "</td>";
-// 	for(int i=0;i<4;i++) {	
-// 		outfile << "<td>" << statisticValues[i] << "</td>";
-// 	}
-// 	outfile << std::endl<< "</tr>" << std::endl;
-// 	
-// 	outfile << "</table>" << std::endl;
-// 		
-// 	// --- Vector checks ---	
-// 	outfile << "<h2>Vector Checks</h2>" << std::endl;	
-// 	//Set table
-// 	outfile << "<table style=\"width:60%\">" << std::endl
-// 	<< "<tr>" << std::endl
-// 	<< "<td> </td> <td> Mean </td> <td> STD </td> <td> Max </td> <td> Min </td>" << std::endl
-// 	<< "</tr>" << std::endl;
-// 	
-// 	//Jacobian
-// 	this->RegistrationQualityNode->GetJacobianStatistics(statisticValues);
-// 	//Check values for color
-// 	if( abs(statisticValues[0]-1) < 0.02 && statisticValues[1] < 0.05 && statisticValues[2] < 5 && statisticValues[3] > 0) color = "green";
-// 	else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
-// 	else color = "red";
-// 	
-// 	outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
-// 	<< "<td>" << "Jacobian of vector field" << "</td>";
-// 	for(int i=0;i<4;i++) {	
-// 		outfile << "<td>" << statisticValues[i] << "</td>";
-// 	}
-// 	outfile << std::endl<< "</tr>" << std::endl;
-// 	
-// 	//TODO: Inverse Jacobian
-// 	
-// 	//Inverse Consistency
-// 	this->RegistrationQualityNode->GetInverseConsistStatistics(statisticValues);
-// 	//Check values for color
-// 	if( statisticValues[0] < 2 && statisticValues[1] < 2) color = "green";
-// 	else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
-// 	else color = "red";
-// 	
-// 	outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
-// 	<< "<td>" << "Inverse Consistency in mm" << "</td>";
-// 	for(int i=0;i<4;i++) {	
-// 		outfile << "<td>" << statisticValues[i] << "</td>";
-// 	}
-// 	outfile << std::endl<< "</tr>" << std::endl;
-// 
-// 	outfile << "</table>" << std::endl;
-// 
-// 	// --- Images ---
-// 	outfile << "<h2>Images</h2>" << std::endl;	
-// 	int screenShotNumber = this->RegistrationQualityNode->GetNumberOfScreenshots();
-// 	if (screenShotNumber > 1){	
-// 		for(int i = 1; i < screenShotNumber; i++) {
-// 			std::ostringstream screenShotName;
-// 			screenShotName << "Screenshot_" << i;
-// 			
-// 				
-// 			//Find the associated node for description
-// 			vtkSmartPointer<vtkCollection> collection = vtkSmartPointer<vtkCollection>::Take(
-// 						this->GetMRMLScene()->GetNodesByName(screenShotName.str().c_str()));
-// 			if (collection->GetNumberOfItems() == 1) {	
-// 				vtkMRMLAnnotationSnapshotNode* snapshot = vtkMRMLAnnotationSnapshotNode::SafeDownCast(
-// 						collection->GetItemAsObject(0));
-// 				outfile << "<h3>" << snapshot->GetSnapshotDescription() << "</h3>" << std::endl;
-// 			}
-// 			
-// 			outfile << "<img src=\"" << screenShotName.str() << ".png"
-// 				<<"\" alt=\"Screenshot "<< i << "\" width=\"80%\"> " << std::endl;
-// 		}
-// 	}
-// 	outfile  << "</body>" << std::endl << "</html>" << std::endl;
-// 	
-// 	outfile << std::endl;
-// 	outfile.close();
-	
-// 	std::cerr << "Output file save to: " << fileName << "" << std::endl;
-}
-//---------------------------------------------------------------------------
 void vtkSlicerRegistrationQualityLogic::CalculateDIRQAFrom(int number){
   // 1. AbsoluteDifference, 2. Jacobian, 3. InverseConsistency, 4. Fiducial Distance
   if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
@@ -2370,6 +2220,155 @@ void vtkSlicerRegistrationQualityLogic::UpdateNodeFromSHNode(vtkIdType itemID){
    else if ( regType.compare(vtkSlicerRegistrationQualityLogic::INVERSECONSISTENCY) == 0) pNode->SetAndObserveInverseConsistVolumeNodeID(node->GetID());
    //TODO:
 //    else if ( regType.compare(vtkSlicerRegistrationQualityLogic::CONTOUR) == 0) pNode->SetAndObserveAbsoluteDiffVolumeNodeID(node->GetID());
-
-
+}
+//TODO: Integrate save of output file
+//---------------------------------------------------------------------------
+void vtkSlicerRegistrationQualityLogic::SaveOutputFile() {
+        if (!this->GetMRMLScene() || !this->RegistrationQualityNode) {
+            vtkErrorMacro("saveOutputFile: Invalid scene or parameter set node!");
+            return;         
+        }
+        
+//      double statisticValues[4];
+//      std::string color;
+//      std::string directory = this->RegistrationQualityNode->GetOutputDirectory();
+//      char fileName[512];
+//      sprintf(fileName, "%s/OutputFile.html", directory.c_str() );
+//      
+//      std::ofstream outfile;
+//      outfile.open(fileName, std::ios_base::out | std::ios_base::trunc);
+//      
+//      if ( !outfile ){
+//              vtkErrorMacro("SaveOutputFile: Output file '" << fileName << "' cannot be opened!");
+//              return;
+//      }
+//      
+//      outfile << "<!DOCTYPE html>" << std::endl << "<html>" << std::endl 
+//      << "<head>" << std::endl << "<title>Registration Quality</title>" << std::endl 
+//      << "<meta charset=\"UTF-8\">" << std::endl << "</head>" << "<body>" << std::endl;
+//      
+//      outfile << "<h1>Registration Quality Output File</h1>" << std::endl;
+//      
+//      // --- Image Checks ---
+//      outfile << "<h2>Image Checks</h2>" << std::endl;
+//      //Set table
+//      outfile << "<table style=\"width:60%\">" << std::endl
+//      << "<tr>" << std::endl
+//      << "<td> </td> <td> Mean </td> <td> STD </td> <td> Max </td> <td> Min </td>" << std::endl
+//      << "</tr>" << std::endl;
+//      
+//      //Absolute Difference
+//      this->RegistrationQualityNode->GetAbsoluteDiffStatistics(statisticValues);
+//      //Check values for color
+//      if(statisticValues[0] < 100 && statisticValues[1] < 200) color = "green";
+//      else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
+//      else color = "red";
+//      
+//      outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
+//      << "<td>" << "Absolute Difference between reference and warped image in HU" << "</td>";
+//      for(int i=0;i<4;i++) {  
+//              outfile << "<td>" << statisticValues[i] << "</td>";
+//      }
+//      outfile << std::endl<< "</tr>" << std::endl;
+//      
+//      //TODO: Inverse Absolute Difference
+//      
+//      //Fiducials
+//      this->RegistrationQualityNode->GetFiducialsStatistics(statisticValues);
+//      //Check values for color
+//      if(statisticValues[0] > 0 && statisticValues[1] > 0 && statisticValues[1] > 0) color = "green";
+//      else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
+//      else color = "red";
+//      
+//      outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
+//      << "<td>" << "Distance difference in fiducials after transformation in mm" << "</td>";
+//      for(int i=0;i<4;i++) {  
+//              outfile << "<td>" << statisticValues[i] << "</td>";
+//      }
+//      outfile << std::endl<< "</tr>" << std::endl;
+//      
+//      //Inverse Fiducials
+//      this->RegistrationQualityNode->GetInvFiducialsStatistics(statisticValues);
+//      //Check values for color
+//      if(statisticValues[0] > 0 && statisticValues[1] > 0 && statisticValues[1] > 0) color = "green";
+//      else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
+//      else color = "red";
+//      
+//      outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
+//      << "<td>" << "Distance difference in fiducials after inverse transformation in mm" << "</td>";
+//      for(int i=0;i<4;i++) {  
+//              outfile << "<td>" << statisticValues[i] << "</td>";
+//      }
+//      outfile << std::endl<< "</tr>" << std::endl;
+//      
+//      outfile << "</table>" << std::endl;
+//              
+//      // --- Vector checks ---        
+//      outfile << "<h2>Vector Checks</h2>" << std::endl;       
+//      //Set table
+//      outfile << "<table style=\"width:60%\">" << std::endl
+//      << "<tr>" << std::endl
+//      << "<td> </td> <td> Mean </td> <td> STD </td> <td> Max </td> <td> Min </td>" << std::endl
+//      << "</tr>" << std::endl;
+//      
+//      //Jacobian
+//      this->RegistrationQualityNode->GetJacobianStatistics(statisticValues);
+//      //Check values for color
+//      if( abs(statisticValues[0]-1) < 0.02 && statisticValues[1] < 0.05 && statisticValues[2] < 5 && statisticValues[3] > 0) color = "green";
+//      else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
+//      else color = "red";
+//      
+//      outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
+//      << "<td>" << "Jacobian of vector field" << "</td>";
+//      for(int i=0;i<4;i++) {  
+//              outfile << "<td>" << statisticValues[i] << "</td>";
+//      }
+//      outfile << std::endl<< "</tr>" << std::endl;
+//      
+//      //TODO: Inverse Jacobian
+//      
+//      //Inverse Consistency
+//      this->RegistrationQualityNode->GetInverseConsistStatistics(statisticValues);
+//      //Check values for color
+//      if( statisticValues[0] < 2 && statisticValues[1] < 2) color = "green";
+//      else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
+//      else color = "red";
+//      
+//      outfile << "<tr style=\"background-color:" << color <<"; color:white;\">" << std::endl
+//      << "<td>" << "Inverse Consistency in mm" << "</td>";
+//      for(int i=0;i<4;i++) {  
+//              outfile << "<td>" << statisticValues[i] << "</td>";
+//      }
+//      outfile << std::endl<< "</tr>" << std::endl;
+// 
+//      outfile << "</table>" << std::endl;
+// 
+//      // --- Images ---
+//      outfile << "<h2>Images</h2>" << std::endl;      
+//      int screenShotNumber = this->RegistrationQualityNode->GetNumberOfScreenshots();
+//      if (screenShotNumber > 1){      
+//              for(int i = 1; i < screenShotNumber; i++) {
+//                      std::ostringstream screenShotName;
+//                      screenShotName << "Screenshot_" << i;
+//                      
+//                              
+//                      //Find the associated node for description
+//                      vtkSmartPointer<vtkCollection> collection = vtkSmartPointer<vtkCollection>::Take(
+//                                              this->GetMRMLScene()->GetNodesByName(screenShotName.str().c_str()));
+//                      if (collection->GetNumberOfItems() == 1) {      
+//                              vtkMRMLAnnotationSnapshotNode* snapshot = vtkMRMLAnnotationSnapshotNode::SafeDownCast(
+//                                              collection->GetItemAsObject(0));
+//                              outfile << "<h3>" << snapshot->GetSnapshotDescription() << "</h3>" << std::endl;
+//                      }
+//                      
+//                      outfile << "<img src=\"" << screenShotName.str() << ".png"
+//                              <<"\" alt=\"Screenshot "<< i << "\" width=\"80%\"> " << std::endl;
+//              }
+//      }
+//      outfile  << "</body>" << std::endl << "</html>" << std::endl;
+//      
+//      outfile << std::endl;
+//      outfile.close();
+        
+//      std::cerr << "Output file save to: " << fileName << "" << std::endl;
 }
