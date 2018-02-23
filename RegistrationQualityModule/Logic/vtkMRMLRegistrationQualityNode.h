@@ -6,6 +6,8 @@
 #include <vtkMRMLNode.h>
 
 #include "vtkSlicerRegistrationQualityModuleLogicExport.h"
+class vtkMRMLSegmentationNode;
+class vtkMRMLTableNode;
 
 /// \ingroup Slicer_QtModules_RegistrationQuality
 class VTK_SLICER_REGISTRATIONQUALITY_MODULE_LOGIC_EXPORT vtkMRMLRegistrationQualityNode :
@@ -23,71 +25,58 @@ public:
 	virtual const char* GetNodeTagName() {return "RegistrationQualityParameters";};
 	virtual void UpdateReferenceID(const char *oldID, const char *newID);
 
-	vtkSetStringMacro(VectorVolumeNodeID);
 	vtkGetStringMacro(VectorVolumeNodeID);
+        vtkSetStringMacro(VectorVolumeNodeID);
 	void SetAndObserveVectorVolumeNodeID(const char* id);
+	
+	vtkGetStringMacro(TransformNodeID);
+        vtkSetStringMacro(TransformNodeID);
+	void SetAndObserveTransformNodeID(const char* id);
 
-	vtkSetStringMacro(InvVectorVolumeNodeID);
-	vtkGetStringMacro(InvVectorVolumeNodeID);
-	void SetAndObserveInvVectorVolumeNodeID(const char* id);
+	vtkGetStringMacro(VolumeNodeID);
+        vtkSetStringMacro(VolumeNodeID);
+	void SetAndObserveVolumeNodeID(const char* id);
 
-	vtkSetStringMacro(ReferenceVolumeNodeID);
-	vtkGetStringMacro(ReferenceVolumeNodeID);
-	void SetAndObserveReferenceVolumeNodeID(const char* id);
-
-	vtkSetStringMacro(WarpedVolumeNodeID);
 	vtkGetStringMacro(WarpedVolumeNodeID);
+        vtkSetStringMacro(WarpedVolumeNodeID);
 	void SetAndObserveWarpedVolumeNodeID(const char* id);
 
-	vtkSetStringMacro(OutputModelNodeID);
-	vtkGetStringMacro(OutputModelNodeID);
-	void SetAndObserveOutputModelNodeID(const char* id);
+	vtkGetStringMacro(OutputDirectory);
+        vtkSetStringMacro(OutputDirectory);
+	void SetAndObserveOutputDirectory(const char* id);
 	
-	vtkSetStringMacro(ROINodeID);
-	vtkGetStringMacro (ROINodeID);
-	void SetAndObserveROINodeID(const char* id);
+	vtkGetStringMacro(ROINodeID);
+        vtkSetStringMacro(ROINodeID);
+        void SetAndObserveROINodeID(const char* id);
+	
+	vtkGetStringMacro (FiducialNodeID);
+        vtkSetStringMacro (FiducialNodeID);
+	void SetAndObserveFiducialNodeID(const char* id);
 
-	// Movie parameters
-	vtkGetMacro(MovieBoxRedState, int);
-	vtkGetMacro(MovieBoxYellowState, int);
-	vtkGetMacro(MovieBoxGreenState, int);
+        /// Get segmentation node
+        vtkMRMLSegmentationNode* GetSegmentationNode();
+        /// Set segmentation node
+        void SetAndObserveSegmentationNode(vtkMRMLSegmentationNode* node);
 
-	// No set for this one
-	vtkGetMacro(MovieRun, int);
+        /// Get  segment ID
+        vtkGetStringMacro(SegmentID);
+        /// Set  segment ID
+        vtkSetStringMacro(SegmentID);
 
-	virtual void SetMovieBoxRedState(int state) {
-		vtkDebugMacro(<< GetClassName() << " (" << this
-				<< "): setting MovieBoxRedState to " << state);
-		if(MovieBoxRedState != state) {
-			MovieBoxRedState = state;
-			MovieRun ^= 1<<0;
-			Modified();
-		}
-	}
+        /// Contour data table node
+        vtkMRMLTableNode* GetRegQATableNode();
+        void SetAndObserveRegQATableNode(vtkMRMLTableNode* node);
+	
+	vtkGetMacro(NumberOfScreenshots, int);
+	vtkSetMacro(NumberOfScreenshots, int);
 
-	virtual void SetMovieBoxYellowState(int state) {
-		vtkDebugMacro(<< GetClassName() << " (" << this
-				<< "): setting MovieBoxYellowState to " << state);
-		if(MovieBoxYellowState != state) {
-			MovieBoxYellowState = state;
-			MovieRun ^= 1<<1;
-			Modified();
-		}
-	}
-
-	virtual void SetMovieBoxGreenState(int state) {
-		vtkDebugMacro(<< GetClassName() << " (" << this
-				<< "): setting MovieBoxGreenState to " << state);
-		if(MovieBoxGreenState != state) {
-			MovieBoxGreenState = state;
-			MovieRun ^= 1<<2;
-			Modified();
-		}
-	}
+	vtkGetStringMacro(OutputModelNodeID);
+        vtkSetStringMacro(OutputModelNodeID);
+	void SetAndObserveOutputModelNodeID(const char* id);
 
 	// Checkerboard parameters
-	vtkSetStringMacro(CheckerboardVolumeNodeID);
 	vtkGetStringMacro(CheckerboardVolumeNodeID);
+        vtkSetStringMacro(CheckerboardVolumeNodeID);
 	void SetAndObserveCheckerboardVolumeNodeID(const char* id);
 
 	vtkSetMacro(CheckerboardPattern, int);
@@ -97,32 +86,58 @@ public:
 	vtkSetMacro(FlickerOpacity, int);
 	vtkGetMacro(FlickerOpacity, int);
 
-	// Squared Difference parameters:
-	vtkSetStringMacro(AbsoluteDiffVolumeNodeID);
+	// Absolute Difference parameters:
 	vtkGetStringMacro(AbsoluteDiffVolumeNodeID);
+        vtkSetStringMacro(AbsoluteDiffVolumeNodeID);
 	void SetAndObserveAbsoluteDiffVolumeNodeID(const char* id);
 
-	vtkSetVector4Macro(AbsoluteDiffStatistics, double);
-	vtkGetVector4Macro(AbsoluteDiffStatistics, double);
-
-
-	// Jacobian parameters:
-	vtkSetStringMacro(JacobianVolumeNodeID);
+	// Jacobian volume node:
 	vtkGetStringMacro(JacobianVolumeNodeID);
+        vtkSetStringMacro(JacobianVolumeNodeID);
 	void SetAndObserveJacobianVolumeNodeID(const char* id);
 
-
-	vtkSetVector4Macro(JacobianStatistics, double);
-	vtkGetVector4Macro(JacobianStatistics, double);
-
 	// Inverse Consistenciy parameters:
-	vtkSetStringMacro(InverseConsistVolumeNodeID);
 	vtkGetStringMacro(InverseConsistVolumeNodeID);
+        vtkSetStringMacro(InverseConsistVolumeNodeID);
 	void SetAndObserveInverseConsistVolumeNodeID(const char* id);
+        
+        /// Forward flag
+        vtkGetMacro(BackwardRegistration, bool);
+        vtkSetMacro(BackwardRegistration, bool);
+        vtkBooleanMacro(BackwardRegistration, bool);
+        
+        /// Backward Registration table node
+        vtkMRMLRegistrationQualityNode* GetBackwardRegQAParameters();
+        void SetAndObserveBackwardRegQAParameters(vtkMRMLRegistrationQualityNode* node);
+        
+        /// Exchange forward and backward parameters
+        bool ChangeFromBackwardToFoward();
+        
+        // Movie parameters
+        vtkGetMacro(MovieBoxRedState, int);
+        vtkSetMacro(MovieBoxRedState, int);
+        vtkGetMacro(MovieBoxYellowState, int);
+        vtkSetMacro(MovieBoxYellowState, int);
+        vtkGetMacro(MovieBoxGreenState, int);
+        vtkSetMacro(MovieBoxGreenState, int);
 
-	vtkSetVector4Macro(InverseConsistStatistics, double);
-	vtkGetVector4Macro(InverseConsistStatistics, double);
+        // No set for this one
+        vtkGetMacro(MovieRun, bool);
+        vtkSetMacro(MovieRun, bool);
+        vtkBooleanMacro(MovieRun, bool);
+        
+        /// Get Volume Color node ID
+        vtkGetStringMacro(VolumeColorNodeID);
+        /// Se Volume Color node ID
+        vtkSetStringMacro(VolumeColorNodeID);
+        
+        /// Get Warped Color node ID
+        vtkGetStringMacro(WarpedColorNodeID);
+        /// Se Warped Color node ID
+        vtkSetStringMacro(WarpedColorNodeID);
 
+
+        
 protected:
 	vtkMRMLRegistrationQualityNode();
 	~vtkMRMLRegistrationQualityNode();
@@ -131,16 +146,22 @@ protected:
 	void operator=(const vtkMRMLRegistrationQualityNode&);
 
 	char* VectorVolumeNodeID;
-	char* InvVectorVolumeNodeID;
-	char* ReferenceVolumeNodeID;
+	char* TransformNodeID;
+	char* VolumeNodeID;
 	char* WarpedVolumeNodeID;
-	char* OutputModelNodeID;
-	char *ROINodeID;
+	char* OutputDirectory;
+	char* ROINodeID;
+	char* FiducialNodeID;
+              
+        char* SegmentID;
 
-	int MovieBoxRedState;
+	char* OutputModelNodeID;
+	int NumberOfScreenshots;
+	
+	bool MovieRun;
+        int MovieBoxRedState;
 	int MovieBoxYellowState;
 	int MovieBoxGreenState;
-	int MovieRun;
 
 	char* CheckerboardVolumeNodeID;
 	int CheckerboardPattern;
@@ -149,14 +170,13 @@ protected:
 	int FlickerDelay;
 
 	char* AbsoluteDiffVolumeNodeID;
-	double AbsoluteDiffStatistics[4];
-
-
 	char* JacobianVolumeNodeID;
-	double JacobianStatistics[4];
-
 	char* InverseConsistVolumeNodeID;
-	double InverseConsistStatistics[4];
+        bool BackwardRegistration;
+        
+        char* VolumeColorNodeID;
+        char* WarpedColorNodeID;
+        
 };
 
 #endif

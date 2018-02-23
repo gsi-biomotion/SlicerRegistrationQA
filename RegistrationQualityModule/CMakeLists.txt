@@ -7,7 +7,16 @@ set(MODULE_TITLE "Registration Quality Module")
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
 #-----------------------------------------------------------------------------
+# find_package(Plastimatch QUIET PATHS ${Plastimatch_DIR} NO_DEFAULT_PATH)
+# if(NOT Plastimatch_FOUND)
+#   message("Plastimatch library is not found. RegistrationQuality module will not be built.")
+#   return()
+# endif() 
+
+#-----------------------------------------------------------------------------
 add_subdirectory(Logic)
+add_subdirectory(Widgets)
+add_subdirectory(SubjectHierarchyPlugins)
 
 #-----------------------------------------------------------------------------
 set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_EXPORT")
@@ -16,6 +25,11 @@ set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_EXPORT")
 set(MODULE_INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}/Logic
   ${CMAKE_CURRENT_BINARY_DIR}/Logic
+  ${CMAKE_CURRENT_SOURCE_DIR}/SubjectHierarchyPlugins
+  ${CMAKE_CURRENT_BINARY_DIR}/SubjectHierarchyPlugins
+  ${qSlicerSubjectHierarchyModuleWidgets_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/Widgets
+  ${CMAKE_CURRENT_BINARY_DIR}/Widgets
   )
 
 set(MODULE_SRCS
@@ -36,13 +50,18 @@ set(MODULE_UI_SRCS
 
 set(MODULE_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleLogic
-  vtkSlicerVolumesModuleLogic
+  vtkSlicer${MODULE_NAME}ModuleWidgets
+  qSlicer${MODULE_NAME}SubjectHierarchyPlugins
+  vtkSlicerSubjectHierarchyModuleLogic
+  qSlicerSubjectHierarchyModuleWidgets
   )
 
 set(MODULE_RESOURCES
   Resources/qSlicer${MODULE_NAME}Module.qrc
   )
-
+set(${KIT}_TARGET_LIBRARIES
+  ${ITK_LIBRARIES}
+  )
 #-----------------------------------------------------------------------------
 slicerMacroBuildQtModule(
   NAME ${MODULE_NAME}

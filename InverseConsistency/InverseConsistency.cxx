@@ -7,6 +7,7 @@
 #include <itkVectorLinearInterpolateImageFunction.h>
 #include <itkContinuousIndex.h>
 #include "itkRegionOfInterestImageFilter.h"
+#include "itkDivideImageFilter.h"
 #include "itkPoint.h"
 #include "itkIndex.h"
 
@@ -28,7 +29,8 @@ namespace
 	{
 		PARSE_ARGS;
 
-		typedef itk::Vector< double, 3 > InputPixelType;
+// 		typedef    T OutputPixelType;
+                typedef itk::Vector< double, 3 > InputPixelType;
 		//   typedef itk::Vector< float, 3 > OutputPixelType;
 		typedef float OutputPixelType;
 		typedef itk::Image<InputPixelType,  3> InputImageType;
@@ -38,15 +40,12 @@ namespace
 		typedef itk::ImageFileWriter<OutputImageType> WriterType;
 		typedef itk::VectorLinearInterpolateImageFunction<InputImageType, double> InterpolateType;
 		typedef itk::ImageRegionIterator<OutputImageType> IteratorType;
-		typedef itk::RegionOfInterestImageFilter< InputImageType, InputImageType > RegionFilterType;
+                typedef itk::DivideImageFilter< OutputImageType, OutputImageType, OutputImageType > DivideFilterType;
 
 		typename ReaderType::Pointer reader1 = ReaderType::New();
-		itk::PluginFilterWatcher watchReader1(reader1, "Read Volume 1",
-											  CLPProcessInformation);
+		itk::PluginFilterWatcher watchReader1(reader1, "Read Volume 1", CLPProcessInformation);
 		typename ReaderType::Pointer reader2 = ReaderType::New();
-		itk::PluginFilterWatcher watchReader2(reader2,
-											  "Read Volume 2",
-										CLPProcessInformation);
+		itk::PluginFilterWatcher watchReader2(reader2, "Read Volume 2",CLPProcessInformation);
 		reader1->SetFileName( inputVolume1.c_str() );
 		reader2->SetFileName( inputVolume2.c_str() );
 		reader2->ReleaseDataFlagOn();
@@ -120,6 +119,7 @@ namespace
 		outputImage->Allocate();
 
 		const InputImageType::SpacingType& sp = fixedImage->GetSpacing();
+                const InputImageType::SpacingType& spMoving = movingImage->GetSpacing();
 		outputImage->SetSpacing( sp );
 
 		const InputImageType::PointType origin = fixedImage->GetOrigin();
@@ -169,27 +169,37 @@ namespace
 			imageIterator.Set(distance);
 			++imageIterator;
 		}
-
-		//   std::cout << "Filter:" << std::endl;
-		//   typename FilterType::Pointer filter = FilterType::New();
-		//   filter->SetInput1( reader1->GetOutput() );
-		//   filter->SetInput2( reader2->GetOutput() );
-		//   filter->Update();
-		//   itk::PluginFilterWatcher watchFilter(filter, "Adding two vector fields.",
-		//                                        CLPProcessInformation);
-		//   std::cout << "Writer:" << std::endl;
 		typename WriterType::Pointer writer = WriterType::New();
+                itk::PluginFilterWatcher watchWriter(writer,"Write Volume",CLPProcessInformation);
+                writer->SetFileName( outputVolume.c_str() );
 
-		itk::PluginFilterWatcher watchWriter(writer,
-											 "Write Volume",
-									   CLPProcessInformation);
-		writer->SetFileName( outputVolume.c_str() );
-		writer->SetInput( outputImage );
+		// Normalize output volume, if specifed
+		if (normalize) {
+                   typename DivideFilterType::Pointer divideFilter = DivideFilterType::New();
+                   // Find maximum spacing from either fixed or moving image
+                   double maxSpacing = -1;
+                   for( int i=0;i<3;i++){
+                      if ( maxSpacing < sp[i] || maxSpacing < spMoving[i] ){
+                         sp[i] > spMoving[i] ? maxSpacing = sp[i] : maxSpacing = spMoving[i];
+                      }
+                   }
+                   if ( maxSpacing > 0 ) {
+                      divideFilter->SetInput( outputImage );
+                      divideFilter->SetConstant( maxSpacing );
+                      divideFilter->Update();
+                   }
+                   else{
+                        std::cerr << "Can't get spacing values" << std::endl;
+                        return EXIT_FAILURE;
+                   }
+                   writer->SetInput( divideFilter->GetOutput() );
+                }
+                else{
+                   writer->SetInput( outputImage );
+                }
+                
 		writer->SetUseCompression(1);
 		writer->Update();
-
-		std::cout << "Finished" << std::endl;
-
 		return EXIT_SUCCESS;
 	}
 

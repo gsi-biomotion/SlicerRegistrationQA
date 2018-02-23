@@ -1,3 +1,0 @@
-All patient data have been downloaded from institute: the Léon Bérard Cancer Center & CREATIS lab, Lyon, France.
-Reference paper: J. Vandemeulebroucke, S. Rit, J. Kybic, P. Clarysse, and D. Sarrut. Spatiotemporal motion estimation for respiratory-correlated imaging of the lungs. In Med Phys, 2011, 38(1), 166-178.
-Webpage: http://www.creatis.insa-lyon.fr/rio/dir_validation_data

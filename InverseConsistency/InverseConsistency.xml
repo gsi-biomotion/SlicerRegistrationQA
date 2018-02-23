@@ -25,7 +25,7 @@
       <index>1</index>
       <description><![CDATA[Input2 vector field]]></description>
     </image>
-    <image >
+    <image type="vector">
       <name>outputVolume</name>
       <label>Output Volume</label>
       <channel>output</channel>
@@ -40,5 +40,12 @@
       <description><![CDATA[Label image which defines a ROI of interest for the fixed image]]></description>
       <default/>
     </region>
+    <boolean>
+      <name>normalize</name>
+      <label>Normalize to maximum vector spacing</label>
+      <default>false</default>
+      <longflag>--enablestage0</longflag>
+      <description>Check this box if you want to normalize output volume with maximum vector spacing.</description>
+    </boolean>
   </parameters>
 </executable>
