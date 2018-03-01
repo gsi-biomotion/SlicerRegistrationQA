@@ -16,7 +16,6 @@
  * ==============================================================================*/
 
 // Qt includes
-#include <QtPlugin>
 #include <QDebug>
 
 // Slicer includes
@@ -38,7 +37,10 @@
 #include "qSlicerSubjectHierarchyRegQAPlugin.h"
 
 //-----------------------------------------------------------------------------
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+#include <QtPlugin>
 Q_EXPORT_PLUGIN2(qSlicerRegQAModule, qSlicerRegQAModule);
+#endif
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_RegQA

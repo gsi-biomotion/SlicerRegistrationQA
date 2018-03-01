@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 3.5)
 
-set(EXTENSION_NAME Slicer-RegQA)
+project(RegistrationQA)
 
 #-----------------------------------------------------------------------------
-set(EXTENSION_NAME "RegQAExtension")
+# Extension meta-information
 set(EXTENSION_HOMEPAGE "https://github.com/gsi-biomotion/Slicer-RegQA/wiki")
 set(EXTENSION_CATEGORY "Registration")
 set(EXTENSION_CONTRIBUTORS "Kristjan Anderle (GSI), Tobias Brandt (University Clinic of Erlangen), Daniel Richter (University Clinic of Erlangen), Jens Woelfelschneider (University Clinic of Erlangen)")
@@ -12,38 +12,19 @@ set(EXTENSION_ICONURL "https://github.com/gsi-biomotion/Slicer-RegQA/blob/master
 set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/4/42/Slicer-r19441-LoadableExtensionTemplate-screenshot.png")
 set(EXTENSION_DEPENDS SlicerRT)
 
-
 #-----------------------------------------------------------------------------
-find_package(Slicer COMPONENTS ConfigurePrerequisites REQUIRED)
-project(SlicerRegQA)
+# Extension dependencies
+
 find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
 
-# find_package(SlicerRT REQUIRED)
+find_package(SlicerRT REQUIRED)
+
+# SlicerRT does not add Plastimatch library path to additional link directories
+# or target properties, so we need to add it here.
+LINK_DIRECTORIES("${SlicerRT_DIR}/../Plastimatch-build")
+
 #-----------------------------------------------------------------------------
-
-# set(DEPENDENCY_BUILD_DIRS "")
-# if(CMAKE_CONFIGURATION_TYPES)
-#   foreach(config ${CMAKE_CONFIGURATION_TYPES})
-# #     list(APPEND DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/inner-build/${Slicer_QTLOADABLEMODULES_LIB_DIR}/${config}")
-#     list(APPEND DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/inner-build/${Slicer_CLIMODULES_LIB_DIR}/${config}")
-#     list(APPEND DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/${SLICERRT_PLASTIMATCH_DIR}/${config}")
-#   endforeach()
-# else()
-# #   set(DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/inner-build/${Slicer_QTLOADABLEMODULES_LIB_DIR}")
-#   set(DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/inner-build/${Slicer_CLIMODULES_LIB_DIR}")
-#   set(DEPENDENCY_BUILD_DIRS "${SlicerRT_DIR}/${SLICERRT_PLASTIMATCH_DIR}")
-# endif()
-# # Plastimatch_DIR
-# 
-set(DEPENDENCIES_ADDITIONAL_MODULE_PATHS
-  ${DEPENDENCY_BUILD_DIRS}
-  "${SlicerRT_DIR}/inner-build/${Slicer_QTSCRIPTEDMODULES_LIB_DIR}"
-  "${SlicerRT_DIR}/Plastimatch-build"
-)
-
-message(STATUS "Plastimatch_DIR: " "${SlicerRT_DIR}/Plastimatch-build")
-message(STATUS "CLI Modules: " "${SlicerRT_DIR}/inner-build/${Slicer_CLIMODULES_LIB_DIR}" )
 
 add_subdirectory(RegQA)
 add_subdirectory(AbsoluteDifference)

@@ -1412,7 +1412,7 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegQALogic::GetWarpedFromMoving(vtkMRMLScalarV
 	}
 
 
-	if (!movingVolume or !transform ) {
+	if (!movingVolume || !transform ) {
 		vtkErrorMacro("Check input parameters!");
                 return NULL;
 	}
