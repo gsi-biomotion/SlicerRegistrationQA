@@ -1,21 +1,21 @@
 cmake_minimum_required(VERSION 2.8.9)
 
-set(EXTENSION_NAME SlicerDIRQA)
+set(EXTENSION_NAME Slicer-RegQA)
 
 #-----------------------------------------------------------------------------
-set(EXTENSION_NAME "RegistrationQualityExtension")
-set(EXTENSION_HOMEPAGE "https://github.com/gsi-biomotion/slicer-dirqa")
+set(EXTENSION_NAME "RegQAExtension")
+set(EXTENSION_HOMEPAGE "https://github.com/gsi-biomotion/Slicer-RegQA/wiki")
 set(EXTENSION_CATEGORY "Registration")
 set(EXTENSION_CONTRIBUTORS "Kristjan Anderle (GSI), Tobias Brandt (University Clinic of Erlangen), Daniel Richter (University Clinic of Erlangen), Jens Woelfelschneider (University Clinic of Erlangen)")
-set(EXTENSION_DESCRIPTION "Deformable image registration (DIR) quality assessment tool.")
-set(EXTENSION_ICONURL "http://viewvc.slicer.org/viewvc.cgi/Slicer4/trunk/Extensions/Testing/LoadableExtensionTemplate/LoadableExtensionTemplate.png?revision=21746&view=co")
+set(EXTENSION_DESCRIPTION "Image registration quality assurance tool.")
+set(EXTENSION_ICONURL "https://github.com/gsi-biomotion/Slicer-RegQA/blob/master/RegQA/Resources/Icons/RegQAIcon.png")
 set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/4/42/Slicer-r19441-LoadableExtensionTemplate-screenshot.png")
 set(EXTENSION_DEPENDS SlicerRT)
 
 
 #-----------------------------------------------------------------------------
 find_package(Slicer COMPONENTS ConfigurePrerequisites REQUIRED)
-project(SlicerDIRQA)
+project(SlicerRegQA)
 find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
 
@@ -45,11 +45,11 @@ set(DEPENDENCIES_ADDITIONAL_MODULE_PATHS
 message(STATUS "Plastimatch_DIR: " "${SlicerRT_DIR}/Plastimatch-build")
 message(STATUS "CLI Modules: " "${SlicerRT_DIR}/inner-build/${Slicer_CLIMODULES_LIB_DIR}" )
 
-add_subdirectory(RegistrationQualityModule)
+add_subdirectory(RegQA)
 add_subdirectory(AbsoluteDifference)
 add_subdirectory(JacobianFilter)
 add_subdirectory(InverseConsistency)
-add_subdirectory(ReadRegistrationNode)
+add_subdirectory(CreateRegistrationHierarchy)
 
 #-----------------------------------------------------------------------------
 include(${Slicer_EXTENSION_GENERATE_CONFIG})
