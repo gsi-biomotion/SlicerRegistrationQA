@@ -6,7 +6,7 @@
 
 # This is source code manager (i.e. svn)
 scm git
-scmurl https://github.com/gsi-biomotion/Slicer-RegQA.git
+scmurl https://github.com/gsi-biomotion/SlicerRegistrationQA.git
 scmrevision ada7f66
 
 # list dependencies
@@ -18,10 +18,8 @@ depends SlicerRT
 build_subdirectory .
 
 # homepage
-homepage https://github.com/gsi-biomotion/Slicer-RegQA/wiki
+homepage https://github.com/gsi-biomotion/SlicerRegistrationQA/wiki
 
-# Firstname1 Lastname1 ([SubOrg1, ]Org1), Firstname2 Lastname2 ([SubOrg2, ]Org2)
-# For example: Jane Roe (Superware), John Doe (Lab1, Nowhere), Joe Bloggs (Noware)
 contributors Kristjan Anderle (GSI), Tobias Brandt (University Clinic of Erlangen), Daniel Richter (University Clinic of Erlangen), Jens Woelfelschneider (University Clinic of Erlangen)
 
 # Match category in the xml description of the module (where it shows up in Modules menu)
@@ -32,7 +30,7 @@ iconurl https://github.com/gsi-biomotion/Slicer-RegQA/blob/master/RegQA/Resource
 
 # Give people an idea what to expect from this code
 #  - Is it just a test or something you stand behind?
-status Code has been developed in colaboration with GSI and UK Erlangen and should help also others with registration QA.
+status beta
 
 # One line stating what the module does
 description Image registration quality assurance tool.
