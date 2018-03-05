@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 2.8.9)
 
-set(EXTENSION_NAME Slicer-RegQA)
+set(EXTENSION_NAME RegistrationQA)
 
 #-----------------------------------------------------------------------------
-set(EXTENSION_NAME "RegQAExtension")
-set(EXTENSION_HOMEPAGE "https://github.com/gsi-biomotion/Slicer-RegQA/wiki")
+set(EXTENSION_NAME "RegistrationQAExtension")
+set(EXTENSION_HOMEPAGE "https://github.com/gsi-biomotion/SlicerRegistrationQAQA/wiki")
 set(EXTENSION_CATEGORY "Registration")
 set(EXTENSION_CONTRIBUTORS "Kristjan Anderle (GSI), Tobias Brandt (University Clinic of Erlangen), Daniel Richter (University Clinic of Erlangen), Jens Woelfelschneider (University Clinic of Erlangen)")
 set(EXTENSION_DESCRIPTION "Image registration quality assurance tool.")
-set(EXTENSION_ICONURL "https://github.com/gsi-biomotion/Slicer-RegQA/blob/master/RegQA/Resources/Icons/RegQAIcon.png")
+set(EXTENSION_ICONURL "https://github.com/gsi-biomotion/SlicerRegistrationQA/blob/master/RegQA/Resources/Icons/RegQAIcon.png")
 set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/4/42/Slicer-r19441-LoadableExtensionTemplate-screenshot.png")
 set(EXTENSION_DEPENDS SlicerRT)
 
@@ -42,10 +42,8 @@ set(DEPENDENCIES_ADDITIONAL_MODULE_PATHS
   "${SlicerRT_DIR}/Plastimatch-build"
 )
 
-message(STATUS "Plastimatch_DIR: " "${SlicerRT_DIR}/Plastimatch-build")
-message(STATUS "CLI Modules: " "${SlicerRT_DIR}/inner-build/${Slicer_CLIMODULES_LIB_DIR}" )
 
-add_subdirectory(RegQA)
+add_subdirectory(RegistrationQA)
 add_subdirectory(AbsoluteDifference)
 add_subdirectory(JacobianFilter)
 add_subdirectory(InverseConsistency)

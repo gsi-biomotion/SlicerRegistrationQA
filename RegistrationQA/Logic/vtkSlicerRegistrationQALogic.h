@@ -1,5 +1,5 @@
-#ifndef __vtkSlicerRegQALogic_h
-#define __vtkSlicerRegQALogic_h
+#ifndef __vtkSlicerRegistrationQALogic_h
+#define __vtkSlicerRegistrationQALogic_h
 
 // Slicer includes
 #include "vtkSlicerModuleLogic.h"
@@ -21,9 +21,9 @@
 #include <vtkSegment.h>
 
 
-#include "vtkSlicerRegQAModuleLogicExport.h"
+#include "vtkSlicerRegistrationQAModuleLogicExport.h"
 
-class vtkMRMLRegQANode;
+class vtkMRMLRegistrationQANode;
 class vtkMRMLVectorVolumeNode;
 class vtkMRMLVolumeNode;
 class vtkMRMLTableNode;
@@ -35,14 +35,14 @@ class vtkMRMLMarkupsFiducialNode;
 class vtkMRMLSliceCompositeNode;
 class vtkMRMLSegmentationNode;
 
-/// \ingroup Slicer_QtModules_RegQA
-class VTK_SLICER_REGQA_MODULE_LOGIC_EXPORT vtkSlicerRegQALogic :
+/// \ingroup Slicer_QtModules_RegistrationQA
+class VTK_SLICER_REGISTRATIONQA_MODULE_LOGIC_EXPORT vtkSlicerRegistrationQALogic :
 	
 	public vtkSlicerModuleLogic {
 public:
    public:
    /** Constants used **/
-   static const char* SLICERREGQA_EXTENSION_NAME;
+   static const char* SLICERRegistrationQA_EXTENSION_NAME;
    static const std::string INVERSE;
    static const std::string WARPED_IMAGE;
    static const std::string VECTOR_FIELD;
@@ -78,10 +78,10 @@ public:
    static const std::string TRIPVF;
    static const std::string BACKWARD;
    static const std::string IMAGE;
-   static const std::string REGQANODEID;
+   static const std::string RegistrationQANODEID;
 public:
-	static vtkSlicerRegQALogic *New();
-	vtkTypeMacro(vtkSlicerRegQALogic, vtkSlicerModuleLogic);
+	static vtkSlicerRegistrationQALogic *New();
+	vtkTypeMacro(vtkSlicerRegistrationQALogic, vtkSlicerModuleLogic);
 	void PrintSelf(ostream& os, vtkIndent indent);
 
 	void SaveScreenshot(const char*);
@@ -107,17 +107,17 @@ public:
         /** Calculates Absolute Difference between reference and warped image from registration
          *  quality node. Calculates statistic as well, if given 
          */
-        bool AbsoluteDifference(vtkMRMLRegQANode* regQANode, double statisticValues[4]);
+        bool AbsoluteDifference(vtkMRMLRegistrationQANode* regQANode, double statisticValues[4]);
         
         /**Calculates Jacobian from registration quality parameter node.
          * Calculates statistic as well, if given 
          */
-        bool Jacobian(vtkMRMLRegQANode* regQANode, double statisticValues[4]);
+        bool Jacobian(vtkMRMLRegistrationQANode* regQANode, double statisticValues[4]);
         
         /** Calculates inverse consistency from registration quality parameter node.
          * Calculates statistic as well, if given 
          */
-        bool InverseConsist(vtkMRMLRegQANode* regQANode, double statisticValues[4]);
+        bool InverseConsist(vtkMRMLRegistrationQANode* regQANode, double statisticValues[4]);
         
         
 	/** Set the background to fixed image, forground to warped image with opacity 0.5
@@ -151,15 +151,15 @@ public:
 	/** Create default table node, used in jacobian, absdiff, fiducials
          *  and inverse consistency
          */
-        vtkMRMLTableNode* CreateDefaultRegQATable();
+        vtkMRMLTableNode* CreateDefaultRegistrationQATable();
         
         /** Update table with all the node names
          */
-        void UpdateRegQATable();
+        void UpdateRegistrationQATable();
         
         /** Create default node for backward parameters
          */
-        void CreateBackwardParameters(vtkMRMLRegQANode* node);
+        void CreateBackwardParameters(vtkMRMLRegistrationQANode* node);
         
         /** Change in which direction (forward or backward) should
          *  the QA be performed.
@@ -173,12 +173,12 @@ public:
 
 
 public:
-	void SetAndObserveRegQANode(vtkMRMLRegQANode *node);
-	vtkGetObjectMacro(RegQANode, vtkMRMLRegQANode);
+	void SetAndObserveRegistrationQANode(vtkMRMLRegistrationQANode *node);
+	vtkGetObjectMacro(RegistrationQANode, vtkMRMLRegistrationQANode);
 
 protected:
-	vtkSlicerRegQALogic();
-	~vtkSlicerRegQALogic();
+	vtkSlicerRegistrationQALogic();
+	~vtkSlicerRegistrationQALogic();
 
 	virtual void RegisterNodes();
 	
@@ -192,7 +192,7 @@ protected:
 	virtual void OnMRMLSceneEndClose();
         
 	void InvertXandY(vtkImageData* imageData);
-        bool GetRadiusAndCenter(vtkSegment* segment, double radius[3], double center[3]);
+        bool GetRadiusAndCenter(vtkMRMLSegmentationNode* segmentationNode, vtkSegment* segment, double radius[3], double center[3]);
         void UpdateTableWithStatisticalValues(double statisticValues[4], int row);
         void UpdateTableWithFiducialValues(vtkMRMLMarkupsFiducialNode* fiducial, double statisticValues[4]);
         void SetForegroundImage(vtkMRMLScalarVolumeNode*,vtkMRMLScalarVolumeNode*,double opacity);
@@ -218,11 +218,11 @@ protected:
 
 protected:
 	/// Parameter set MRML node
-	vtkMRMLRegQANode* RegQANode;
+	vtkMRMLRegistrationQANode* RegistrationQANode;
 
 private:
-	vtkSlicerRegQALogic(const vtkSlicerRegQALogic&);// Not implemented
-	void operator=(const vtkSlicerRegQALogic&);// Not implemented
+	vtkSlicerRegistrationQALogic(const vtkSlicerRegistrationQALogic&);// Not implemented
+	void operator=(const vtkSlicerRegistrationQALogic&);// Not implemented
 };
 
 #endif

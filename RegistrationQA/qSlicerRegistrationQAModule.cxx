@@ -23,96 +23,96 @@
 #include <qSlicerCoreApplication.h>
 #include <qSlicerModuleManager.h>
 
-// RegQA Logic includes
-#include <vtkSlicerRegQALogic.h>
+// RegistrationQA Logic includes
+#include <vtkSlicerRegistrationQALogic.h>
 #include <vtkSlicerVolumesLogic.h>
 #include <vtkSlicerTransformLogic.h>
 // #include <vtkSlicerDoseVolumeHistogramLogic.h>
 
-// RegQA includes
-#include "qSlicerRegQAModule.h"
-#include "qSlicerRegQAModuleWidget.h"
+// RegistrationQA includes
+#include "qSlicerRegistrationQAModule.h"
+#include "qSlicerRegistrationQAModuleWidget.h"
 
 // SubjectHierarchy Plugins includes
 #include "qSlicerSubjectHierarchyPluginHandler.h"
-#include "qSlicerSubjectHierarchyRegQAPlugin.h"
+#include "qSlicerSubjectHierarchyRegistrationQAPlugin.h"
 
 //-----------------------------------------------------------------------------
-Q_EXPORT_PLUGIN2(qSlicerRegQAModule, qSlicerRegQAModule);
+Q_EXPORT_PLUGIN2(qSlicerRegistrationQAModule, qSlicerRegistrationQAModule);
 
 //-----------------------------------------------------------------------------
-/// \ingroup Slicer_QtModules_RegQA
-class qSlicerRegQAModulePrivate {
+/// \ingroup Slicer_QtModules_RegistrationQA
+class qSlicerRegistrationQAModulePrivate {
 public:
-	qSlicerRegQAModulePrivate();
+	qSlicerRegistrationQAModulePrivate();
 };
 
 //-----------------------------------------------------------------------------
-// qSlicerRegQAModulePrivate methods
+// qSlicerRegistrationQAModulePrivate methods
 
 //-----------------------------------------------------------------------------
-qSlicerRegQAModulePrivate::qSlicerRegQAModulePrivate() {
+qSlicerRegistrationQAModulePrivate::qSlicerRegistrationQAModulePrivate() {
 }
 
 //-----------------------------------------------------------------------------
-// qSlicerRegQAModule methods
+// qSlicerRegistrationQAModule methods
 
 //-----------------------------------------------------------------------------
-qSlicerRegQAModule::qSlicerRegQAModule(QObject* _parent)
+qSlicerRegistrationQAModule::qSlicerRegistrationQAModule(QObject* _parent)
 	: Superclass(_parent)
-	, d_ptr(new qSlicerRegQAModulePrivate) {
+	, d_ptr(new qSlicerRegistrationQAModulePrivate) {
 }
 
 //-----------------------------------------------------------------------------
-qSlicerRegQAModule::~qSlicerRegQAModule() {
+qSlicerRegistrationQAModule::~qSlicerRegistrationQAModule() {
 }
 
 //-----------------------------------------------------------------------------
-QString qSlicerRegQAModule::helpText() const {
+QString qSlicerRegistrationQAModule::helpText() const {
 	return "TODO:\n-FalseColour\n-Flicker\n-Checkerboard\n-Movie\n-CURL\n-Jacobian\n-InverseConsistencyError";
 }
 
 //-----------------------------------------------------------------------------
-QString qSlicerRegQAModule::acknowledgementText() const {
+QString qSlicerRegistrationQAModule::acknowledgementText() const {
 	return "This module is a project of the following institutes:\nGSI - HIT - UKER\n\nThe aim of this module is to estimate the quality of an image registration.";
 }
 
 //-----------------------------------------------------------------------------
-QStringList qSlicerRegQAModule::contributors() const {
+QStringList qSlicerRegistrationQAModule::contributors() const {
 	QStringList moduleContributors;
 	moduleContributors << QString("Kristjan Anderle") << QString("Jens Woelfelschneider") << QString("Tobias Brandt") << QString("Daniel Richter");
 	return moduleContributors;
 }
 
 //-----------------------------------------------------------------------------
-QIcon qSlicerRegQAModule::icon() const {
-	return QIcon(":/Icons/RegQAIcon.png");
+QIcon qSlicerRegistrationQAModule::icon() const {
+	return QIcon(":/Icons/RegistrationQAIcon.png");
 }
 
 //-----------------------------------------------------------------------------
-QStringList qSlicerRegQAModule::categories() const {
+QStringList qSlicerRegistrationQAModule::categories() const {
 	return QStringList() << "Registration";
 }
 	
 //-----------------------------------------------------------------------------
-QStringList qSlicerRegQAModule::dependencies() const {
+QStringList qSlicerRegistrationQAModule::dependencies() const {
 	return QStringList();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModule::setup() {
+void qSlicerRegistrationQAModule::setup() {
 	this->Superclass::setup();
 	// Register Subject Hierarchy core plugins
-       qSlicerSubjectHierarchyPluginHandler::instance()->registerPlugin(new qSlicerSubjectHierarchyRegQAPlugin());
+       qSlicerSubjectHierarchyPluginHandler::instance()->registerPlugin(new qSlicerSubjectHierarchyRegistrationQAPlugin());
 }
 
 //-----------------------------------------------------------------------------
-qSlicerAbstractModuleRepresentation *qSlicerRegQAModule
+qSlicerAbstractModuleRepresentation *qSlicerRegistrationQAModule
 ::createWidgetRepresentation() {
-	return new qSlicerRegQAModuleWidget;
+	return new qSlicerRegistrationQAModuleWidget;
 }
 
 //-----------------------------------------------------------------------------
-vtkMRMLAbstractLogic* qSlicerRegQAModule::createLogic() {
-	return vtkSlicerRegQALogic::New();
+vtkMRMLAbstractLogic* qSlicerRegistrationQAModule::createLogic() {
+	return vtkSlicerRegistrationQALogic::New();
 }

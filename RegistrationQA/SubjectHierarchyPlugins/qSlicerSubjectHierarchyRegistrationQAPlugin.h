@@ -18,34 +18,34 @@
 
 ==============================================================================*/
 
-#ifndef __qSlicerSubjectHierarchyRegQAPlugin_h
-#define __qSlicerSubjectHierarchyRegQAPlugin_h
+#ifndef __qSlicerSubjectHierarchyRegistrationQAPlugin_h
+#define __qSlicerSubjectHierarchyRegistrationQAPlugin_h
 
 // SlicerRt includes
 #include "qSlicerSubjectHierarchyAbstractPlugin.h"
-#include "qSlicerRegQASubjectHierarchyPluginsExport.h"
+#include "qSlicerRegistrationQASubjectHierarchyPluginsExport.h"
 
 // #include "qSlicerDicomRtImportExportSubjectHierarchyPluginsExport.h"
 
-class qSlicerSubjectHierarchyRegQAPluginPrivate;
+class qSlicerSubjectHierarchyRegistrationQAPluginPrivate;
 class vtkMRMLNode;
 class vtkMRMLVolumeNode;
 class vtkMRMLAnnotationROINode;
 class vtkMRMLMarkupsFiducialNode;
 class vtkMRMLScalarVolumeNode;
 class vtkMRMLTableNode;
-class vtkMRMLRegQANode;
+class vtkMRMLRegistrationQANode;
 //BTX
 /// \ingroup Slicer_QtModules_SubjectHierarchy_Plugins
-class Q_SLICER_REGQA_SUBJECT_HIERARCHY_PLUGINS_EXPORT qSlicerSubjectHierarchyRegQAPlugin : public qSlicerSubjectHierarchyAbstractPlugin
+class Q_SLICER_REGISTRATIONQA_SUBJECT_HIERARCHY_PLUGINS_EXPORT qSlicerSubjectHierarchyRegistrationQAPlugin : public qSlicerSubjectHierarchyAbstractPlugin
 {
 public:
   Q_OBJECT
 
 public:
   typedef qSlicerSubjectHierarchyAbstractPlugin Superclass;
-  qSlicerSubjectHierarchyRegQAPlugin(QObject* parent = NULL);
-  virtual ~qSlicerSubjectHierarchyRegQAPlugin();
+  qSlicerSubjectHierarchyRegistrationQAPlugin(QObject* parent = NULL);
+  virtual ~qSlicerSubjectHierarchyRegistrationQAPlugin();
  
 public:
   /// Determines if a data node can be placed in the hierarchy using the actual plugin,
@@ -100,7 +100,7 @@ protected slots:
   
   /// Load volume from filename
   void loadFromFilenameForItemID(vtkIdType itemID);
-//   void assignNodeToRegQANode(vtkMRMLNode* node, vtkMRMLRegQANode* regQANode, std::string regType, bool inverse);
+//   void assignNodeToRegistrationQANode(vtkMRMLNode* node, vtkMRMLRegistrationQANode* regQANode, std::string regType, bool inverse);
   vtkMRMLVolumeNode* loadVolumeFromItemId(vtkIdType itemID);
   void calcuateDIRQAForCurrentNode();
   void calcuateDIRQAForID(vtkIdType itemID, bool removeNodes);
@@ -108,7 +108,7 @@ protected slots:
   void updateRegNodeForID(vtkIdType itemID);
   vtkMRMLAnnotationROINode* loadROI(vtkIdType itemID);
   vtkMRMLMarkupsFiducialNode* loadMarkups(vtkIdType itemID);
-  vtkMRMLRegQANode* loadRegQANode(vtkIdType itemID);
+  vtkMRMLRegistrationQANode* loadRegistrationQANode(vtkIdType itemID);
   void calculateAbsoluteDifference(vtkIdType itemID, bool removeNodes);
   void calculateJacobian(vtkIdType itemID, bool removeNodes);
   void calculateInverseConsistency(vtkIdType itemID, bool removeNodes);
@@ -125,34 +125,34 @@ protected slots:
   void writeInTable(vtkIdType itemID,char const* tableName, double* statisticValues, vtkMRMLMarkupsFiducialNode* fiducalsNode = NULL);
   vtkMRMLTableNode* createTable(vtkIdType itemID,char const* tableName, bool fiducalsTable = false);
   
-  /// Functions to add appropriate nodes to RegQA module
+  /// Functions to add appropriate nodes to RegistrationQA module
   void InputSelected(std::string name, bool backward,vtkIdType itemID, vtkMRMLNode* associatedNode);
   void InputSelected(std::string name, bool backward);
   void loadContourSelected(bool backward);
   
-  void fixedImageSelected();
+  void referenceImageSelected();
   void movingImageSelected();
   void fwarpedImageSelected();
   void bwarpedImageSelected();
-  void fixedVectorFieldSelected();
+  void referenceVectorFieldSelected();
   void movingVectorFieldSelected();
-  void fixedFiducialsSelected();
+  void referenceFiducialsSelected();
   void movingFiducialsSelected();
   void ROISelected();
-  void fixedContourSelected();
+  void referenceContourSelected();
   void movingContourSelected();
 
-  void setNodeInRegQA(vtkMRMLNode* node, QString role, QString context = "");
+  void setNodeInRegistrationQA(vtkMRMLNode* node, QString role, QString context = "");
 
 protected:  
-  QString m_RegQAParametersID;
+  QString m_RegistrationQAParametersID;
 protected:
-  QScopedPointer<qSlicerSubjectHierarchyRegQAPluginPrivate> d_ptr;
+  QScopedPointer<qSlicerSubjectHierarchyRegistrationQAPluginPrivate> d_ptr;
   
 
 private:
-  Q_DECLARE_PRIVATE(qSlicerSubjectHierarchyRegQAPlugin);
-  Q_DISABLE_COPY(qSlicerSubjectHierarchyRegQAPlugin);
+  Q_DECLARE_PRIVATE(qSlicerSubjectHierarchyRegistrationQAPlugin);
+  Q_DISABLE_COPY(qSlicerSubjectHierarchyRegistrationQAPlugin);
 };
 //ETX
 #endif

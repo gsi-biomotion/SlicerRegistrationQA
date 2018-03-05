@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>RegistrationQuality</category>
+  <category>Registration.Quality Assurance</category>
   <title>InverseConsistency</title>
-  <description><![CDATA[This is a CLI module calculating Inverse Consistency for two vector fields]]></description>
+  <description><![CDATA[This is a CLI module calculating Inverse Consistency for two vector fields. Output is an image filled with inverse consistency values for each voxel.]]></description>
   <version>0.0.1</version>
   <documentation-url>http://www.slicer.org/slicerWiki/index.php/Documentation/4.3/Modules/InverseConsistency</documentation-url>
   <license>Slicer</license>

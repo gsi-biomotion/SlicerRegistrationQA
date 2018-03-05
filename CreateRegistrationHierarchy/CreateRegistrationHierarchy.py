@@ -58,7 +58,7 @@ class CreateRegistrationHierarchy(ScriptedLoadableModule):
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
     parent.title = "Read Registration Node" # TODO make this more human readable by adding spaces
-    parent.categories = ["RegistrationQuality"]
+    parent.categories = ["Registration.Quality Assurance"]
     parent.dependencies = []
     parent.contributors = ["Kristjan Anderle (GSI)"] # replace with "Firstname Lastname (Org)"
     parent.helpText = """
@@ -298,11 +298,11 @@ class CreateRegistrationHierarchyLogic:
       shNode.SetItemUID(patientItemID, 'DICOM', patientName);
 
     #Create reg quality node
-    regQualityNode = slicer.vtkMRMLRegistrationQualityNode()
-    slicer.mrmlScene.AddNode( regQualityNode )
-    regQualityNode.SetName( patientName + 'regQualityNode')
-    if not regQualityNode is None:
-       shNode.SetItemAttribute( patientItemID, REGQANODEID, regQualityNode.GetID() )
+    regQANode = slicer.vtkMRMLRegistrationQANode()
+    slicer.mrmlScene.AddNode( regQANode )
+    regQANode.SetName( patientName + 'regQANode')
+    if not regQANode is None:
+       shNode.SetItemAttribute( patientItemID, REGQANODEID, regQANode.GetID() )
     
     dirList = [dirPaths.warpDirectory, dirPaths.vectorDirectory, dirPaths.roiFile]
     
@@ -730,6 +730,25 @@ class RegistrationHierarchyHelp():
          self.fiducialsDirectory = patientDirectory + '4D/NRRD/'
          self.roiFile = patientDirectory + 'Registration/' + "R.acsv"
          self.referencePhase = "00"
+      elif case == "Example":
+         if name == "":
+            patName = 'Lung006'
+         else:
+            patName = name
+         
+         patientDirectory = '/u/kanderle/Documents/Data/' + patName + '/'
+         self.name = patName
+         self.patDirectory  = patientDirectory
+         #self.ctDirectory   = patientDirectory + 'CTX/'
+         self.ctDirectory = patientDirectory 
+         self.doseDirectory = patientDirectory 
+         self.contourFile   = patientDirectory 
+         #self.vectorDirectory = patientDirectory + 'Registration/4D/'
+         self.vectorDirectory = patientDirectory 
+         self.warpDirectory = self.vectorDirectory
+         self.fiducialsDirectory = patientDirectory 
+         #self.roiFile = patientDirectory + 'Registration/' + "R.acsv"
+         #self.referencePhase = "00"
       elif case == "MDACC":
          if name == "":
             patName = 'Patient122'

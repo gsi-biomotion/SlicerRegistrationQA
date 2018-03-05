@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>qSlicerRegQAModule</class>
- <widget class="qSlicerWidget" name="qSlicerRegQAModule">
+ <class>qSlicerRegistrationQAModule</class>
+ <widget class="qSlicerWidget" name="qSlicerRegistrationQAModule">
   <property name="windowModality">
    <enum>Qt::NonModal</enum>
   </property>
@@ -28,8 +28,8 @@
    <string>Registration Quality Module</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../qSlicerRegQAModule.qrc">
-    <normaloff>:/Icons/RegQAIcon.png</normaloff>:/Icons/RegQAIcon.png</iconset>
+   <iconset resource="../qSlicerRegistrationQAModule.qrc">
+    <normaloff>:/Icons/RegistrationQAIcon.png</normaloff>:/Icons/RegistrationQAIcon.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -45,7 +45,7 @@
         </property>
         <property name="nodeTypes">
          <stringlist>
-          <string>vtkMRMLRegQANode</string>
+          <string>vtkMRMLRegistrationQANode</string>
          </stringlist>
         </property>
         <property name="showHidden">
@@ -288,7 +288,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../qSlicerRegQAModule.qrc">
+            <iconset resource="../qSlicerRegistrationQAModule.qrc">
              <normaloff>:/Icons/RedIcon.png</normaloff>:/Icons/RedIcon.png</iconset>
            </property>
           </widget>
@@ -299,7 +299,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../qSlicerRegQAModule.qrc">
+            <iconset resource="../qSlicerRegistrationQAModule.qrc">
              <normaloff>:/Icons/YellowIcon.png</normaloff>:/Icons/YellowIcon.png</iconset>
            </property>
           </widget>
@@ -310,7 +310,7 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../qSlicerRegQAModule.qrc">
+            <iconset resource="../qSlicerRegistrationQAModule.qrc">
              <normaloff>:/Icons/GreenIcon.png</normaloff>:/Icons/GreenIcon.png</iconset>
            </property>
           </widget>
@@ -480,11 +480,11 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../qSlicerRegQAModule.qrc"/>
+  <include location="../qSlicerRegistrationQAModule.qrc"/>
  </resources>
  <connections>
   <connection>
-   <sender>qSlicerRegQAModule</sender>
+   <sender>qSlicerRegistrationQAModule</sender>
    <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
    <receiver>ParameterComboBox</receiver>
    <slot>setMRMLScene(vtkMRMLScene*)</slot>
@@ -500,7 +500,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>qSlicerRegQAModule</sender>
+   <sender>qSlicerRegistrationQAModule</sender>
    <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
    <receiver>SubjectHierarchyTreeView</receiver>
    <slot>setMRMLScene(vtkMRMLScene*)</slot>

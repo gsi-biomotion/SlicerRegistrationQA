@@ -1,6 +1,6 @@
 // SlicerQt includes
-#include "qSlicerRegQAModuleWidget.h"
-#include "ui_qSlicerRegQAModule.h"
+#include "qSlicerRegistrationQAModuleWidget.h"
+#include "ui_qSlicerRegistrationQAModule.h"
 #include "qSlicerApplication.h"
 #include "qSlicerLayoutManager.h"
 
@@ -22,8 +22,8 @@
 #include <qSlicerAbstractCoreModule.h>
 
 // DeformationVisualizer includes
-#include "vtkSlicerRegQALogic.h"
-#include "vtkMRMLRegQANode.h"
+#include "vtkSlicerRegistrationQALogic.h"
+#include "vtkMRMLRegistrationQANode.h"
 
 
 // MMRL includes
@@ -63,122 +63,122 @@
 #include <time.h>
 
 //-----------------------------------------------------------------------------
-/// \ingroup Slicer_QtModules_RegQA
+/// \ingroup Slicer_QtModules_RegistrationQA
 // TODO: Keeping private for now until after fixes and enhancements
-class qSlicerRegQAModuleWidgetPrivate: public Ui_qSlicerRegQAModule {
-	Q_DECLARE_PUBLIC(qSlicerRegQAModuleWidget);
+class qSlicerRegistrationQAModuleWidgetPrivate: public Ui_qSlicerRegistrationQAModule {
+	Q_DECLARE_PUBLIC(qSlicerRegistrationQAModuleWidget);
 protected:
-	qSlicerRegQAModuleWidget* const q_ptr;
+	qSlicerRegistrationQAModuleWidget* const q_ptr;
 public:
-	qSlicerRegQAModuleWidgetPrivate(qSlicerRegQAModuleWidget& object);
-	~qSlicerRegQAModuleWidgetPrivate();
-	vtkSlicerRegQALogic* logic() const;
+	qSlicerRegistrationQAModuleWidgetPrivate(qSlicerRegistrationQAModuleWidget& object);
+	~qSlicerRegistrationQAModuleWidgetPrivate();
+	vtkSlicerRegistrationQALogic* logic() const;
 };
 
 //-----------------------------------------------------------------------------
-// qSlicerRegQAModuleWidgetPrivate methods
+// qSlicerRegistrationQAModuleWidgetPrivate methods
 //-----------------------------------------------------------------------------
-qSlicerRegQAModuleWidgetPrivate::qSlicerRegQAModuleWidgetPrivate(
-	qSlicerRegQAModuleWidget& object) : q_ptr(&object) {
+qSlicerRegistrationQAModuleWidgetPrivate::qSlicerRegistrationQAModuleWidgetPrivate(
+	qSlicerRegistrationQAModuleWidget& object) : q_ptr(&object) {
 }
 //-----------------------------------------------------------------------------
-qSlicerRegQAModuleWidgetPrivate::~qSlicerRegQAModuleWidgetPrivate()
+qSlicerRegistrationQAModuleWidgetPrivate::~qSlicerRegistrationQAModuleWidgetPrivate()
 {
 }
 //-----------------------------------------------------------------------------
-vtkSlicerRegQALogic* qSlicerRegQAModuleWidgetPrivate::logic() const {
-	Q_Q( const qSlicerRegQAModuleWidget );
-	return vtkSlicerRegQALogic::SafeDownCast( q->logic() );
+vtkSlicerRegistrationQALogic* qSlicerRegistrationQAModuleWidgetPrivate::logic() const {
+	Q_Q( const qSlicerRegistrationQAModuleWidget );
+	return vtkSlicerRegistrationQALogic::SafeDownCast( q->logic() );
 }
 //-----------------------------------------------------------------------------
-// qSlicerRegQAModuleWidget methods
+// qSlicerRegistrationQAModuleWidget methods
 //-----------------------------------------------------------------------------
-qSlicerRegQAModuleWidget::qSlicerRegQAModuleWidget(QWidget* _parent)
+qSlicerRegistrationQAModuleWidget::qSlicerRegistrationQAModuleWidget(QWidget* _parent)
 	: Superclass( _parent )
-	, d_ptr(new qSlicerRegQAModuleWidgetPrivate(*this))
+	, d_ptr(new qSlicerRegistrationQAModuleWidgetPrivate(*this))
 	, flickerTimer(new QTimer(this)) {
 }
 
 //-----------------------------------------------------------------------------
-qSlicerRegQAModuleWidget::~qSlicerRegQAModuleWidget() {
+qSlicerRegistrationQAModuleWidget::~qSlicerRegistrationQAModuleWidget() {
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::setMRMLScene(vtkMRMLScene* scene) {
-	Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::setMRMLScene(vtkMRMLScene* scene) {
+	Q_D(qSlicerRegistrationQAModuleWidget);
 	this->Superclass::setMRMLScene(scene);
 
 	// Find parameters node or create it if there is no one in the scene
-	if (scene &&  d->logic()->GetRegQANode() == 0) {
-		vtkMRMLNode* node = scene->GetNthNodeByClass(0, "vtkMRMLRegQANode");
+	if (scene &&  d->logic()->GetRegistrationQANode() == 0) {
+		vtkMRMLNode* node = scene->GetNthNodeByClass(0, "vtkMRMLRegistrationQANode");
 		if (node) {
-			this->setRegQAParametersNode(
-				vtkMRMLRegQANode::SafeDownCast(node));
+			this->setRegistrationQAParametersNode(
+				vtkMRMLRegistrationQANode::SafeDownCast(node));
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::onSceneImportedEvent() {
+void qSlicerRegistrationQAModuleWidget::onSceneImportedEvent() {
 	this->onEnter();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::enter() {
+void qSlicerRegistrationQAModuleWidget::enter() {
 	this->onEnter();
 	this->Superclass::enter();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::onEnter() {
+void qSlicerRegistrationQAModuleWidget::onEnter() {
 	if (!this->mrmlScene()) {
 		return;
 	}
 
-	Q_D(qSlicerRegQAModuleWidget);
+	Q_D(qSlicerRegistrationQAModuleWidget);
 
 	if (d->logic() == NULL) {
 		return;
 	}
 
 	//Check for existing parameter node
-	vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+	vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
 
 	if (pNode == NULL) {
-		vtkMRMLNode* node = this->mrmlScene()->GetNthNodeByClass(0,"vtkMRMLRegQANode");
+		vtkMRMLNode* node = this->mrmlScene()->GetNthNodeByClass(0,"vtkMRMLRegistrationQANode");
 		if (node) {
-			pNode = vtkMRMLRegQANode::SafeDownCast(node);
-			d->logic()->SetAndObserveRegQANode(pNode);
+			pNode = vtkMRMLRegistrationQANode::SafeDownCast(node);
+			d->logic()->SetAndObserveRegistrationQANode(pNode);
 		} else {
-			vtkSmartPointer<vtkMRMLRegQANode> newNode = vtkSmartPointer<vtkMRMLRegQANode>::New();
+			vtkSmartPointer<vtkMRMLRegistrationQANode> newNode = vtkSmartPointer<vtkMRMLRegistrationQANode>::New();
 			this->mrmlScene()->AddNode(newNode);
-			d->logic()->SetAndObserveRegQANode(newNode);
+			d->logic()->SetAndObserveRegistrationQANode(newNode);
 		}
 	}
 	this->updateWidgetFromMRML();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::setRegQAParametersNode(vtkMRMLNode *node) {
-	Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::setRegistrationQAParametersNode(vtkMRMLNode *node) {
+	Q_D(qSlicerRegistrationQAModuleWidget);
 
-	vtkMRMLRegQANode* pNode = vtkMRMLRegQANode::SafeDownCast(node);
+	vtkMRMLRegistrationQANode* pNode = vtkMRMLRegistrationQANode::SafeDownCast(node);
 
-	qvtkReconnect( d->logic()->GetRegQANode(), pNode,
+	qvtkReconnect( d->logic()->GetRegistrationQANode(), pNode,
 				   vtkCommand::ModifiedEvent, this, SLOT(updateWidgetFromMRML()));
 
-	d->logic()->SetAndObserveRegQANode(pNode);
+	d->logic()->SetAndObserveRegistrationQANode(pNode);
 	this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::updateWidgetFromMRML() {
-   Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::updateWidgetFromMRML() {
+   Q_D(qSlicerRegistrationQAModuleWidget);
 
-   vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+   vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
    if (pNode && this->mrmlScene()) {
       d->ParameterComboBox->setCurrentNode(pNode);
-      //Create backward RegQAParameters, if it isn't there yet
-      if ( pNode->GetBackwardRegQAParameters() == NULL ){
+      //Create backward RegistrationQAParameters, if it isn't there yet
+      if ( pNode->GetBackwardRegistrationQAParameters() == NULL ){
          d->logic()->CreateBackwardParameters(pNode);
       }
       
@@ -193,16 +193,16 @@ void qSlicerRegQAModuleWidget::updateWidgetFromMRML() {
       }
       
       //Create table if necesarry
-      vtkSmartPointer<vtkMRMLTableNode> tableNode = pNode->GetRegQATableNode();
+      vtkSmartPointer<vtkMRMLTableNode> tableNode = pNode->GetRegistrationQATableNode();
       if ( ! tableNode ){
-         tableNode = d->logic()->CreateDefaultRegQATable();
+         tableNode = d->logic()->CreateDefaultRegistrationQATable();
          if (tableNode == NULL){
-            d->StillErrorLabel->setText("Can't create default RegQA table");
+            d->StillErrorLabel->setText("Can't create default RegistrationQA table");
             return;
          }
          pNode->DisableModifiedEventOn();
-         pNode->SetAndObserveRegQATableNode(tableNode);
-         pNode->GetBackwardRegQAParameters()->SetAndObserveRegQATableNode(tableNode);
+         pNode->SetAndObserveRegistrationQATableNode(tableNode);
+         pNode->GetBackwardRegistrationQAParameters()->SetAndObserveRegistrationQATableNode(tableNode);
          pNode->DisableModifiedEventOff();
       }
       
@@ -213,10 +213,10 @@ void qSlicerRegQAModuleWidget::updateWidgetFromMRML() {
    this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::updateButtonsAndTable() {
-   Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::updateButtonsAndTable() {
+   Q_D(qSlicerRegistrationQAModuleWidget);
 
-   vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+   vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
    
    if ( ! pNode ){
       return;
@@ -229,7 +229,7 @@ void qSlicerRegQAModuleWidget::updateButtonsAndTable() {
    d->CheckerboardPushButton->setEnabled(currentScalarVolumeState);
    d->FlickerToggle->setEnabled(currentScalarVolumeState);
    
-   if (pNode->GetVolumeNodeID() &&  pNode->GetBackwardRegQAParameters()->GetVolumeNodeID()){
+   if (pNode->GetVolumeNodeID() &&  pNode->GetBackwardRegistrationQAParameters()->GetVolumeNodeID()){
       d->FalseColor2PushButton->setEnabled(true);
    }
    else{
@@ -247,31 +247,31 @@ void qSlicerRegQAModuleWidget::updateButtonsAndTable() {
    bool vector = pNode->GetVectorVolumeNodeID();
    d->jacobianButton->setEnabled(vector);
    
-   if ( pNode->GetBackwardRegQAParameters() ){
-      bool movingVector = vector && pNode->GetBackwardRegQAParameters()->GetVectorVolumeNodeID();
+   if ( pNode->GetBackwardRegistrationQAParameters() ){
+      bool movingVector = vector && pNode->GetBackwardRegistrationQAParameters()->GetVectorVolumeNodeID();
       d->consistencyButton->setEnabled(movingVector);
 
-      bool fiducials = pNode->GetFiducialNodeID() && pNode->GetBackwardRegQAParameters()->GetFiducialNodeID();
+      bool fiducials = pNode->GetFiducialNodeID() && pNode->GetBackwardRegistrationQAParameters()->GetFiducialNodeID();
       d->fiducialButton->setEnabled(fiducials);
  
       bool contour = pNode->GetSegmentID() &&
                      pNode->GetSegmentationNode() &&
-                     pNode->GetBackwardRegQAParameters()->GetSegmentID() &&
-                     pNode->GetBackwardRegQAParameters()->GetSegmentationNode() &&
+                     pNode->GetBackwardRegistrationQAParameters()->GetSegmentID() &&
+                     pNode->GetBackwardRegistrationQAParameters()->GetSegmentationNode() &&
                      vector;
                  
       d->contourButton->setEnabled(contour);
    }
-   d->logic()->UpdateRegQATable();
+   d->logic()->UpdateRegistrationQATable();
    //Change node to the right direction
    
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::vectorVolumeChanged(vtkMRMLNode* node) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::vectorVolumeChanged(vtkMRMLNode* node) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
         // TODO: Move into updatefrommrml?
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene() || !node) {
                 return;
         }
@@ -279,7 +279,7 @@ void qSlicerRegQAModuleWidget::vectorVolumeChanged(vtkMRMLNode* node) {
         pNode->DisableModifiedEventOn();
         if (node->IsA("vtkMRMLTransformNode")){
           if ( pNode->GetBackwardRegistration() ){
-             pNode->GetBackwardRegQAParameters()->SetAndObserveTransformNodeID(node->GetID());
+             pNode->GetBackwardRegistrationQAParameters()->SetAndObserveTransformNodeID(node->GetID());
           }
           else{
              pNode->SetAndObserveTransformNodeID(node->GetID());
@@ -303,7 +303,7 @@ void qSlicerRegQAModuleWidget::vectorVolumeChanged(vtkMRMLNode* node) {
         }
         else if (node->IsA("vtkMRMLVectorVolumeNode")){
           if ( pNode->GetBackwardRegistration() ){
-             pNode->GetBackwardRegQAParameters()->SetAndObserveVectorVolumeNodeID(node->GetID());
+             pNode->GetBackwardRegistrationQAParameters()->SetAndObserveVectorVolumeNodeID(node->GetID());
           }
           else{
              pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
@@ -330,13 +330,13 @@ void qSlicerRegQAModuleWidget::vectorVolumeChanged(vtkMRMLNode* node) {
         
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::invVectorVolumeChanged(vtkMRMLNode* node) {
-  Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::invVectorVolumeChanged(vtkMRMLNode* node) {
+  Q_D(qSlicerRegistrationQAModuleWidget);
   //Change to backward
 
   
   // TODO: Move into updatefrommrml?
-  vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+  vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
   if (!pNode || !this->mrmlScene() || !node) {
           return;
   }
@@ -347,7 +347,7 @@ void qSlicerRegQAModuleWidget::invVectorVolumeChanged(vtkMRMLNode* node) {
        pNode->SetAndObserveTransformNodeID(node->GetID());
     }
     else{
-       pNode->GetBackwardRegQAParameters()->SetAndObserveTransformNodeID(node->GetID());
+       pNode->GetBackwardRegistrationQAParameters()->SetAndObserveTransformNodeID(node->GetID());
     }
 
             
@@ -372,7 +372,7 @@ void qSlicerRegQAModuleWidget::invVectorVolumeChanged(vtkMRMLNode* node) {
        pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
     }
     else{
-       pNode->GetBackwardRegQAParameters()->SetAndObserveVectorVolumeNodeID(node->GetID());
+       pNode->GetBackwardRegistrationQAParameters()->SetAndObserveVectorVolumeNodeID(node->GetID());
     }
     
 //        //Convert transform to vector
@@ -398,12 +398,12 @@ void qSlicerRegQAModuleWidget::invVectorVolumeChanged(vtkMRMLNode* node) {
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::fixedVolumeChanged(vtkMRMLNode* node) {
+void qSlicerRegistrationQAModuleWidget::fixedVolumeChanged(vtkMRMLNode* node) {
 
-        Q_D(qSlicerRegQAModuleWidget);
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
         //TODO: Move into updatefrommrml?
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
 
         if (!pNode || !this->mrmlScene() || !node) {
                 return;
@@ -411,7 +411,7 @@ void qSlicerRegQAModuleWidget::fixedVolumeChanged(vtkMRMLNode* node) {
         
         pNode->DisableModifiedEventOn();
         if ( pNode->GetBackwardRegistration() ){
-           pNode->GetBackwardRegQAParameters()->SetAndObserveVolumeNodeID(node->GetID());
+           pNode->GetBackwardRegistrationQAParameters()->SetAndObserveVolumeNodeID(node->GetID());
         }
         else{
            pNode->SetAndObserveVolumeNodeID(node->GetID());
@@ -420,11 +420,11 @@ void qSlicerRegQAModuleWidget::fixedVolumeChanged(vtkMRMLNode* node) {
         this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::movingVolumeChanged(vtkMRMLNode* node) {
+void qSlicerRegistrationQAModuleWidget::movingVolumeChanged(vtkMRMLNode* node) {
 
-        Q_D(qSlicerRegQAModuleWidget);
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
 
         if (!pNode || !this->mrmlScene() || !node) {
                 return;
@@ -435,25 +435,25 @@ void qSlicerRegQAModuleWidget::movingVolumeChanged(vtkMRMLNode* node) {
            pNode->SetAndObserveVolumeNodeID(node->GetID());
         }
         else{
-           pNode->GetBackwardRegQAParameters()->SetAndObserveVolumeNodeID(node->GetID());
+           pNode->GetBackwardRegistrationQAParameters()->SetAndObserveVolumeNodeID(node->GetID());
         }
         pNode->DisableModifiedEventOff();
         this->updateButtonsAndTable();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::forwardWarpedVolumeChanged(vtkMRMLNode* node) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::forwardWarpedVolumeChanged(vtkMRMLNode* node) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
         
         //TODO: Move into updatefrommrml?
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene() || !node) {
                 return;
         }
         
         pNode->DisableModifiedEventOn();
         if ( pNode->GetBackwardRegistration() ){
-           pNode->GetBackwardRegQAParameters()->SetAndObserveWarpedVolumeNodeID(node->GetID());
+           pNode->GetBackwardRegistrationQAParameters()->SetAndObserveWarpedVolumeNodeID(node->GetID());
            
         }
         else{
@@ -463,11 +463,11 @@ void qSlicerRegQAModuleWidget::forwardWarpedVolumeChanged(vtkMRMLNode* node) {
         this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::backwardWarpedVolumeChanged(vtkMRMLNode* node) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::backwardWarpedVolumeChanged(vtkMRMLNode* node) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
         
         //TODO: Move into updatefrommrml?
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene() || !node) {
                 return;
         }
@@ -477,7 +477,7 @@ void qSlicerRegQAModuleWidget::backwardWarpedVolumeChanged(vtkMRMLNode* node) {
            pNode->SetAndObserveWarpedVolumeNodeID(node->GetID());
         }
         else{
-           pNode->GetBackwardRegQAParameters()->SetAndObserveWarpedVolumeNodeID(node->GetID());
+           pNode->GetBackwardRegistrationQAParameters()->SetAndObserveWarpedVolumeNodeID(node->GetID());
         }
         pNode->DisableModifiedEventOff();
         this->updateButtonsAndTable();
@@ -485,11 +485,11 @@ void qSlicerRegQAModuleWidget::backwardWarpedVolumeChanged(vtkMRMLNode* node) {
 
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::outputModelChanged(vtkMRMLNode* node) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::outputModelChanged(vtkMRMLNode* node) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
         //TODO: Move into updatefrommrml?
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene() || !node) {
                 return;
         }
@@ -499,11 +499,11 @@ void qSlicerRegQAModuleWidget::outputModelChanged(vtkMRMLNode* node) {
         pNode->DisableModifiedEventOff();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::outputDirectoyChanged() {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::outputDirectoyChanged() {
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
         //TODO: Move into updatefrommrml?
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene()) {
                 return;
         }
@@ -518,11 +518,11 @@ void qSlicerRegQAModuleWidget::outputDirectoyChanged() {
         pNode->DisableModifiedEventOff();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::ROIChanged(vtkMRMLNode* node) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::ROIChanged(vtkMRMLNode* node) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
         //TODO: Move into updatefrommrml?
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene() || !node) {
                 return;
         }
@@ -533,18 +533,18 @@ void qSlicerRegQAModuleWidget::ROIChanged(vtkMRMLNode* node) {
         this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::FixedSegmentIDChanged(QString segmentID) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::FixedSegmentIDChanged(QString segmentID) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
         //TODO: Move into updatefrommrml?
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene() || segmentID.isEmpty() ) {
                 return;
         }
 
         pNode->DisableModifiedEventOn();
         if ( pNode->GetBackwardRegistration() ){
-           pNode->GetBackwardRegQAParameters()->SetSegmentID(segmentID.toLatin1().constData());
+           pNode->GetBackwardRegistrationQAParameters()->SetSegmentID(segmentID.toLatin1().constData());
            
         }
         else{
@@ -554,11 +554,11 @@ void qSlicerRegQAModuleWidget::FixedSegmentIDChanged(QString segmentID) {
         this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::MovingSegmentIDChanged(QString segmentID) {
-  Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::MovingSegmentIDChanged(QString segmentID) {
+  Q_D(qSlicerRegistrationQAModuleWidget);
 
   //TODO: Move into updatefrommrml?
-  vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+  vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
   if (!pNode || !this->mrmlScene() || segmentID.isEmpty() ) {
           return;
   }
@@ -567,7 +567,7 @@ void qSlicerRegQAModuleWidget::MovingSegmentIDChanged(QString segmentID) {
      pNode->SetSegmentID(segmentID.toLatin1().constData());
   }
   else{
-     pNode->GetBackwardRegQAParameters()->SetSegmentID(segmentID.toLatin1().constData());
+     pNode->GetBackwardRegistrationQAParameters()->SetSegmentID(segmentID.toLatin1().constData());
   }
 
   
@@ -575,18 +575,18 @@ void qSlicerRegQAModuleWidget::MovingSegmentIDChanged(QString segmentID) {
   this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::fixedSegmentationNodeChanged(vtkMRMLNode* node)
+void qSlicerRegistrationQAModuleWidget::fixedSegmentationNodeChanged(vtkMRMLNode* node)
 {
-  Q_D(qSlicerRegQAModuleWidget);
+  Q_D(qSlicerRegistrationQAModuleWidget);
   
-  vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+  vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
   if (!pNode || !this->mrmlScene() || !node) {
           return;
   }
 
   pNode->DisableModifiedEventOn();
   if ( pNode->GetBackwardRegistration() ){
-     pNode->GetBackwardRegQAParameters()->SetAndObserveSegmentationNode(vtkMRMLSegmentationNode::SafeDownCast(node));
+     pNode->GetBackwardRegistrationQAParameters()->SetAndObserveSegmentationNode(vtkMRMLSegmentationNode::SafeDownCast(node));
      
   }
   else{
@@ -596,11 +596,11 @@ void qSlicerRegQAModuleWidget::fixedSegmentationNodeChanged(vtkMRMLNode* node)
   this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::movingSegmentationNodeChanged(vtkMRMLNode* node)
+void qSlicerRegistrationQAModuleWidget::movingSegmentationNodeChanged(vtkMRMLNode* node)
 {
-  Q_D(qSlicerRegQAModuleWidget);
+  Q_D(qSlicerRegistrationQAModuleWidget);
   
-  vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+  vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
   if (!pNode || !this->mrmlScene() || !node) {
           return;
   }
@@ -611,25 +611,25 @@ void qSlicerRegQAModuleWidget::movingSegmentationNodeChanged(vtkMRMLNode* node)
      
   }
   else{
-     pNode->GetBackwardRegQAParameters()->SetAndObserveSegmentationNode(vtkMRMLSegmentationNode::SafeDownCast(node));
+     pNode->GetBackwardRegistrationQAParameters()->SetAndObserveSegmentationNode(vtkMRMLSegmentationNode::SafeDownCast(node));
   }
   pNode->DisableModifiedEventOff();
   this->updateButtonsAndTable();
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::fixedFiducialChanged(vtkMRMLNode* node) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::fixedFiducialChanged(vtkMRMLNode* node) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
         //TODO: Move into updatefrommrml?
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene() || !node) {
                 return;
         }
         pNode->DisableModifiedEventOn();
         
         if ( pNode->GetBackwardRegistration() ){
-           pNode->GetBackwardRegQAParameters()->SetAndObserveFiducialNodeID(node->GetID());
+           pNode->GetBackwardRegistrationQAParameters()->SetAndObserveFiducialNodeID(node->GetID());
         }
         else{
            pNode->SetAndObserveFiducialNodeID(node->GetID());
@@ -638,10 +638,10 @@ void qSlicerRegQAModuleWidget::fixedFiducialChanged(vtkMRMLNode* node) {
         this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::movingFiducialChanged(vtkMRMLNode* node) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::movingFiducialChanged(vtkMRMLNode* node) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         
         if (!pNode || !this->mrmlScene() || !node) {
                 return;
@@ -653,22 +653,22 @@ void qSlicerRegQAModuleWidget::movingFiducialChanged(vtkMRMLNode* node) {
            
         }
         else{
-           pNode->GetBackwardRegQAParameters()->SetAndObserveFiducialNodeID(node->GetID());
+           pNode->GetBackwardRegistrationQAParameters()->SetAndObserveFiducialNodeID(node->GetID());
         }
         pNode->DisableModifiedEventOff();
         this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::onLogicModified() {
+void qSlicerRegistrationQAModuleWidget::onLogicModified() {
         this->updateWidgetFromMRML();
 }
-void qSlicerRegQAModuleWidget::setup() {
-	Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::setup() {
+	Q_D(qSlicerRegistrationQAModuleWidget);
 	d->setupUi(this);
 	this->Superclass::setup();
 	d->StillErrorLabel->setVisible(false);
 
-	connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegQAParametersNode(vtkMRMLNode*)));
+	connect(d->ParameterComboBox, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(setRegistrationQAParametersNode(vtkMRMLNode*)));
 	
 	connect(d->SaveScreenshotPushButton, SIGNAL(clicked()), this, SLOT(saveScreenshotClicked()));
 	connect(d->SaveOutputFilePushButton, SIGNAL(clicked()), this, SLOT(saveOutputFileClicked()));
@@ -699,24 +699,24 @@ void qSlicerRegQAModuleWidget::setup() {
 //-----------------------------------------------------------------------------
 // Create ROI around Segments
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::ROIaroundSegmentClicked() {
-   Q_D(const qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::ROIaroundSegmentClicked() {
+   Q_D(const qSlicerRegistrationQAModuleWidget);
    d->logic()->CreateROI();
 }
 //-----------------------------------------------------------------------------
 // Interchange forward and backward registration direction
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::RegistrationDirectionChanged() {
-   Q_D(const qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::RegistrationDirectionChanged() {
+   Q_D(const qSlicerRegistrationQAModuleWidget);
    d->logic()->UpdateRegistrationDirection();
    this->updateWidgetFromMRML();
 }
 //-----------------------------------------------------------------------------
 // Output File
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::saveScreenshotClicked() {
-        Q_D(const qSlicerRegQAModuleWidget);
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+void qSlicerRegistrationQAModuleWidget::saveScreenshotClicked() {
+        Q_D(const qSlicerRegistrationQAModuleWidget);
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
 
         if (! pNode->GetOutputDirectory() ) {
                 this->outputDirectoyChanged();
@@ -742,9 +742,9 @@ void qSlicerRegQAModuleWidget::saveScreenshotClicked() {
         QApplication::restoreOverrideCursor();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::saveOutputFileClicked() {
-        Q_D(const qSlicerRegQAModuleWidget);
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+void qSlicerRegistrationQAModuleWidget::saveOutputFileClicked() {
+        Q_D(const qSlicerRegistrationQAModuleWidget);
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
 
         
         
@@ -767,8 +767,8 @@ void qSlicerRegQAModuleWidget::saveOutputFileClicked() {
 //-----------------------------------------------------------------------------
 // Absolute Difference
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::absoluteDiffClicked() {
-        Q_D(const qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::absoluteDiffClicked() {
+        Q_D(const qSlicerRegistrationQAModuleWidget);
 
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
@@ -792,8 +792,8 @@ void qSlicerRegQAModuleWidget::absoluteDiffClicked() {
 //-----------------------------------------------------------------------------
 // Fiducials distance
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::fiducialClicked() {
-        Q_D(const qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::fiducialClicked() {
+        Q_D(const qSlicerRegistrationQAModuleWidget);
         
         //Check if we want to calculate reference or inverse distance
         int number = 4;
@@ -820,8 +820,8 @@ void qSlicerRegQAModuleWidget::fiducialClicked() {
 // False Color 1
 //-----------------------------------------------------------------------------
 
-void qSlicerRegQAModuleWidget::falseColor1Clicked() {
-        Q_D(const qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::falseColor1Clicked() {
+        Q_D(const qSlicerRegistrationQAModuleWidget);
         bool invertColor, matchLevels;
         
         if (d->ColorCheckBox->checkState() == 0) invertColor = false;
@@ -844,8 +844,8 @@ void qSlicerRegQAModuleWidget::falseColor1Clicked() {
 // False Color 2
 //-----------------------------------------------------------------------------
 
-void qSlicerRegQAModuleWidget::falseColor2Clicked() {
-        Q_D(const qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::falseColor2Clicked() {
+        Q_D(const qSlicerRegistrationQAModuleWidget);
         bool invertColor, matchLevels;
         
         if (d->ColorCheckBox->checkState() == 0) invertColor = false;
@@ -867,9 +867,9 @@ void qSlicerRegQAModuleWidget::falseColor2Clicked() {
 //-----------------------------------------------------------------------------
 // Checkerboard
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::checkerboardClicked(){
-        Q_D(const qSlicerRegQAModuleWidget);
-//      vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+void qSlicerRegistrationQAModuleWidget::checkerboardClicked(){
+        Q_D(const qSlicerRegistrationQAModuleWidget);
+//      vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
                 d->logic()->Checkerboard();
@@ -885,7 +885,7 @@ void qSlicerRegQAModuleWidget::checkerboardClicked(){
         QApplication::restoreOverrideCursor();
 }
 
-void qSlicerRegQAModuleWidget::flickerToggle(){
+void qSlicerRegistrationQAModuleWidget::flickerToggle(){
         if(!flickerTimer->isActive()) {
 //              cerr << "Starting timer" << endl;
                 flickerToggle1();
@@ -897,12 +897,12 @@ void qSlicerRegQAModuleWidget::flickerToggle(){
 }
 
 // TODO: Move this to Logic
-void qSlicerRegQAModuleWidget::flickerToggle1(){
-        Q_D(const qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::flickerToggle1(){
+        Q_D(const qSlicerRegistrationQAModuleWidget);
 
 //      cerr << "Timer timeout" << endl;
-        vtkSlicerRegQALogic *logic = d->logic();
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkSlicerRegistrationQALogic *logic = d->logic();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
 
         if (pNode->GetFlickerOpacity()!=0 && pNode->GetFlickerOpacity()!=1) {
                 pNode->SetFlickerOpacity(1);
@@ -922,10 +922,10 @@ void qSlicerRegQAModuleWidget::flickerToggle1(){
         }
 }
 
-void qSlicerRegQAModuleWidget::movieToggle(){
-        Q_D(const qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::movieToggle(){
+        Q_D(const qSlicerRegistrationQAModuleWidget);
 
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         
         //Alternate between start and stop
         pNode->DisableModifiedEventOn();
@@ -939,16 +939,16 @@ void qSlicerRegQAModuleWidget::movieToggle(){
         }
         pNode->DisableModifiedEventOff();
 
-        vtkSlicerRegQALogic *logic = d->logic();
+        vtkSlicerRegistrationQALogic *logic = d->logic();
         logic->Movie();
         pNode->MovieRunOff();
         this->updateButtonsAndTable();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::movieBoxRedStateChanged(int state) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::movieBoxRedStateChanged(int state) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene()) {
                 return;
         }
@@ -958,10 +958,10 @@ void qSlicerRegQAModuleWidget::movieBoxRedStateChanged(int state) {
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::movieBoxYellowStateChanged(int state) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::movieBoxYellowStateChanged(int state) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene()) {
                 return;
         }
@@ -971,10 +971,10 @@ void qSlicerRegQAModuleWidget::movieBoxYellowStateChanged(int state) {
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::movieBoxGreenStateChanged(int state) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::movieBoxGreenStateChanged(int state) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene()) {
                 return;
         }
@@ -986,8 +986,8 @@ void qSlicerRegQAModuleWidget::movieBoxGreenStateChanged(int state) {
 //-----------------------------------------------------------------------------
 // Vector checks
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::jacobianClicked(){
-        Q_D(const qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::jacobianClicked(){
+        Q_D(const qSlicerRegistrationQAModuleWidget);
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
                 d->logic()->CalculateDIRQAFrom(2);
@@ -1004,8 +1004,8 @@ void qSlicerRegQAModuleWidget::jacobianClicked(){
         QApplication::restoreOverrideCursor();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::inverseConsistClicked(){
-        Q_D(const qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::inverseConsistClicked(){
+        Q_D(const qSlicerRegistrationQAModuleWidget);
 
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
@@ -1024,8 +1024,8 @@ void qSlicerRegQAModuleWidget::inverseConsistClicked(){
         QApplication::restoreOverrideCursor();
 }
 //-----------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::contourButtonClicked(){
-        Q_D(const qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::contourButtonClicked(){
+        Q_D(const qSlicerRegistrationQAModuleWidget);
 
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
@@ -1045,10 +1045,10 @@ void qSlicerRegQAModuleWidget::contourButtonClicked(){
         QApplication::restoreOverrideCursor();
 }
 //------------------------------------------------------------------------------
-void qSlicerRegQAModuleWidget::setCheckerboardPattern(int checkboardPattern) {
-        Q_D(qSlicerRegQAModuleWidget);
+void qSlicerRegistrationQAModuleWidget::setCheckerboardPattern(int checkboardPattern) {
+        Q_D(qSlicerRegistrationQAModuleWidget);
 
-        vtkMRMLRegQANode* pNode = d->logic()->GetRegQANode();
+        vtkMRMLRegistrationQANode* pNode = d->logic()->GetRegistrationQANode();
         if (!pNode || !this->mrmlScene()) {
                 return;
         }
@@ -1058,10 +1058,10 @@ void qSlicerRegQAModuleWidget::setCheckerboardPattern(int checkboardPattern) {
         pNode->DisableModifiedEventOff();
 }
 //-----------------------------------------------------------
-bool qSlicerRegQAModuleWidget::setEditedNode(
+bool qSlicerRegistrationQAModuleWidget::setEditedNode(
   vtkMRMLNode* node, QString role /* = QString()*/, QString context /* = QString() */)
 {
-//   Q_D(qSlicerRegQAModuleWidget);
+//   Q_D(qSlicerRegistrationQAModuleWidget);
   this->updateButtonsAndTable();
   return true;
 /*

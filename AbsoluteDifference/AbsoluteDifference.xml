@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>RegistrationQuality</category>
+  <category>Registration.Quality Assurance</category>
   <title>Absolute Difference</title>
-  <description><![CDATA[This is a CLI module (based on GaussianBlurImageFilter) bundled in an extension]]></description>
+  <description><![CDATA[This module calculates voxel-wise absolute difference between two images. It is a mean square root metric. Output is a image as absolute difference in voxel values.]]></description>
   <version>0.0.1</version>
   <documentation-url></documentation-url>
   <license>Slicer</license>
@@ -30,7 +30,7 @@
       <label>Output Volume</label>
       <channel>output</channel>
       <index>2</index>
-      <description><![CDATA[Squared Difference Volume]]></description>
+      <description><![CDATA[Absolute Difference Volume]]></description>
     </image>
     <region>
       <name>fixedImageROI</name>

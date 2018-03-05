@@ -1,20 +1,20 @@
-#ifndef __qSlicerRegQAModuleWidget_h
-#define __qSlicerRegQAModuleWidget_h
+#ifndef __qSlicerRegistrationQAModuleWidget_h
+#define __qSlicerRegistrationQAModuleWidget_h
 
 // SlicerQt includes
 #include "qSlicerAbstractModuleWidget.h"
 
-#include "qSlicerRegQAModuleExport.h"
+#include "qSlicerRegistrationQAModuleExport.h"
 
 #include <vtkMRMLVectorVolumeNode.h>
 #include <vtkMRMLGridTransformNode.h>
 
-class qSlicerRegQAModuleWidgetPrivate;
+class qSlicerRegistrationQAModuleWidgetPrivate;
 class vtkMRMLNode;
 class QMenu;
 
-/// \ingroup Slicer_QtModules_RegQA
-class Q_SLICER_QTMODULES_REGQA_EXPORT qSlicerRegQAModuleWidget :
+/// \ingroup Slicer_QtModules_RegistrationQA
+class Q_SLICER_QTMODULES_REGISTRATIONQA_EXPORT qSlicerRegistrationQAModuleWidget :
 	public qSlicerAbstractModuleWidget {
 
 	Q_OBJECT
@@ -22,8 +22,8 @@ class Q_SLICER_QTMODULES_REGQA_EXPORT qSlicerRegQAModuleWidget :
 
 public:
 	typedef qSlicerAbstractModuleWidget Superclass;
-	qSlicerRegQAModuleWidget(QWidget *parent=0);
-	virtual ~qSlicerRegQAModuleWidget();
+	qSlicerRegistrationQAModuleWidget(QWidget *parent=0);
+	virtual ~qSlicerRegistrationQAModuleWidget();
 
 	virtual void enter();
         virtual bool setEditedNode(vtkMRMLNode* node, QString role = QString(), QString context = QString());
@@ -32,7 +32,7 @@ public:
 public slots:
 	virtual void setMRMLScene(vtkMRMLScene*);
 	void onSceneImportedEvent();
-	void setRegQAParametersNode(vtkMRMLNode *node);
+	void setRegistrationQAParametersNode(vtkMRMLNode *node);
 	void updateWidgetFromMRML();
         
 
@@ -90,15 +90,15 @@ protected slots:
         void setCheckerboardPattern(int);
 
 protected:
-	QScopedPointer<qSlicerRegQAModuleWidgetPrivate> d_ptr;
+	QScopedPointer<qSlicerRegistrationQAModuleWidgetPrivate> d_ptr;
 	QTimer *flickerTimer;
 
 	virtual void setup();
 	void onEnter();
 
 private:
-	Q_DECLARE_PRIVATE(qSlicerRegQAModuleWidget);
-	Q_DISABLE_COPY(qSlicerRegQAModuleWidget);
+	Q_DECLARE_PRIVATE(qSlicerRegistrationQAModuleWidget);
+	Q_DISABLE_COPY(qSlicerRegistrationQAModuleWidget);
 };
 
 #endif

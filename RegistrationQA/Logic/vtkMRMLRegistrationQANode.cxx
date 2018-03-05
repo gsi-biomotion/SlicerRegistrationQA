@@ -1,4 +1,4 @@
-#include "vtkMRMLRegQANode.h"
+#include "vtkMRMLRegistrationQANode.h"
 
 // VTK includes
 #include <vtkCommand.h>
@@ -14,13 +14,13 @@
 
 //----------------------------------------------------------------------------
 static const char* SEGMENTATION_REFERENCE_ROLE = "fixedSegmentationRef";
-static const char* REGQA_TABLE_REFERENCE_ROLE = "regQATableRef";
+static const char* RegistrationQA_TABLE_REFERENCE_ROLE = "regQATableRef";
 static const char* BACKWARD_REGNODE_REFERENCE_ROLE = "backwardRegNodeRef";
 //----------------------------------------------------------------------------
-vtkMRMLNodeNewMacro(vtkMRMLRegQANode);
+vtkMRMLNodeNewMacro(vtkMRMLRegistrationQANode);
 
 //----------------------------------------------------------------------------
-vtkMRMLRegQANode::vtkMRMLRegQANode() {
+vtkMRMLRegistrationQANode::vtkMRMLRegistrationQANode() {
 
 	this->VectorVolumeNodeID = NULL;
 	this->TransformNodeID = NULL;
@@ -59,7 +59,7 @@ vtkMRMLRegQANode::vtkMRMLRegQANode() {
 
 }
 //----------------------------------------------------------------------------
-vtkMRMLRegQANode::~vtkMRMLRegQANode() {
+vtkMRMLRegistrationQANode::~vtkMRMLRegistrationQANode() {
 	this->SetVectorVolumeNodeID(NULL);
 	this->SetTransformNodeID(NULL);
 	this->SetVolumeNodeID(NULL);
@@ -77,10 +77,10 @@ vtkMRMLRegQANode::~vtkMRMLRegQANode() {
         this->SetWarpedColorNodeID(NULL);
 }
 //----------------------------------------------------------------------------
-bool vtkMRMLRegQANode::ChangeFromBackwardToFoward(){
+bool vtkMRMLRegistrationQANode::ChangeFromBackwardToFoward(){
         
 
-   vtkMRMLRegQANode *backNode = this->GetBackwardRegQAParameters();
+   vtkMRMLRegistrationQANode *backNode = this->GetBackwardRegistrationQAParameters();
    
    if ( backNode == NULL ){
       return false;
@@ -89,7 +89,7 @@ bool vtkMRMLRegQANode::ChangeFromBackwardToFoward(){
    this->SetOutputDirectory(backNode->GetOutputDirectory());
    this->SetROINodeID(backNode->GetROINodeID());
    this->SetOutputModelNodeID(backNode->GetOutputModelNodeID());
-   this->SetAndObserveRegQATableNode(backNode->GetRegQATableNode());
+   this->SetAndObserveRegistrationQATableNode(backNode->GetRegistrationQATableNode());
 
    this->CheckerboardPattern=backNode->CheckerboardPattern;
    this->FlickerOpacity = backNode->FlickerOpacity;
@@ -106,8 +106,8 @@ bool vtkMRMLRegQANode::ChangeFromBackwardToFoward(){
    return true;
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::ReadXMLAttributes(const char** atts) {
-	std::cerr << "Reading RegQA parameter node" << std::endl;
+void vtkMRMLRegistrationQANode::ReadXMLAttributes(const char** atts) {
+	std::cerr << "Reading RegistrationQA parameter node" << std::endl;
 	Superclass::ReadXMLAttributes(atts);
 
 	const char* attName;
@@ -190,7 +190,7 @@ void vtkMRMLRegQANode::ReadXMLAttributes(const char** atts) {
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::WriteXML(ostream& of, int nIndent) {
+void vtkMRMLRegistrationQANode::WriteXML(ostream& of, int nIndent) {
 	Superclass::WriteXML(of, nIndent);
 	vtkIndent indent(nIndent);
 
@@ -226,9 +226,9 @@ void vtkMRMLRegQANode::WriteXML(ostream& of, int nIndent) {
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::Copy(vtkMRMLNode *anode) {
+void vtkMRMLRegistrationQANode::Copy(vtkMRMLNode *anode) {
 	Superclass::Copy(anode);
-	vtkMRMLRegQANode *node = vtkMRMLRegQANode::SafeDownCast(anode);
+	vtkMRMLRegistrationQANode *node = vtkMRMLRegistrationQANode::SafeDownCast(anode);
 	this->DisableModifiedEventOn();
 
 	this->SetVectorVolumeNodeID(node->GetVectorVolumeNodeID());
@@ -260,7 +260,7 @@ void vtkMRMLRegQANode::Copy(vtkMRMLNode *anode) {
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::UpdateReferenceID(const char *oldID, const char *newID) {
+void vtkMRMLRegistrationQANode::UpdateReferenceID(const char *oldID, const char *newID) {
 	if (this->VectorVolumeNodeID && !strcmp(oldID, this->VectorVolumeNodeID)) {
 		this->SetAndObserveVectorVolumeNodeID(newID);
 	}
@@ -273,7 +273,7 @@ void vtkMRMLRegQANode::UpdateReferenceID(const char *oldID, const char *newID) {
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveVectorVolumeNodeID(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveVectorVolumeNodeID(const char* id) {
 	if (this->VectorVolumeNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->VectorVolumeNodeID, this);
 	}
@@ -284,7 +284,7 @@ void vtkMRMLRegQANode::SetAndObserveVectorVolumeNodeID(const char* id) {
 	}
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveTransformNodeID(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveTransformNodeID(const char* id) {
 	if (this->TransformNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->TransformNodeID, this);
 	}
@@ -295,7 +295,7 @@ void vtkMRMLRegQANode::SetAndObserveTransformNodeID(const char* id) {
 	}
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveVolumeNodeID(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveVolumeNodeID(const char* id) {
 	if (this->VolumeNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->VolumeNodeID, this);
 	}
@@ -307,7 +307,7 @@ void vtkMRMLRegQANode::SetAndObserveVolumeNodeID(const char* id) {
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveWarpedVolumeNodeID(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveWarpedVolumeNodeID(const char* id) {
 	if (this->WarpedVolumeNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->WarpedVolumeNodeID, this);
 	}
@@ -318,28 +318,28 @@ void vtkMRMLRegQANode::SetAndObserveWarpedVolumeNodeID(const char* id) {
 	}
 }
 //----------------------------------------------------------------------------
-vtkMRMLSegmentationNode* vtkMRMLRegQANode::GetSegmentationNode()
+vtkMRMLSegmentationNode* vtkMRMLRegistrationQANode::GetSegmentationNode()
 {
   return vtkMRMLSegmentationNode::SafeDownCast( this->GetNodeReference(SEGMENTATION_REFERENCE_ROLE) );
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveSegmentationNode(vtkMRMLSegmentationNode* node)
+void vtkMRMLRegistrationQANode::SetAndObserveSegmentationNode(vtkMRMLSegmentationNode* node)
 {
   this->SetNodeReferenceID(SEGMENTATION_REFERENCE_ROLE, (node ? node->GetID() : NULL));
 }
 //----------------------------------------------------------------------------
-vtkMRMLTableNode* vtkMRMLRegQANode::GetRegQATableNode()
+vtkMRMLTableNode* vtkMRMLRegistrationQANode::GetRegistrationQATableNode()
 {
-  return vtkMRMLTableNode::SafeDownCast( this->GetNodeReference(REGQA_TABLE_REFERENCE_ROLE) );
+  return vtkMRMLTableNode::SafeDownCast( this->GetNodeReference(RegistrationQA_TABLE_REFERENCE_ROLE) );
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveRegQATableNode(vtkMRMLTableNode* node)
+void vtkMRMLRegistrationQANode::SetAndObserveRegistrationQATableNode(vtkMRMLTableNode* node)
 {
-  this->SetNodeReferenceID(REGQA_TABLE_REFERENCE_ROLE, (node ? node->GetID() : NULL));
+  this->SetNodeReferenceID(RegistrationQA_TABLE_REFERENCE_ROLE, (node ? node->GetID() : NULL));
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveOutputDirectory(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveOutputDirectory(const char* id) {
 	if (this->OutputDirectory) {
 		this->Scene->RemoveReferencedNodeID(this->OutputDirectory, this);
 	}
@@ -350,7 +350,7 @@ void vtkMRMLRegQANode::SetAndObserveOutputDirectory(const char* id) {
 	}
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveROINodeID(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveROINodeID(const char* id) {
 	if (this->ROINodeID) {
 		this->Scene->RemoveReferencedNodeID(this->ROINodeID, this);
 	}
@@ -361,7 +361,7 @@ void vtkMRMLRegQANode::SetAndObserveROINodeID(const char* id) {
 	}
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveFiducialNodeID(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveFiducialNodeID(const char* id) {
 	if (this->FiducialNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->FiducialNodeID, this);
 	}
@@ -372,7 +372,7 @@ void vtkMRMLRegQANode::SetAndObserveFiducialNodeID(const char* id) {
 	}
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveOutputModelNodeID(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveOutputModelNodeID(const char* id) {
         if (this->OutputModelNodeID) {
                 this->Scene->RemoveReferencedNodeID(this->OutputModelNodeID, this);
         }
@@ -383,7 +383,7 @@ void vtkMRMLRegQANode::SetAndObserveOutputModelNodeID(const char* id) {
         }
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveCheckerboardVolumeNodeID(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveCheckerboardVolumeNodeID(const char* id) {
 	if (this->CheckerboardVolumeNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->CheckerboardVolumeNodeID, this);
 	}
@@ -395,7 +395,7 @@ void vtkMRMLRegQANode::SetAndObserveCheckerboardVolumeNodeID(const char* id) {
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveAbsoluteDiffVolumeNodeID(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveAbsoluteDiffVolumeNodeID(const char* id) {
 	if (this->AbsoluteDiffVolumeNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->AbsoluteDiffVolumeNodeID, this);
 	}
@@ -407,7 +407,7 @@ void vtkMRMLRegQANode::SetAndObserveAbsoluteDiffVolumeNodeID(const char* id) {
 }
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveJacobianVolumeNodeID(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveJacobianVolumeNodeID(const char* id) {
 	if (this->JacobianVolumeNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->JacobianVolumeNodeID, this);
 	}
@@ -419,7 +419,7 @@ void vtkMRMLRegQANode::SetAndObserveJacobianVolumeNodeID(const char* id) {
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveInverseConsistVolumeNodeID(const char* id) {
+void vtkMRMLRegistrationQANode::SetAndObserveInverseConsistVolumeNodeID(const char* id) {
 	if (this->InverseConsistVolumeNodeID) {
 		this->Scene->RemoveReferencedNodeID(this->InverseConsistVolumeNodeID, this);
 	}
@@ -430,17 +430,17 @@ void vtkMRMLRegQANode::SetAndObserveInverseConsistVolumeNodeID(const char* id) {
 	}
 }
 //----------------------------------------------------------------------------
-vtkMRMLRegQANode* vtkMRMLRegQANode::GetBackwardRegQAParameters()
+vtkMRMLRegistrationQANode* vtkMRMLRegistrationQANode::GetBackwardRegistrationQAParameters()
 {
-  return vtkMRMLRegQANode::SafeDownCast( this->GetNodeReference(BACKWARD_REGNODE_REFERENCE_ROLE) );
+  return vtkMRMLRegistrationQANode::SafeDownCast( this->GetNodeReference(BACKWARD_REGNODE_REFERENCE_ROLE) );
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::SetAndObserveBackwardRegQAParameters(vtkMRMLRegQANode* node)
+void vtkMRMLRegistrationQANode::SetAndObserveBackwardRegistrationQAParameters(vtkMRMLRegistrationQANode* node)
 {
   this->SetNodeReferenceID(BACKWARD_REGNODE_REFERENCE_ROLE, (node ? node->GetID() : NULL));
 }
 //----------------------------------------------------------------------------
-void vtkMRMLRegQANode::PrintSelf(ostream& os, vtkIndent indent){
+void vtkMRMLRegistrationQANode::PrintSelf(ostream& os, vtkIndent indent){
 	Superclass::PrintSelf(os,indent);
 
 	os << indent << " VectorVolumeNodeID = "

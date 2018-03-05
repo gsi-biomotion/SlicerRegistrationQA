@@ -1,6 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 	<qresource>
-		<file>Icons/RegQAIcon.png</file>
+		<file>Icons/RegistrationQAIcon.png</file>
 		<file>Icons/GlyphIcon.png</file>
 		<file>Icons/GridIcon.png</file>
 		<file>Icons/BlockIcon.png</file>

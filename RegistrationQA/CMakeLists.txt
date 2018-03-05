@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 2.8.7)
 
 #-----------------------------------------------------------------------------
-set(MODULE_NAME RegQA)
-set(MODULE_TITLE "Registration Quality Assurance Module")
+set(MODULE_NAME RegistrationQA)
+set(MODULE_TITLE "Registration Quality Assurance")
 
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
 #-----------------------------------------------------------------------------
 # find_package(Plastimatch QUIET PATHS ${Plastimatch_DIR} NO_DEFAULT_PATH)
 # if(NOT Plastimatch_FOUND)
-#   message("Plastimatch library is not found. RegQA module will not be built.")
+#   message("Plastimatch library is not found. RegistrationQA module will not be built.")
 #   return()
 # endif() 
 

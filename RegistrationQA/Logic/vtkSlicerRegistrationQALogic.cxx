@@ -1,7 +1,7 @@
-#include "vtkSlicerRegQALogic.h"
+#include "vtkSlicerRegistrationQALogic.h"
 
-// RegQA includes
-#include "vtkMRMLRegQANode.h"
+// RegistrationQA includes
+#include "vtkMRMLRegistrationQANode.h"
 
 // SlicerQt Includes
 #include "qSlicerApplication.h"
@@ -19,11 +19,13 @@
 
 // MRML includes
 #include <vtkMRMLVectorVolumeNode.h>
+#include <vtkMRMLLabelMapVolumeNode.h>
 #include <vtkMRMLVectorVolumeDisplayNode.h>
 #include <vtkMRMLModelDisplayNode.h>
 #include <vtkMRMLScalarVolumeDisplayNode.h>
 #include <vtkMRMLAnnotationROINode.h>
 #include <vtkMRMLSegmentationNode.h>
+#include <vtkSlicerSegmentationsModuleLogic.h>
 #include <vtkMRMLSegmentationDisplayNode.h>
 #include <vtkMRMLSegmentationStorageNode.h>
 #include <vtkMRMLModelNode.h>
@@ -93,66 +95,66 @@
 #include <QStandardItemModel>
 
 // constants
-const std::string vtkSlicerRegQALogic::ITEMID = "_itemID";
-const std::string vtkSlicerRegQALogic::INVERSE = "Inverse";
-const std::string vtkSlicerRegQALogic::IMAGE = "Image";
-const std::string vtkSlicerRegQALogic::WARPED_IMAGE = "WarpedImage";
-const std::string vtkSlicerRegQALogic::VECTOR_FIELD = "VectorField";
-const std::string vtkSlicerRegQALogic::TRANSFORM = "Transform";
-const std::string vtkSlicerRegQALogic::ABSOLUTEDIFFERENCE = "AbsDiff";
-const std::string vtkSlicerRegQALogic::JACOBIAN = "Jacobian";
-const std::string vtkSlicerRegQALogic::INVERSECONSISTENCY = "InvConsist";
-const std::string vtkSlicerRegQALogic::REFIMAGEID = "ReferenceImageItemID";
-const std::string vtkSlicerRegQALogic::REGISTRATION_TYPE = "RegistrationType";
-const std::string vtkSlicerRegQALogic::PHASENUMBER = "PhaseNumber";
-const std::string vtkSlicerRegQALogic::PHASETYPE= "Phase";
-const std::string vtkSlicerRegQALogic::CT= "CT";
-const std::string vtkSlicerRegQALogic::ROI= "ROI";
-const std::string vtkSlicerRegQALogic::ROIITEMID= "ROI" + ITEMID;
-const std::string vtkSlicerRegQALogic::DIR = "DIR";
-const std::string vtkSlicerRegQALogic::FILEPATH = "FilePath";
-const std::string vtkSlicerRegQALogic::FIXEDIMAGEID = "FixedImage" + ITEMID;
-const std::string vtkSlicerRegQALogic::MOVINGIMAGEID = "MovingImage" + ITEMID;
-const std::string vtkSlicerRegQALogic::NODEITEMID = "Node" + ITEMID;
-const std::string vtkSlicerRegQALogic::VECTORITEMID = VECTOR_FIELD + ITEMID;
-const std::string vtkSlicerRegQALogic::TRANSFORMITEMID = TRANSFORM + ITEMID;
-const std::string vtkSlicerRegQALogic::ABSDIFFNODEITEMID = ABSOLUTEDIFFERENCE + ITEMID;
-const std::string vtkSlicerRegQALogic::JACOBIANITEMID = JACOBIAN + ITEMID;
-const std::string vtkSlicerRegQALogic::INVERSECONSISTENCYITEMID = INVERSECONSISTENCY + ITEMID;
-const std::string vtkSlicerRegQALogic::TABLE = "_table";
-const std::string vtkSlicerRegQALogic::ABSDIFFTABLE = ABSOLUTEDIFFERENCE + TABLE;
-const std::string vtkSlicerRegQALogic::JACOBIANTABLE = JACOBIAN + TABLE;
-const std::string vtkSlicerRegQALogic::INVCONSISTTABLE = INVERSECONSISTENCY + TABLE;
-const std::string vtkSlicerRegQALogic::FIDUCIAL = "Fiducial";
-const std::string vtkSlicerRegQALogic::FIDUCIALTABLE = FIDUCIAL + TABLE;
-const std::string vtkSlicerRegQALogic::REFERENCENUMBER = "ReferenceNumber";
-const std::string vtkSlicerRegQALogic::TRIPVF = "TRiP_vf";
-const std::string vtkSlicerRegQALogic::BACKWARD = "BackwardReg";
-const std::string vtkSlicerRegQALogic::REGQANODEID = "RegQualityNodeID";
+const std::string vtkSlicerRegistrationQALogic::ITEMID = "_itemID";
+const std::string vtkSlicerRegistrationQALogic::INVERSE = "Inverse";
+const std::string vtkSlicerRegistrationQALogic::IMAGE = "Image";
+const std::string vtkSlicerRegistrationQALogic::WARPED_IMAGE = "WarpedImage";
+const std::string vtkSlicerRegistrationQALogic::VECTOR_FIELD = "VectorField";
+const std::string vtkSlicerRegistrationQALogic::TRANSFORM = "Transform";
+const std::string vtkSlicerRegistrationQALogic::ABSOLUTEDIFFERENCE = "AbsDiff";
+const std::string vtkSlicerRegistrationQALogic::JACOBIAN = "Jacobian";
+const std::string vtkSlicerRegistrationQALogic::INVERSECONSISTENCY = "InvConsist";
+const std::string vtkSlicerRegistrationQALogic::REFIMAGEID = "ReferenceImageItemID";
+const std::string vtkSlicerRegistrationQALogic::REGISTRATION_TYPE = "RegistrationType";
+const std::string vtkSlicerRegistrationQALogic::PHASENUMBER = "PhaseNumber";
+const std::string vtkSlicerRegistrationQALogic::PHASETYPE= "Phase";
+const std::string vtkSlicerRegistrationQALogic::CT= "CT";
+const std::string vtkSlicerRegistrationQALogic::ROI= "ROI";
+const std::string vtkSlicerRegistrationQALogic::ROIITEMID= "ROI" + ITEMID;
+const std::string vtkSlicerRegistrationQALogic::DIR = "DIR";
+const std::string vtkSlicerRegistrationQALogic::FILEPATH = "FilePath";
+const std::string vtkSlicerRegistrationQALogic::FIXEDIMAGEID = "FixedImage" + ITEMID;
+const std::string vtkSlicerRegistrationQALogic::MOVINGIMAGEID = "MovingImage" + ITEMID;
+const std::string vtkSlicerRegistrationQALogic::NODEITEMID = "Node" + ITEMID;
+const std::string vtkSlicerRegistrationQALogic::VECTORITEMID = VECTOR_FIELD + ITEMID;
+const std::string vtkSlicerRegistrationQALogic::TRANSFORMITEMID = TRANSFORM + ITEMID;
+const std::string vtkSlicerRegistrationQALogic::ABSDIFFNODEITEMID = ABSOLUTEDIFFERENCE + ITEMID;
+const std::string vtkSlicerRegistrationQALogic::JACOBIANITEMID = JACOBIAN + ITEMID;
+const std::string vtkSlicerRegistrationQALogic::INVERSECONSISTENCYITEMID = INVERSECONSISTENCY + ITEMID;
+const std::string vtkSlicerRegistrationQALogic::TABLE = "_table";
+const std::string vtkSlicerRegistrationQALogic::ABSDIFFTABLE = ABSOLUTEDIFFERENCE + TABLE;
+const std::string vtkSlicerRegistrationQALogic::JACOBIANTABLE = JACOBIAN + TABLE;
+const std::string vtkSlicerRegistrationQALogic::INVCONSISTTABLE = INVERSECONSISTENCY + TABLE;
+const std::string vtkSlicerRegistrationQALogic::FIDUCIAL = "Fiducial";
+const std::string vtkSlicerRegistrationQALogic::FIDUCIALTABLE = FIDUCIAL + TABLE;
+const std::string vtkSlicerRegistrationQALogic::REFERENCENUMBER = "ReferenceNumber";
+const std::string vtkSlicerRegistrationQALogic::TRIPVF = "TRiP_vf";
+const std::string vtkSlicerRegistrationQALogic::BACKWARD = "BackwardReg";
+const std::string vtkSlicerRegistrationQALogic::RegistrationQANODEID = "RegQualityNodeID";
 //----------------------------------------------------------------------------
-vtkStandardNewMacro(vtkSlicerRegQALogic);
+vtkStandardNewMacro(vtkSlicerRegistrationQALogic);
 
 //----------------------------------------------------------------------------
-vtkSlicerRegQALogic::vtkSlicerRegQALogic() {
-	this->RegQANode = NULL;
+vtkSlicerRegistrationQALogic::vtkSlicerRegistrationQALogic() {
+	this->RegistrationQANode = NULL;
 }
 
 //----------------------------------------------------------------------------
-vtkSlicerRegQALogic::~vtkSlicerRegQALogic() {
-	vtkSetAndObserveMRMLNodeMacro(this->RegQANode, NULL);
+vtkSlicerRegistrationQALogic::~vtkSlicerRegistrationQALogic() {
+	vtkSetAndObserveMRMLNodeMacro(this->RegistrationQANode, NULL);
 }
 //----------------------------------------------------------------------------
-void vtkSlicerRegQALogic::PrintSelf(ostream& os, vtkIndent indent) {
+void vtkSlicerRegistrationQALogic::PrintSelf(ostream& os, vtkIndent indent) {
 	this->Superclass::PrintSelf(os, indent);
 }
 //----------------------------------------------------------------------------
-void vtkSlicerRegQALogic
-::SetAndObserveRegQANode(vtkMRMLRegQANode *node) {
-	vtkSetAndObserveMRMLNodeMacro(this->RegQANode, node);
+void vtkSlicerRegistrationQALogic
+::SetAndObserveRegistrationQANode(vtkMRMLRegistrationQANode *node) {
+	vtkSetAndObserveMRMLNodeMacro(this->RegistrationQANode, node);
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::SetMRMLSceneInternal(vtkMRMLScene * newScene) {
+void vtkSlicerRegistrationQALogic::SetMRMLSceneInternal(vtkMRMLScene * newScene) {
 	vtkNew<vtkIntArray> events;
 	events->InsertNextValue(vtkMRMLScene::NodeAddedEvent);
 	events->InsertNextValue(vtkMRMLScene::NodeRemovedEvent);
@@ -161,21 +163,21 @@ void vtkSlicerRegQALogic::SetMRMLSceneInternal(vtkMRMLScene * newScene) {
 }
 
 //-----------------------------------------------------------------------------
-void vtkSlicerRegQALogic::RegisterNodes() {
+void vtkSlicerRegistrationQALogic::RegisterNodes() {
 	vtkMRMLScene* scene = this->GetMRMLScene();
 	assert(scene != 0);
 
-	scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLRegQANode>::New());
+	scene->RegisterNodeClass(vtkSmartPointer<vtkMRMLRegistrationQANode>::New());
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::UpdateFromMRMLScene() {
+void vtkSlicerRegistrationQALogic::UpdateFromMRMLScene() {
 	assert(this->GetMRMLScene() != 0);
 	this->Modified();
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node) {
+void vtkSlicerRegistrationQALogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node) {
 	if (!node || !this->GetMRMLScene()) {
 		return;
 	}
@@ -184,13 +186,13 @@ void vtkSlicerRegQALogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node) {
 		node->IsA("vtkMRMLLinearTransformNode") ||
 		node->IsA("vtkMRMLGridTransformNode") ||
 		node->IsA("vtkMRMLBSplineTransformNode") ||
-		node->IsA("vtkMRMLRegQANode")) {
+		node->IsA("vtkMRMLRegistrationQANode")) {
 		this->Modified();
 	}
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node) {
+void vtkSlicerRegistrationQALogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node) {
 	if (!node || !this->GetMRMLScene()) {
 		return;
 	}
@@ -199,45 +201,45 @@ void vtkSlicerRegQALogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node) {
 		node->IsA("vtkMRMLLinearTransformNode") ||
 		node->IsA("vtkMRMLGridTransformNode") ||
 		node->IsA("vtkMRMLBSplineTransformNode") ||
-		node->IsA("vtkMRMLRegQANode")) {
+		node->IsA("vtkMRMLRegistrationQANode")) {
 		this->Modified();
 	}
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::OnMRMLSceneEndImport() {
+void vtkSlicerRegistrationQALogic::OnMRMLSceneEndImport() {
 	//Select parameter node if it exists
-	vtkSmartPointer<vtkMRMLRegQANode> paramNode = NULL;
+	vtkSmartPointer<vtkMRMLRegistrationQANode> paramNode = NULL;
 	vtkSmartPointer<vtkMRMLNode> node = this->GetMRMLScene()->GetNthNodeByClass(
-			0, "vtkMRMLRegQANode");
+			0, "vtkMRMLRegistrationQANode");
 
 	if (node) {
-		paramNode = vtkMRMLRegQANode::SafeDownCast(node);
-		vtkSetAndObserveMRMLNodeMacro(this->RegQANode, paramNode);
+		paramNode = vtkMRMLRegistrationQANode::SafeDownCast(node);
+		vtkSetAndObserveMRMLNodeMacro(this->RegistrationQANode, paramNode);
 	}
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::OnMRMLSceneEndClose() {
+void vtkSlicerRegistrationQALogic::OnMRMLSceneEndClose() {
 	this->Modified();
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::CreateBackwardParameters(vtkMRMLRegQANode* node){
+void vtkSlicerRegistrationQALogic::CreateBackwardParameters(vtkMRMLRegistrationQANode* node){
    if (!node){
       vtkErrorMacro("CreateBackwardParameters: Invalid registration quality node!");
       return;
    }
    
-   vtkSmartPointer<vtkMRMLRegQANode> backNode = 
-         vtkSmartPointer<vtkMRMLRegQANode>::New();
+   vtkSmartPointer<vtkMRMLRegistrationQANode> backNode = 
+         vtkSmartPointer<vtkMRMLRegistrationQANode>::New();
    std::string outSS;
    std::string addName("_backward");
    outSS = node->GetName() + addName;
    std::string nameNode = this->GetMRMLScene()->GenerateUniqueName(outSS);
    backNode->SetName(nameNode.c_str());
    this->GetMRMLScene()->AddNode(backNode);
-   backNode->SetAndObserveBackwardRegQAParameters(node);
-   node->SetAndObserveBackwardRegQAParameters(backNode);
+   backNode->SetAndObserveBackwardRegistrationQAParameters(node);
+   node->SetAndObserveBackwardRegistrationQAParameters(backNode);
    
    backNode->Modified();
    
@@ -249,18 +251,18 @@ void vtkSlicerRegQALogic::CreateBackwardParameters(vtkMRMLRegQANode* node){
    backNode->BackwardRegistrationOn();
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::UpdateRegistrationDirection(){
-   if (!this->GetMRMLScene() || !this->RegQANode) {
+void vtkSlicerRegistrationQALogic::UpdateRegistrationDirection(){
+   if (!this->GetMRMLScene() || !this->RegistrationQANode) {
       vtkErrorMacro("UpdateRegistrationDirection: Invalid scene or parameter set node!");
       return;
    }
    
-   vtkSmartPointer<vtkMRMLRegQANode> pNode = this->RegQANode;
+   vtkSmartPointer<vtkMRMLRegistrationQANode> pNode = this->RegistrationQANode;
    
    // Look at the node and change directions
    if ( !pNode->GetBackwardRegistration() ) {
       // Create backward parameters, if not there yet
-      vtkSmartPointer<vtkMRMLRegQANode> backNode = pNode->GetBackwardRegQAParameters();
+      vtkSmartPointer<vtkMRMLRegistrationQANode> backNode = pNode->GetBackwardRegistrationQAParameters();
       if ( backNode == NULL ){
          this->CreateBackwardParameters(pNode);
       }
@@ -269,12 +271,12 @@ void vtkSlicerRegQALogic::UpdateRegistrationDirection(){
          return;
       }
       backNode->BackwardRegistrationOn();
-      this->SetAndObserveRegQANode(backNode);
+      this->SetAndObserveRegistrationQANode(backNode);
    }
    else{
       //Change only from backward registration
       // Backward Parameters must already exist, since they were the first ones
-      vtkSmartPointer<vtkMRMLRegQANode> forwardNode = pNode->GetBackwardRegQAParameters();
+      vtkSmartPointer<vtkMRMLRegistrationQANode> forwardNode = pNode->GetBackwardRegistrationQAParameters();
       if ( forwardNode == NULL ){
          vtkErrorMacro("Forward parameter doesn't exist");
          return;
@@ -284,29 +286,29 @@ void vtkSlicerRegQALogic::UpdateRegistrationDirection(){
          return;
       }
       forwardNode->BackwardRegistrationOff();
-      this->SetAndObserveRegQANode(forwardNode);
+      this->SetAndObserveRegistrationQANode(forwardNode);
    }
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::SaveScreenshot(const char* description) {
-	if (!this->GetMRMLScene() || !this->RegQANode) {
+void vtkSlicerRegistrationQALogic::SaveScreenshot(const char* description) {
+	if (!this->GetMRMLScene() || !this->RegistrationQANode) {
 	    vtkErrorMacro("SaveScreenshot: Invalid scene or parameter set node!");
 	    return;
 	}
 	
-	if (!this->RegQANode->GetOutputDirectory()) {
+	if (!this->RegistrationQANode->GetOutputDirectory()) {
 		vtkErrorMacro("SaveScreenshot: No output Directory!");
 		return;
 	}
 	
-	int screenShotNumber = this->RegQANode->GetNumberOfScreenshots();
+	int screenShotNumber = this->RegistrationQANode->GetNumberOfScreenshots();
 	std::ostringstream convert;
 	convert << screenShotNumber;
 	std::string outSS;
 	std::string Name("Screenshot_");
 	outSS = Name + convert.str();
 	
-	std::string directory = this->RegQANode->GetOutputDirectory();
+	std::string directory = this->RegistrationQANode->GetOutputDirectory();
 
 	
 	//Add snapshot node
@@ -361,14 +363,14 @@ void vtkSlicerRegQALogic::SaveScreenshot(const char* description) {
 	
 	//Increase screen shot number
 	screenShotNumber += 1;
-	this->RegQANode->DisableModifiedEventOn();
-	this->RegQANode->SetNumberOfScreenshots(screenShotNumber);
-	this->RegQANode->DisableModifiedEventOff();
+	this->RegistrationQANode->DisableModifiedEventOn();
+	this->RegistrationQANode->SetNumberOfScreenshots(screenShotNumber);
+	this->RegistrationQANode->DisableModifiedEventOff();
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::CalculateDIRQAFrom(int number){
+void vtkSlicerRegistrationQALogic::CalculateDIRQAFrom(int number){
   // 1. AbsoluteDifference, 2. Jacobian, 3. InverseConsistency, 4. Fiducial Distance
-  if (!this->GetMRMLScene() || !this->RegQANode) {
+  if (!this->GetMRMLScene() || !this->RegistrationQANode) {
 	    vtkErrorMacro("CalculateDIRQAFrom: Invalid scene or parameter set node!");
 	    return;   
   }
@@ -378,7 +380,7 @@ void vtkSlicerRegQALogic::CalculateDIRQAFrom(int number){
     return;
   }
   
-  vtkMRMLRegQANode* pNode = this->RegQANode;
+  vtkMRMLRegistrationQANode* pNode = this->RegistrationQANode;
   vtkMRMLScene* scene = this->GetMRMLScene();
   
   // Color table node id:
@@ -463,7 +465,7 @@ void vtkSlicerRegQALogic::CalculateDIRQAFrom(int number){
                              pNode->GetFiducialNodeID()));
      vtkMRMLMarkupsFiducialNode *movingFiducials = vtkMRMLMarkupsFiducialNode::SafeDownCast(
                      scene->GetNodeByID(
-                             pNode->GetBackwardRegQAParameters()->GetFiducialNodeID()));
+                             pNode->GetBackwardRegistrationQAParameters()->GetFiducialNodeID()));
      vtkMRMLTransformNode *transform;
      if (number == 4){
              transform = vtkMRMLTransformNode::SafeDownCast(scene->GetNodeByID(
@@ -490,7 +492,7 @@ void vtkSlicerRegQALogic::CalculateDIRQAFrom(int number){
   }
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::CalculateContourStatistic() {
+void vtkSlicerRegistrationQALogic::CalculateContourStatistic() {
 
    if (!this->GetMRMLScene() ) {
       vtkErrorMacro("CalculateContourStatistic: Invalid scene or parameter set node!");
@@ -504,11 +506,11 @@ void vtkSlicerRegQALogic::CalculateContourStatistic() {
    double statisticValues[4];
    
    transform = vtkMRMLTransformNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(
-                       this->RegQANode->GetTransformNodeID()));
+                       this->RegistrationQANode->GetTransformNodeID()));
    // Check if we have vector fields that can be changed in transform
    if ( transform == NULL ) {
       vtkSmartPointer<vtkMRMLVectorVolumeNode> vectorNode = vtkMRMLVectorVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(
-                       this->RegQANode->GetVectorVolumeNodeID()));
+                       this->RegistrationQANode->GetVectorVolumeNodeID()));
       if (vectorNode == NULL ) {
          vtkErrorMacro("CalculateContourStatistic: No transform or vector!");
          return;
@@ -516,11 +518,11 @@ void vtkSlicerRegQALogic::CalculateContourStatistic() {
       transform = this->CreateTransformFromVector(vectorNode);
    }
    
-   fixedSegmentationNode = this->RegQANode->GetSegmentationNode();
-   fixedSegmentID = this->RegQANode->GetSegmentID();
+   fixedSegmentationNode = this->RegistrationQANode->GetSegmentationNode();
+   fixedSegmentID = this->RegistrationQANode->GetSegmentID();
   
-   movingSegmentationNode = this->RegQANode->GetBackwardRegQAParameters()->GetSegmentationNode();
-   movingSegmentID = this->RegQANode->GetBackwardRegQAParameters()->GetSegmentID();
+   movingSegmentationNode = this->RegistrationQANode->GetBackwardRegistrationQAParameters()->GetSegmentationNode();
+   movingSegmentID = this->RegistrationQANode->GetBackwardRegistrationQAParameters()->GetSegmentID();
 
    
    if (!fixedSegmentationNode || !fixedSegmentID || 
@@ -608,7 +610,7 @@ void vtkSlicerRegQALogic::CalculateContourStatistic() {
    
    this->GetMRMLScene()->RemoveNode(segmentComparisonNode);
    this->GetMRMLScene()->RemoveNode(warpedSegmentationNode);
-   if ( this->RegQANode->GetBackwardRegistration() ) {
+   if ( this->RegistrationQANode->GetBackwardRegistration() ) {
       this->UpdateTableWithStatisticalValues(statisticValues,19);
    }
    else{
@@ -616,7 +618,7 @@ void vtkSlicerRegQALogic::CalculateContourStatistic() {
    }
 }
 //---------------------------------------------------------------------------
-bool vtkSlicerRegQALogic::CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLVectorVolumeNode *vectorNode, double *statisticValues) {
+bool vtkSlicerRegistrationQALogic::CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLVectorVolumeNode *vectorNode, double *statisticValues) {
    if (!this->GetMRMLScene() ) {
             vtkErrorMacro("CalculateFiducialsDistance: Invalid scene or parameter set node!");
             return false;
@@ -624,8 +626,8 @@ bool vtkSlicerRegQALogic::CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode*
    vtkSmartPointer<vtkMRMLTransformNode> transform;
    transform = this->CreateTransformFromVector(vectorNode);
    
-   if ( transform && this->RegQANode ){
-      this->RegQANode->SetAndObserveTransformNodeID(transform->GetID());
+   if ( transform && this->RegistrationQANode ){
+      this->RegistrationQANode->SetAndObserveTransformNodeID(transform->GetID());
    }
    
    if ( this->CalculateFiducialsDistance(referenceFiducals,movingFiducials,transform,statisticValues)){
@@ -636,7 +638,7 @@ bool vtkSlicerRegQALogic::CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode*
    }
 }
 //---------------------------------------------------------------------------
-bool vtkSlicerRegQALogic::CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transform, double *statisticValues) {
+bool vtkSlicerRegistrationQALogic::CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode* referenceFiducals, vtkMRMLMarkupsFiducialNode* movingFiducials,vtkMRMLTransformNode *transform, double *statisticValues) {
 
 	if (!this->GetMRMLScene() ) {
 	    vtkErrorMacro("CalculateFiducialsDistance: Invalid scene or parameter set node!");
@@ -737,13 +739,13 @@ bool vtkSlicerRegQALogic::CalculateFiducialsDistance(vtkMRMLMarkupsFiducialNode*
 	return true;
 }
 //--- Image Checks -----------------------------------------------------------
-void vtkSlicerRegQALogic::FalseColor(bool invertColor, bool movingImage, bool matchLevels) {
-	if (!this->GetMRMLScene() || !this->RegQANode) {
+void vtkSlicerRegistrationQALogic::FalseColor(bool invertColor, bool movingImage, bool matchLevels) {
+	if (!this->GetMRMLScene() || !this->RegistrationQANode) {
 		vtkErrorMacro("FalseColor: Invalid scene or parameter set node!");
 		return;
 	}
 	
-	vtkMRMLRegQANode *pNode = this->RegQANode;
+	vtkMRMLRegistrationQANode *pNode = this->RegistrationQANode;
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
@@ -767,7 +769,7 @@ void vtkSlicerRegQALogic::FalseColor(bool invertColor, bool movingImage, bool ma
         if ( movingImage ){
            foregroundVolume= vtkMRMLScalarVolumeNode::SafeDownCast(
                         this->GetMRMLScene()->GetNodeByID(
-                                pNode->GetBackwardRegQAParameters()->GetVolumeNodeID()));
+                                pNode->GetBackwardRegistrationQAParameters()->GetVolumeNodeID()));
         }
         else{
            foregroundVolume= vtkMRMLScalarVolumeNode::SafeDownCast(
@@ -797,8 +799,8 @@ void vtkSlicerRegQALogic::FalseColor(bool invertColor, bool movingImage, bool ma
            pNode->SetVolumeColorNodeID(referenceVolumeDisplayNode->GetColorNodeID());
         }
         
-        if ( movingImage && !pNode->GetBackwardRegQAParameters()->GetVolumeColorNodeID() ){
-              pNode->GetBackwardRegQAParameters()->SetVolumeColorNodeID(
+        if ( movingImage && !pNode->GetBackwardRegistrationQAParameters()->GetVolumeColorNodeID() ){
+              pNode->GetBackwardRegistrationQAParameters()->SetVolumeColorNodeID(
                  foregroundVolumeDisplayNode->GetColorNodeID());
         }
         
@@ -816,7 +818,7 @@ void vtkSlicerRegQALogic::FalseColor(bool invertColor, bool movingImage, bool ma
            referenceVolumeDisplayNode->SetAndObserveColorNodeID(pNode->GetVolumeColorNodeID());
            if ( movingImage) {
               foregroundVolumeDisplayNode->SetAndObserveColorNodeID(
-                 pNode->GetBackwardRegQAParameters()->GetVolumeColorNodeID());
+                 pNode->GetBackwardRegistrationQAParameters()->GetVolumeColorNodeID());
            }
            else{
               foregroundVolumeDisplayNode->SetAndObserveColorNodeID(pNode->GetWarpedColorNodeID());
@@ -836,19 +838,19 @@ void vtkSlicerRegQALogic::FalseColor(bool invertColor, bool movingImage, bool ma
 }
 
 //----------------------------------------------------------------------------
-void vtkSlicerRegQALogic::Flicker(int opacity) {
-	if (!this->GetMRMLScene() || !this->RegQANode) {
+void vtkSlicerRegistrationQALogic::Flicker(int opacity) {
+	if (!this->GetMRMLScene() || !this->RegistrationQANode) {
 		vtkErrorMacro("Flicker: Invalid scene or parameter set node!");
 		return;
 	}
 
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegQANode->GetVolumeNodeID()));
+				this->RegistrationQANode->GetVolumeNodeID()));
 
 	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegQANode->GetWarpedVolumeNodeID()));
+				this->RegistrationQANode->GetWarpedVolumeNodeID()));
 
 	if (!referenceVolume || !warpedVolume) {
 		vtkErrorMacro("Flicker: Invalid reference or warped volume!");
@@ -860,7 +862,7 @@ void vtkSlicerRegQALogic::Flicker(int opacity) {
 	return;
 }
 
-bool vtkSlicerRegQALogic
+bool vtkSlicerRegistrationQALogic
 ::getSliceCompositeNodeRASBounds(vtkMRMLSliceCompositeNode *scn, double* minmax) {
    if ( !scn ){
       vtkErrorMacro("getSliceCompositeNodeRASBounds: No scn node");
@@ -893,11 +895,11 @@ bool vtkSlicerRegQALogic
  * 			- Changed slice directions
  * 			- Oblique slices
  */
-void vtkSlicerRegQALogic::Movie() {
-   vtkMRMLRegQANode *pNode = this->RegQANode;
+void vtkSlicerRegistrationQALogic::Movie() {
+   vtkMRMLRegistrationQANode *pNode = this->RegistrationQANode;
    
    
-   if (!this->GetMRMLScene() || !this->RegQANode) {
+   if (!this->GetMRMLScene() || !this->RegistrationQANode) {
       vtkErrorMacro("Movie: Invalid scene or parameter set node!");
       pNode->MovieRunOff();
       return;
@@ -1009,18 +1011,18 @@ void vtkSlicerRegQALogic::Movie() {
    }
 }
 //----------------------------------------------------------------------------
-void vtkSlicerRegQALogic::Checkerboard() {
+void vtkSlicerRegistrationQALogic::Checkerboard() {
 	//   Calling checkerboardfilter cli. Logic has been copied and modified from CropVolumeLogic onApply.
-	if (!this->GetMRMLScene() || !this->RegQANode) {
+	if (!this->GetMRMLScene() || !this->RegistrationQANode) {
 		vtkErrorMacro("Invalid scene or parameter set node!");
 		vtkErrorMacro("Internal Error, see command line!");
 	}
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegQANode->GetVolumeNodeID()));
+				this->RegistrationQANode->GetVolumeNodeID()));
 	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegQANode->GetWarpedVolumeNodeID()));
+				this->RegistrationQANode->GetWarpedVolumeNodeID()));
 
 
 	if (!referenceVolume || !warpedVolume) {
@@ -1031,8 +1033,8 @@ void vtkSlicerRegQALogic::Checkerboard() {
 	//Go to default display, so that we have normal colors 
 	this->SetDefaultDisplay();
 
-	if (!this->RegQANode->GetCheckerboardVolumeNodeID()) {
-		int PatternValue = this->RegQANode->GetCheckerboardPattern();
+	if (!this->RegistrationQANode->GetCheckerboardVolumeNodeID()) {
+		int PatternValue = this->RegistrationQANode->GetCheckerboardPattern();
 		std::string outSS;
 		std::string Name("-CheckerboardPattern_");
 		std::ostringstream strPattern;
@@ -1074,17 +1076,17 @@ void vtkSlicerRegQALogic::Checkerboard() {
 		this->GetMRMLScene()->RemoveNode(cmdNode);
 
 		outputVolume->SetAndObserveTransformNodeID(NULL);
-		this->RegQANode->SetCheckerboardVolumeNodeID(outputVolume->GetID());
+		this->RegistrationQANode->SetCheckerboardVolumeNodeID(outputVolume->GetID());
 		return;
 	}
 
 	vtkMRMLScalarVolumeNode *checkerboardVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegQANode->GetCheckerboardVolumeNodeID()));
+				this->RegistrationQANode->GetCheckerboardVolumeNodeID()));
 	this->SetForegroundImage(checkerboardVolume,referenceVolume,0);
 }
 //---------------------------------------------------------------------------
-bool vtkSlicerRegQALogic::AbsoluteDifference(vtkMRMLRegQANode* regQAnode, double statisticValues[4]) {
+bool vtkSlicerRegistrationQALogic::AbsoluteDifference(vtkMRMLRegistrationQANode* regQAnode, double statisticValues[4]) {
    if ( !regQAnode || !this->GetMRMLScene() ){
       vtkErrorMacro("AbsoluteDifference: No scene or registration quality node");
       return false;
@@ -1122,7 +1124,7 @@ bool vtkSlicerRegQALogic::AbsoluteDifference(vtkMRMLRegQANode* regQAnode, double
    return true;
 }
 //---------------------------------------------------------------------------
-vtkMRMLScalarVolumeNode* vtkSlicerRegQALogic::CalculateAbsoluteDifference(vtkMRMLScalarVolumeNode* referenceVolume, vtkMRMLScalarVolumeNode* warpedVolume,vtkMRMLAnnotationROINode *inputROI  ) {
+vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQALogic::CalculateAbsoluteDifference(vtkMRMLScalarVolumeNode* referenceVolume, vtkMRMLScalarVolumeNode* warpedVolume,vtkMRMLAnnotationROINode *inputROI  ) {
 
         if (!this->GetMRMLScene() ) {
             vtkErrorMacro("CalculateAbsoluteDifference: Invalid scene or parameter set node!");
@@ -1193,7 +1195,7 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegQALogic::CalculateAbsoluteDifference(vtkMRM
         return outputVolume;
 }
 //----------------------------------------------------------------------------
-bool vtkSlicerRegQALogic::Jacobian(vtkMRMLRegQANode* regQAnode, double statisticValues[4]){
+bool vtkSlicerRegistrationQALogic::Jacobian(vtkMRMLRegistrationQANode* regQAnode, double statisticValues[4]){
    if ( !regQAnode || !this->GetMRMLScene() ){
       vtkErrorMacro("Jacobian: No scene or registration quality node");
       return false;
@@ -1229,7 +1231,7 @@ bool vtkSlicerRegQALogic::Jacobian(vtkMRMLRegQANode* regQAnode, double statistic
    return true;
 }
 //----------------------------------------------------------------------------
-vtkMRMLScalarVolumeNode* vtkSlicerRegQALogic::CalculateJacobian(vtkMRMLVectorVolumeNode *vectorVolume,
+vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQALogic::CalculateJacobian(vtkMRMLVectorVolumeNode *vectorVolume,
                                                         vtkMRMLAnnotationROINode *inputROI) {
 
      if (!this->GetMRMLScene()) {
@@ -1299,7 +1301,7 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegQALogic::CalculateJacobian(vtkMRMLVectorVol
 	
 }
 //----------------------------------------------------------------------------
-bool vtkSlicerRegQALogic::InverseConsist(vtkMRMLRegQANode* regQAnode, double statisticValues[4]) {
+bool vtkSlicerRegistrationQALogic::InverseConsist(vtkMRMLRegistrationQANode* regQAnode, double statisticValues[4]) {
    if ( !regQAnode || !this->GetMRMLScene() ){
       vtkErrorMacro("InverseConsist: No scene or registration quality node");
       return false;
@@ -1317,7 +1319,7 @@ bool vtkSlicerRegQALogic::InverseConsist(vtkMRMLRegQANode* regQAnode, double sta
                                 regQAnode->GetVectorVolumeNodeID()));
    vtkMRMLVectorVolumeNode *vectorVolume2 = vtkMRMLVectorVolumeNode::SafeDownCast(
                         scene->GetNodeByID(
-                        regQAnode->GetBackwardRegQAParameters()->GetVectorVolumeNodeID()));
+                        regQAnode->GetBackwardRegistrationQAParameters()->GetVectorVolumeNodeID()));
    vtkMRMLAnnotationROINode* inputROI = vtkMRMLAnnotationROINode::SafeDownCast(
       scene->GetNodeByID(regQAnode->GetROINodeID()));
    
@@ -1333,7 +1335,7 @@ bool vtkSlicerRegQALogic::InverseConsist(vtkMRMLRegQANode* regQAnode, double sta
    return true;
 }
 //----------------------------------------------------------------------------
-vtkMRMLScalarVolumeNode* vtkSlicerRegQALogic::CalculateInverseConsist(vtkMRMLVectorVolumeNode *vectorVolume1,vtkMRMLVectorVolumeNode *vectorVolume2,vtkMRMLAnnotationROINode *inputROI) {
+vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQALogic::CalculateInverseConsist(vtkMRMLVectorVolumeNode *vectorVolume1,vtkMRMLVectorVolumeNode *vectorVolume2,vtkMRMLAnnotationROINode *inputROI) {
 
 	if (!this->GetMRMLScene() ) {
 		vtkErrorMacro("Inverse Consistency: Invalid scene!");
@@ -1404,7 +1406,7 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegQALogic::CalculateInverseConsist(vtkMRMLVec
 }
 //----------------------------------------------------------------------------
 //------Get warped image by applying transform on moving image
-vtkMRMLScalarVolumeNode* vtkSlicerRegQALogic::GetWarpedFromMoving(vtkMRMLScalarVolumeNode *movingVolume, vtkMRMLTransformNode *transform) {
+vtkMRMLScalarVolumeNode* vtkSlicerRegistrationQALogic::GetWarpedFromMoving(vtkMRMLScalarVolumeNode *movingVolume, vtkMRMLTransformNode *transform) {
 
 	if (!this->GetMRMLScene()) {
 		vtkErrorMacro("Internal Error, see command line!");
@@ -1462,7 +1464,7 @@ vtkMRMLScalarVolumeNode* vtkSlicerRegQALogic::GetWarpedFromMoving(vtkMRMLScalarV
         return outputVolume;
 }
 //---Change Vector node to transform node-------------------------------------------------------------------------
-vtkMRMLGridTransformNode* vtkSlicerRegQALogic::CreateTransformFromVector(vtkMRMLVectorVolumeNode* vectorVolume)
+vtkMRMLGridTransformNode* vtkSlicerRegistrationQALogic::CreateTransformFromVector(vtkMRMLVectorVolumeNode* vectorVolume)
 {
 	if (!vectorVolume) {
 	  vtkErrorMacro("CreateTransormFromVector: Volumes not set!");
@@ -1526,7 +1528,7 @@ vtkMRMLGridTransformNode* vtkSlicerRegQALogic::CreateTransformFromVector(vtkMRML
 	  
 }
 //---Change Vector node to transform node-------------------------------------------------------------------------
-vtkMRMLVectorVolumeNode* vtkSlicerRegQALogic::CreateVectorFromTransform(vtkMRMLTransformNode* transform)
+vtkMRMLVectorVolumeNode* vtkSlicerRegistrationQALogic::CreateVectorFromTransform(vtkMRMLTransformNode* transform)
 {
 	if (!transform) {
 	  std::cerr << "CreateVectorFromTransform: No transform set!" << std::endl;
@@ -1534,7 +1536,7 @@ vtkMRMLVectorVolumeNode* vtkSlicerRegQALogic::CreateVectorFromTransform(vtkMRMLT
 	}
 	//Create new Vector Volume from transform. Copied from Crop Volume Logic.
 	
-	vtkMRMLRegQANode* pNode = this->RegQANode;
+	vtkMRMLRegistrationQANode* pNode = this->RegistrationQANode;
 	
 	if (!this->GetMRMLScene() || !pNode ) {
 		vtkErrorMacro("CreateVectorFromTransform: Invalid scene or parameter node!");
@@ -1617,18 +1619,18 @@ vtkMRMLVectorVolumeNode* vtkSlicerRegQALogic::CreateVectorFromTransform(vtkMRMLT
 	return vectorVolume.GetPointer();*/
 }
 //--- Create a ROI from segment in node -----------------------------------------------------------
-void vtkSlicerRegQALogic::CreateROI(){
-   vtkMRMLSegmentationNode* fixedSegmentation = this->RegQANode->GetSegmentationNode();
-   const char* fixedSegmentID = this->RegQANode->GetSegmentID();
+void vtkSlicerRegistrationQALogic::CreateROI(){
+   vtkMRMLSegmentationNode* fixedSegmentation = this->RegistrationQANode->GetSegmentationNode();
+   const char* fixedSegmentID = this->RegistrationQANode->GetSegmentID();
    
-   vtkMRMLSegmentationNode* movingSegmentation = this->RegQANode->GetBackwardRegQAParameters()->GetSegmentationNode();
-   const char* movingSegmentID = this->RegQANode->GetBackwardRegQAParameters()->GetSegmentID();
+   vtkMRMLSegmentationNode* movingSegmentation = this->RegistrationQANode->GetBackwardRegistrationQAParameters()->GetSegmentationNode();
+   const char* movingSegmentID = this->RegistrationQANode->GetBackwardRegistrationQAParameters()->GetSegmentID();
    
    vtkSmartPointer<vtkMRMLAnnotationROINode> ROINode;
    
    ROINode = this->CreateROIAroundSegments(fixedSegmentation, fixedSegmentID, movingSegmentation, movingSegmentID);
    if (ROINode){
-      this->RegQANode->SetAndObserveROINodeID(ROINode->GetID());
+      this->RegistrationQANode->SetAndObserveROINodeID(ROINode->GetID());
    }
    else{
       vtkErrorMacro("Can't get ROI Node!");
@@ -1636,7 +1638,7 @@ void vtkSlicerRegQALogic::CreateROI(){
    }
 }
 //--- Create a ROI around one or two segments -----------------------------------------------------------
-vtkMRMLAnnotationROINode* vtkSlicerRegQALogic::CreateROIAroundSegments(vtkMRMLSegmentationNode* segmentation1Node,const char* segment1StringID,
+vtkMRMLAnnotationROINode* vtkSlicerRegistrationQALogic::CreateROIAroundSegments(vtkMRMLSegmentationNode* segmentation1Node,const char* segment1StringID,
    vtkMRMLSegmentationNode* segmentation2Node,const char* segment2StringID)
 {
    if (!segmentation1Node || !segment1StringID )
@@ -1650,7 +1652,7 @@ vtkMRMLAnnotationROINode* vtkSlicerRegQALogic::CreateROIAroundSegments(vtkMRMLSe
    double radius1[3];
    double center1[3];
    
-   if (! this->GetRadiusAndCenter(segment1, radius1, center1)){
+   if (! this->GetRadiusAndCenter(segmentation1Node, segment1, radius1, center1)){
       vtkErrorMacro("Can't get radius and center from segment!");
       return NULL;
    }
@@ -1660,7 +1662,7 @@ vtkMRMLAnnotationROINode* vtkSlicerRegQALogic::CreateROIAroundSegments(vtkMRMLSe
       double radius2[3];
       double center2[3];
       segment2 = segmentation2Node->GetSegmentation()->GetSegment(segment2StringID);
-      if (! this->GetRadiusAndCenter(segment2, radius2, center2)){
+      if (! this->GetRadiusAndCenter(segmentation2Node,segment2, radius2, center2)){
          vtkErrorMacro("Can't get radius and center from segment!");
          return NULL;
       }
@@ -1711,19 +1713,30 @@ vtkMRMLAnnotationROINode* vtkSlicerRegQALogic::CreateROIAroundSegments(vtkMRMLSe
    return ROINode;
 }
 //--- Get radius and center from segment -----------------------------------------------------------
-bool vtkSlicerRegQALogic::GetRadiusAndCenter(vtkSegment* segment,double radius[3], double center[3]){
-vtkSmartPointer<vtkOrientedImageData> binaryLabelmap;
-      binaryLabelmap = vtkOrientedImageData::
-         SafeDownCast(segment->GetRepresentation("Binary labelmap"));
+bool vtkSlicerRegistrationQALogic::GetRadiusAndCenter(vtkMRMLSegmentationNode* segmentationNode, vtkSegment* segment,double radius[3], double center[3]){
+      vtkSmartPointer<vtkMRMLLabelMapVolumeNode> labelmapNode = vtkSmartPointer<vtkMRMLLabelMapVolumeNode>::New();
+      this->GetMRMLScene()->AddNode(labelmapNode);
+      std::vector<std::string> segmentIDs;
+      segmentIDs.push_back(segmentationNode->GetSegmentation()->GetSegmentIdBySegment(segment));
+      vtkNew<vtkSlicerSegmentationsModuleLogic> SegmentationLogic;
       
-      if ( binaryLabelmap == NULL ){
-         vtkErrorMacro("Can't get binary labelmap!");
+      if (! SegmentationLogic->ExportSegmentsToLabelmapNode(segmentationNode, segmentIDs,
+                            labelmapNode)) {
+         vtkErrorMacro("GetRadiusAndCenter: ExportSegmentsToLabelmapNode failed");
+         this->GetMRMLScene()->RemoveNode(labelmapNode);
+         return false;
+      }
+    
+      
+      if ( labelmapNode == NULL ){
+         vtkErrorMacro("GetRadiusAndCenter: Can't get binary labelmap!");
+         this->GetMRMLScene()->RemoveNode(labelmapNode);
          return false;
       }
    
-      int *dims = binaryLabelmap->GetDimensions();
-      double *spacing = binaryLabelmap->GetSpacing();
-      double *origin = binaryLabelmap->GetOrigin();
+      int *dims = labelmapNode->GetImageData()->GetDimensions();
+      double *spacing = labelmapNode->GetSpacing();
+      double *origin = labelmapNode->GetOrigin();
      
       double dimsH[4];
       dimsH[0] = dims[0] - 1;
@@ -1732,7 +1745,7 @@ vtkSmartPointer<vtkOrientedImageData> binaryLabelmap;
       dimsH[3] = 0.;
 
       vtkNew<vtkMatrix4x4> ijkToRAS;
-      binaryLabelmap->GetDirectionMatrix(ijkToRAS.GetPointer());
+      labelmapNode->GetIJKToRASDirectionMatrix(ijkToRAS.GetPointer());
       double rasCorner[4];
       ijkToRAS->MultiplyPoint(dimsH, rasCorner);
       for (int i=0;i<3;i++){
@@ -1741,11 +1754,15 @@ vtkSmartPointer<vtkOrientedImageData> binaryLabelmap;
         radius[i] = fabs(radius[i]);
         radius[i] += 10*spacing[i]; // Add ten voxels as margin
       }
-      
+      qCritical() << Q_FUNC_INFO << ": ROI center, origin and radius\n" << 
+      center[0] << " " << center[1] << " " << center[2] << "\n"
+      << origin[0] << " " << origin[1] << " " << origin[2]  << "\n"
+      << radius[0] << " " << radius[1] << " " << radius[2];
+      this->GetMRMLScene()->RemoveNode(labelmapNode);
       return true;
 }
 //--- Invert X and Y in image Data -----------------------------------------------------------
-void vtkSlicerRegQALogic::InvertXandY(vtkImageData* imageData){
+void vtkSlicerRegistrationQALogic::InvertXandY(vtkImageData* imageData){
 	if (!imageData) {
 		      vtkErrorMacro("InvertXandY: No imageData.");
 		      return;
@@ -1818,19 +1835,19 @@ void vtkSlicerRegQALogic::InvertXandY(vtkImageData* imageData){
 	return;
 }
 //--- Default mode when checkbox is unchecked -----------------------------------------------------------
-void vtkSlicerRegQALogic::SetDefaultDisplay() {
-	if (!this->GetMRMLScene() || !this->RegQANode) {
+void vtkSlicerRegistrationQALogic::SetDefaultDisplay() {
+	if (!this->GetMRMLScene() || !this->RegistrationQANode) {
 		vtkErrorMacro("SetDefaultDisplay: Invalid scene or parameter set node!");
 		return;
 	}
 	vtkMRMLScalarVolumeNode *referenceVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegQANode->GetVolumeNodeID()));
+				this->RegistrationQANode->GetVolumeNodeID()));
 	
 	
 	vtkMRMLScalarVolumeNode *warpedVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
 			this->GetMRMLScene()->GetNodeByID(
-				this->RegQANode->GetWarpedVolumeNodeID()));
+				this->RegistrationQANode->GetWarpedVolumeNodeID()));
 
 	if (!warpedVolume || !referenceVolume) {
 		vtkErrorMacro("SetDefaultDisplay: Invalid volumes!");
@@ -1850,7 +1867,7 @@ void vtkSlicerRegQALogic::SetDefaultDisplay() {
 }
 
 //---Calculate Statistic of image-----------------------------------
-void vtkSlicerRegQALogic::CalculateStatistics(vtkMRMLScalarVolumeNode *inputVolume, double statisticValues[4] ) {
+void vtkSlicerRegistrationQALogic::CalculateStatistics(vtkMRMLScalarVolumeNode *inputVolume, double statisticValues[4] ) {
 	vtkNew<vtkImageAccumulate> StatImage;
 	StatImage->SetInputData(inputVolume->GetImageData());
 	StatImage->Update();
@@ -1862,7 +1879,7 @@ void vtkSlicerRegQALogic::CalculateStatistics(vtkMRMLScalarVolumeNode *inputVolu
 }
 
 //---Load volume node from fileName
-vtkMRMLVolumeNode* vtkSlicerRegQALogic::LoadVolumeFromFile( std::string filePath, std::string volumeName){
+vtkMRMLVolumeNode* vtkSlicerRegistrationQALogic::LoadVolumeFromFile( std::string filePath, std::string volumeName){
    
    vtkNew<vtkSlicerVolumesLogic> VolumesLogic;
    vtkMRMLVolumeNode* volume =
@@ -1878,7 +1895,7 @@ vtkMRMLVolumeNode* vtkSlicerRegQALogic::LoadVolumeFromFile( std::string filePath
 }
 
 //---Change backroung image and set opacity-----------------------------------
-void vtkSlicerRegQALogic
+void vtkSlicerRegistrationQALogic
 ::SetForegroundImage(vtkMRMLScalarVolumeNode *backgroundVolume,
 					 vtkMRMLScalarVolumeNode *foregroundVolume,
 					 double opacity) {
@@ -1930,15 +1947,15 @@ void vtkSlicerRegQALogic
 	return;
 }
 //---Create default table-----------------------------------
-vtkMRMLTableNode* vtkSlicerRegQALogic::CreateDefaultRegQATable() {
-   if (!this->GetMRMLScene() || !this->RegQANode) {
-      vtkErrorMacro("CreateDefaultRegQATable: Invalid scene or parameter set node!");
+vtkMRMLTableNode* vtkSlicerRegistrationQALogic::CreateDefaultRegistrationQATable() {
+   if (!this->GetMRMLScene() || !this->RegistrationQANode) {
+      vtkErrorMacro("CreateDefaultRegistrationQATable: Invalid scene or parameter set node!");
       return NULL;
    }
 
    vtkSmartPointer<vtkMRMLTableNode> tableNode = vtkSmartPointer<vtkMRMLTableNode>::New();
 
-   std::string tableNodeName = this->GetMRMLScene()->GenerateUniqueName("RegQA");
+   std::string tableNodeName = this->GetMRMLScene()->GenerateUniqueName("RegistrationQA");
    tableNode->SetName(tableNodeName.c_str());
    this->GetMRMLScene()->AddNode(tableNode);
    
@@ -1951,7 +1968,7 @@ vtkMRMLTableNode* vtkSlicerRegQALogic::CreateDefaultRegQATable() {
    
    vtkStringArray* zero = vtkStringArray::SafeDownCast(tableNode->AddColumn());
    // Add input information to the table
-   zero->InsertNextValue("Fixed Image"); //0
+   zero->InsertNextValue("Reference Image"); //0
    zero->InsertNextValue("Moving Image"); //1
    zero->InsertNextValue("Forward Warped Image"); //2
    zero->InsertNextValue("Backward Warped Image"); //3
@@ -1980,72 +1997,72 @@ vtkMRMLTableNode* vtkSlicerRegQALogic::CreateDefaultRegQATable() {
    tableNode->AddColumn();
    
    if (! tableNode->SetCellText(11,1,"Max")){
-      vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
+      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
       return NULL;
    }
    if (! tableNode->SetCellText(11,2,"Min")){
-      vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
+      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
       return NULL;
    }
    if (! tableNode->SetCellText(11,3,"Mean")){
-      vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
+      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
       return NULL;
    }
    if (! tableNode->SetCellText(11,4,"STD")){
-      vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
+      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
       return NULL;
    }
    if (! tableNode->SetCellText(20,1,"Distance Before")){
-      vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
+      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
       return NULL;
    }
    if (! tableNode->SetCellText(20,2,"Distance After")){
-      vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
+      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
       return NULL;
    }
    if (! tableNode->SetCellText(17,1,"Mean Hauss. Before")){
-      vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
+      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
       return NULL;
    }
    if (! tableNode->SetCellText(17,2,"Mean Hauss. After")){
-      vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
+      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
       return NULL;
    }
    if (! tableNode->SetCellText(17,3,"Dice Coeff. Before")){
-      vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
+      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
       return NULL;
    }
    if (! tableNode->SetCellText(17,4,"Dice Coeff. After")){
-      vtkErrorMacro("CreateDefaultRegQATable: Can't set cell!");
+      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
       return NULL;
    }
 
    return tableNode;
 }
 //---Create default table-----------------------------------
-void vtkSlicerRegQALogic::UpdateRegQATable() {
-   if (!this->GetMRMLScene() || !this->RegQANode) {
-      vtkErrorMacro("UpdateRegQATable: Invalid scene or parameter set node!");
+void vtkSlicerRegistrationQALogic::UpdateRegistrationQATable() {
+   if (!this->GetMRMLScene() || !this->RegistrationQANode) {
+      vtkErrorMacro("UpdateRegistrationQATable: Invalid scene or parameter set node!");
       return;
    }
-   vtkSmartPointer<vtkMRMLRegQANode> pNode = this->RegQANode;
+   vtkSmartPointer<vtkMRMLRegistrationQANode> pNode = this->RegistrationQANode;
    vtkSmartPointer<vtkMRMLNode> node;
    char* segmentID;
 
-   //Get forward RegQA parameter node
+   //Get forward RegistrationQA parameter node
    if ( pNode->GetBackwardRegistration() ){
-      pNode = this->RegQANode->GetBackwardRegQAParameters();
+      pNode = this->RegistrationQANode->GetBackwardRegistrationQAParameters();
    }
    else{
-      pNode = this->RegQANode;
+      pNode = this->RegistrationQANode;
    }
    
    if (!pNode) {
-      vtkErrorMacro("UpdateRegQATable: Wrong node setting!");
+      vtkErrorMacro("UpdateRegistrationQATable: Wrong node setting!");
       return;
    }
 
-   vtkSmartPointer<vtkMRMLTableNode> regQATable = pNode->GetRegQATableNode();
+   vtkSmartPointer<vtkMRMLTableNode> regQATable = pNode->GetRegistrationQATableNode();
    vtkSmartPointer<vtkTable> table;
    table = regQATable->GetTable();
 
@@ -2075,11 +2092,11 @@ void vtkSlicerRegQALogic::UpdateRegQATable() {
    }
    
    //Repeat all for backward
-   if ( !pNode->GetBackwardRegQAParameters()){
+   if ( !pNode->GetBackwardRegistrationQAParameters()){
       regQATable->Modified();
       return;
    }
-   pNode = pNode->GetBackwardRegQAParameters();
+   pNode = pNode->GetBackwardRegistrationQAParameters();
 
    node = this->GetMRMLScene()->GetNodeByID(pNode->GetVolumeNodeID());
    if ( node ){
@@ -2104,15 +2121,15 @@ void vtkSlicerRegQALogic::UpdateRegQATable() {
 
    regQATable->Modified();
 }
-void vtkSlicerRegQALogic::UpdateTableWithStatisticalValues(double statisticValues[4], int row) {
-   if (!this->RegQANode) {
-      vtkErrorMacro("UpdateRegQATable: Invalid scene or parameter set node!");
+void vtkSlicerRegistrationQALogic::UpdateTableWithStatisticalValues(double statisticValues[4], int row) {
+   if (!this->RegistrationQANode) {
+      vtkErrorMacro("UpdateRegistrationQATable: Invalid scene or parameter set node!");
       return;
    }
    
-   vtkSmartPointer<vtkMRMLRegQANode> pNode = this->RegQANode;
+   vtkSmartPointer<vtkMRMLRegistrationQANode> pNode = this->RegistrationQANode;
    vtkSmartPointer<vtkMRMLNode> node;
-   vtkSmartPointer<vtkMRMLTableNode> regQATable = pNode->GetRegQATableNode();
+   vtkSmartPointer<vtkMRMLTableNode> regQATable = pNode->GetRegistrationQATableNode();
    vtkSmartPointer<vtkTable> table;
    table = regQATable->GetTable();
 
@@ -2126,8 +2143,8 @@ void vtkSlicerRegQALogic::UpdateTableWithStatisticalValues(double statisticValue
 
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::UpdateTableWithFiducialValues(vtkMRMLMarkupsFiducialNode* fiducals, double statisticValues[4]){
-   if ( !this->RegQANode ) {
+void vtkSlicerRegistrationQALogic::UpdateTableWithFiducialValues(vtkMRMLMarkupsFiducialNode* fiducals, double statisticValues[4]){
+   if ( !this->RegistrationQANode ) {
       vtkErrorMacro("UpdateTableWithFiducialValues: Invalid parameter set node!");
       vtkErrorMacro("Internal Error, see command line!");
    }
@@ -2136,7 +2153,7 @@ void vtkSlicerRegQALogic::UpdateTableWithFiducialValues(vtkMRMLMarkupsFiducialNo
       vtkErrorMacro("Internal Error, see command line!");
    }
    
-   vtkSmartPointer<vtkMRMLTableNode> tableNode = this->RegQANode->GetRegQATableNode();
+   vtkSmartPointer<vtkMRMLTableNode> tableNode = this->RegistrationQANode->GetRegistrationQATableNode();
    vtkSmartPointer<vtkTable> table = tableNode->GetTable();
    int fiducialNumber = fiducals->GetNumberOfFiducials();
    vtkIdType nRows = table->GetNumberOfRows();
@@ -2149,7 +2166,7 @@ void vtkSlicerRegQALogic::UpdateTableWithFiducialValues(vtkMRMLMarkupsFiducialNo
    }
    
    //First cells are for forward registration, followed by backward
-   if ( this->RegQANode->GetBackwardRegistration() ){
+   if ( this->RegistrationQANode->GetBackwardRegistration() ){
       nAllRows += fiducialNumber;
    }
    
@@ -2167,13 +2184,13 @@ void vtkSlicerRegQALogic::UpdateTableWithFiducialValues(vtkMRMLMarkupsFiducialNo
    tableNode->Modified();
 }
 
-void vtkSlicerRegQALogic::UpdateNodeFromSHNode(vtkIdType itemID){
-   if ( !this->RegQANode || !this->GetMRMLScene() ) {
+void vtkSlicerRegistrationQALogic::UpdateNodeFromSHNode(vtkIdType itemID){
+   if ( !this->RegistrationQANode || !this->GetMRMLScene() ) {
       vtkErrorMacro("UpdateNodeFromSHNode: Invalid parameter set node!");
       return;
    }
    
-   vtkMRMLRegQANode* pNode;
+   vtkMRMLRegistrationQANode* pNode;
    
    vtkSmartPointer<vtkMRMLSubjectHierarchyNode> shNode;
    shNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
@@ -2186,9 +2203,9 @@ void vtkSlicerRegQALogic::UpdateNodeFromSHNode(vtkIdType itemID){
    }
    
    std::string regType = shNode->GetItemAttribute(itemID,
-         vtkSlicerRegQALogic::REGISTRATION_TYPE.c_str());
+         vtkSlicerRegistrationQALogic::REGISTRATION_TYPE.c_str());
    std::string inverse = shNode->GetItemAttribute(itemID,
-         vtkSlicerRegQALogic::INVERSE.c_str());
+         vtkSlicerRegistrationQALogic::INVERSE.c_str());
    vtkMRMLNode* node = shNode->GetItemDataNode(itemID);
    
    if ( ! node ){
@@ -2200,38 +2217,38 @@ void vtkSlicerRegQALogic::UpdateNodeFromSHNode(vtkIdType itemID){
    }
    
    if ( inverse.empty() ){
-      pNode = this->RegQANode;
+      pNode = this->RegistrationQANode;
    }
    else{
-      pNode = this->RegQANode->GetBackwardRegQAParameters();
+      pNode = this->RegistrationQANode->GetBackwardRegistrationQAParameters();
    }
    
    if ( ! pNode ) {
       return;
    }
    
-   if ( regType.compare(vtkSlicerRegQALogic::IMAGE) == 0) pNode->SetAndObserveVolumeNodeID(node->GetID());
-   else if ( regType.compare(vtkSlicerRegQALogic::WARPED_IMAGE) == 0) pNode->SetAndObserveWarpedVolumeNodeID(node->GetID());
-   else if ( regType.compare(vtkSlicerRegQALogic::VECTOR_FIELD) == 0) pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
-   else if ( regType.compare(vtkSlicerRegQALogic::FIDUCIAL) == 0) pNode->SetAndObserveFiducialNodeID(node->GetID());
-   else if ( regType.compare(vtkSlicerRegQALogic::ROI) == 0) pNode->SetAndObserveROINodeID(node->GetID());
-   else if ( regType.compare(vtkSlicerRegQALogic::ABSOLUTEDIFFERENCE) == 0) pNode->SetAndObserveAbsoluteDiffVolumeNodeID(node->GetID());
-   else if ( regType.compare(vtkSlicerRegQALogic::JACOBIAN) == 0) pNode->SetAndObserveJacobianVolumeNodeID(node->GetID());
-   else if ( regType.compare(vtkSlicerRegQALogic::INVERSECONSISTENCY) == 0) pNode->SetAndObserveInverseConsistVolumeNodeID(node->GetID());
+   if ( regType.compare(vtkSlicerRegistrationQALogic::IMAGE) == 0) pNode->SetAndObserveVolumeNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQALogic::WARPED_IMAGE) == 0) pNode->SetAndObserveWarpedVolumeNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQALogic::VECTOR_FIELD) == 0) pNode->SetAndObserveVectorVolumeNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQALogic::FIDUCIAL) == 0) pNode->SetAndObserveFiducialNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQALogic::ROI) == 0) pNode->SetAndObserveROINodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQALogic::ABSOLUTEDIFFERENCE) == 0) pNode->SetAndObserveAbsoluteDiffVolumeNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQALogic::JACOBIAN) == 0) pNode->SetAndObserveJacobianVolumeNodeID(node->GetID());
+   else if ( regType.compare(vtkSlicerRegistrationQALogic::INVERSECONSISTENCY) == 0) pNode->SetAndObserveInverseConsistVolumeNodeID(node->GetID());
    //TODO:
-//    else if ( regType.compare(vtkSlicerRegQALogic::CONTOUR) == 0) pNode->SetAndObserveAbsoluteDiffVolumeNodeID(node->GetID());
+//    else if ( regType.compare(vtkSlicerRegistrationQALogic::CONTOUR) == 0) pNode->SetAndObserveAbsoluteDiffVolumeNodeID(node->GetID());
 }
 //TODO: Integrate save of output file
 //---------------------------------------------------------------------------
-void vtkSlicerRegQALogic::SaveOutputFile() {
-        if (!this->GetMRMLScene() || !this->RegQANode) {
+void vtkSlicerRegistrationQALogic::SaveOutputFile() {
+        if (!this->GetMRMLScene() || !this->RegistrationQANode) {
             vtkErrorMacro("saveOutputFile: Invalid scene or parameter set node!");
             return;         
         }
         
 //      double statisticValues[4];
 //      std::string color;
-//      std::string directory = this->RegQANode->GetOutputDirectory();
+//      std::string directory = this->RegistrationQANode->GetOutputDirectory();
 //      char fileName[512];
 //      sprintf(fileName, "%s/OutputFile.html", directory.c_str() );
 //      
@@ -2258,7 +2275,7 @@ void vtkSlicerRegQALogic::SaveOutputFile() {
 //      << "</tr>" << std::endl;
 //      
 //      //Absolute Difference
-//      this->RegQANode->GetAbsoluteDiffStatistics(statisticValues);
+//      this->RegistrationQANode->GetAbsoluteDiffStatistics(statisticValues);
 //      //Check values for color
 //      if(statisticValues[0] < 100 && statisticValues[1] < 200) color = "green";
 //      else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
@@ -2274,7 +2291,7 @@ void vtkSlicerRegQALogic::SaveOutputFile() {
 //      //TODO: Inverse Absolute Difference
 //      
 //      //Fiducials
-//      this->RegQANode->GetFiducialsStatistics(statisticValues);
+//      this->RegistrationQANode->GetFiducialsStatistics(statisticValues);
 //      //Check values for color
 //      if(statisticValues[0] > 0 && statisticValues[1] > 0 && statisticValues[1] > 0) color = "green";
 //      else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
@@ -2288,7 +2305,7 @@ void vtkSlicerRegQALogic::SaveOutputFile() {
 //      outfile << std::endl<< "</tr>" << std::endl;
 //      
 //      //Inverse Fiducials
-//      this->RegQANode->GetInvFiducialsStatistics(statisticValues);
+//      this->RegistrationQANode->GetInvFiducialsStatistics(statisticValues);
 //      //Check values for color
 //      if(statisticValues[0] > 0 && statisticValues[1] > 0 && statisticValues[1] > 0) color = "green";
 //      else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
@@ -2312,7 +2329,7 @@ void vtkSlicerRegQALogic::SaveOutputFile() {
 //      << "</tr>" << std::endl;
 //      
 //      //Jacobian
-//      this->RegQANode->GetJacobianStatistics(statisticValues);
+//      this->RegistrationQANode->GetJacobianStatistics(statisticValues);
 //      //Check values for color
 //      if( abs(statisticValues[0]-1) < 0.02 && statisticValues[1] < 0.05 && statisticValues[2] < 5 && statisticValues[3] > 0) color = "green";
 //      else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
@@ -2328,7 +2345,7 @@ void vtkSlicerRegQALogic::SaveOutputFile() {
 //      //TODO: Inverse Jacobian
 //      
 //      //Inverse Consistency
-//      this->RegQANode->GetInverseConsistStatistics(statisticValues);
+//      this->RegistrationQANode->GetInverseConsistStatistics(statisticValues);
 //      //Check values for color
 //      if( statisticValues[0] < 2 && statisticValues[1] < 2) color = "green";
 //      else if (statisticValues[0] == 0 && statisticValues[1] == 0 &&  statisticValues[2] == 0 && statisticValues[3] == 0) color = "blue";
@@ -2345,7 +2362,7 @@ void vtkSlicerRegQALogic::SaveOutputFile() {
 // 
 //      // --- Images ---
 //      outfile << "<h2>Images</h2>" << std::endl;      
-//      int screenShotNumber = this->RegQANode->GetNumberOfScreenshots();
+//      int screenShotNumber = this->RegistrationQANode->GetNumberOfScreenshots();
 //      if (screenShotNumber > 1){      
 //              for(int i = 1; i < screenShotNumber; i++) {
 //                      std::ostringstream screenShotName;

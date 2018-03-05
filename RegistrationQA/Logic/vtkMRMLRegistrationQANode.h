@@ -1,28 +1,28 @@
 #pragma once
-#ifndef __vtkMRMLRegQANode_h
-#define __vtkMRMLRegQANode_h
+#ifndef __vtkMRMLRegistrationQANode_h
+#define __vtkMRMLRegistrationQANode_h
 
 #include <vtkMRML.h>
 #include <vtkMRMLNode.h>
 
-#include "vtkSlicerRegQAModuleLogicExport.h"
+#include "vtkSlicerRegistrationQAModuleLogicExport.h"
 class vtkMRMLSegmentationNode;
 class vtkMRMLTableNode;
 
-/// \ingroup Slicer_QtModules_RegQA
-class VTK_SLICER_REGQA_MODULE_LOGIC_EXPORT vtkMRMLRegQANode :
+/// \ingroup Slicer_QtModules_RegistrationQA
+class VTK_SLICER_REGISTRATIONQA_MODULE_LOGIC_EXPORT vtkMRMLRegistrationQANode :
 	public vtkMRMLNode {
 
 public:
-	static vtkMRMLRegQANode *New();
-	vtkTypeMacro(vtkMRMLRegQANode, vtkMRMLNode);
+	static vtkMRMLRegistrationQANode *New();
+	vtkTypeMacro(vtkMRMLRegistrationQANode, vtkMRMLNode);
 	void PrintSelf(ostream& os, vtkIndent indent);
 
 	virtual vtkMRMLNode* CreateNodeInstance();
 	virtual void ReadXMLAttributes( const char** atts);
 	virtual void WriteXML(ostream& of, int indent);
 	virtual void Copy(vtkMRMLNode *node);
-	virtual const char* GetNodeTagName() {return "RegQAParameters";};
+	virtual const char* GetNodeTagName() {return "RegistrationQAParameters";};
 	virtual void UpdateReferenceID(const char *oldID, const char *newID);
 
 	vtkGetStringMacro(VectorVolumeNodeID);
@@ -64,8 +64,8 @@ public:
         vtkSetStringMacro(SegmentID);
 
         /// Contour data table node
-        vtkMRMLTableNode* GetRegQATableNode();
-        void SetAndObserveRegQATableNode(vtkMRMLTableNode* node);
+        vtkMRMLTableNode* GetRegistrationQATableNode();
+        void SetAndObserveRegistrationQATableNode(vtkMRMLTableNode* node);
 	
 	vtkGetMacro(NumberOfScreenshots, int);
 	vtkSetMacro(NumberOfScreenshots, int);
@@ -107,8 +107,8 @@ public:
         vtkBooleanMacro(BackwardRegistration, bool);
         
         /// Backward Registration table node
-        vtkMRMLRegQANode* GetBackwardRegQAParameters();
-        void SetAndObserveBackwardRegQAParameters(vtkMRMLRegQANode* node);
+        vtkMRMLRegistrationQANode* GetBackwardRegistrationQAParameters();
+        void SetAndObserveBackwardRegistrationQAParameters(vtkMRMLRegistrationQANode* node);
         
         /// Exchange forward and backward parameters
         bool ChangeFromBackwardToFoward();
@@ -139,11 +139,11 @@ public:
 
         
 protected:
-	vtkMRMLRegQANode();
-	~vtkMRMLRegQANode();
+	vtkMRMLRegistrationQANode();
+	~vtkMRMLRegistrationQANode();
 
-	vtkMRMLRegQANode(const vtkMRMLRegQANode&);
-	void operator=(const vtkMRMLRegQANode&);
+	vtkMRMLRegistrationQANode(const vtkMRMLRegistrationQANode&);
+	void operator=(const vtkMRMLRegistrationQANode&);
 
 	char* VectorVolumeNodeID;
 	char* TransformNodeID;

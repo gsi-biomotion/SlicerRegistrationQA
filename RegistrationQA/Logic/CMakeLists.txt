@@ -10,6 +10,7 @@ set(${KIT}_INCLUDE_DIRECTORIES
   ${vtkSlicerAnnotationsMRML_INCLUDE_DIRS}
   ${vtkSlicerSegmentationsModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerVolumesModuleLogic_INCLUDE_DIRS}
+  ${vtkSlicerSegmentationsModuleLogic_INCLUDE_DIRS}
   ${vtkSlicerTransformsModuleLogic_INCLUDE_DIRS}
 #   ${vtkSlicerSegmentComparisonModuleLogic_INCLUDE_DIRS}
 
@@ -19,14 +20,15 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   vtkSlicer${MODULE_NAME}Logic.cxx
   vtkSlicer${MODULE_NAME}Logic.h
-  vtkMRMLRegQANode.cxx
-  vtkMRMLRegQANode.h
+  vtkMRMLRegistrationQANode.cxx
+  vtkMRMLRegistrationQANode.h
 )
 # message(STATUS "Logic: " "${SlicerRT_ModuleLogic_INCLUDE_DIRS}" )
 set(${KIT}_TARGET_LIBRARIES
   ${ITK_LIBRARIES}
   vtkSlicerMarkupsModuleMRML
   vtkSlicerVolumesModuleLogic
+  vtkSlicerSegmentationsModuleLogic
   vtkSlicerTransformsModuleLogic
   vtkSlicerAnnotationsModuleMRML
   vtkSlicerSegmentationsModuleMRML

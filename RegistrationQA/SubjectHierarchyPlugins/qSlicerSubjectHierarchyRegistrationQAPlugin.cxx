@@ -19,7 +19,7 @@
 ==============================================================================*/
 
 
-#include "qSlicerSubjectHierarchyRegQAPlugin.h"
+#include "qSlicerSubjectHierarchyRegistrationQAPlugin.h"
 
 // SubjectHierarchy MRML includes
 #include "vtkMRMLSubjectHierarchyConstants.h"
@@ -40,8 +40,8 @@
 #include <vtkMRMLMarkupsFiducialNode.h>
 #include <vtkMRMLGridTransformNode.h>
 // #include "vtkMRMLMarkupsNode.h"
-#include "vtkSlicerRegQALogic.h"
-#include "vtkMRMLRegQANode.h"
+#include "vtkSlicerRegistrationQALogic.h"
+#include "vtkMRMLRegistrationQANode.h"
 #include <vtkSlicerVolumesLogic.h>
 #include <vtkSlicerAnnotationModuleLogic.h>
 #include <vtkMRMLColorTableNode.h>
@@ -106,27 +106,27 @@
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_SubjectHierarchy_Plugins
-class qSlicerSubjectHierarchyRegQAPluginPrivate: public QObject
+class qSlicerSubjectHierarchyRegistrationQAPluginPrivate: public QObject
 {
-  Q_DECLARE_PUBLIC(qSlicerSubjectHierarchyRegQAPlugin);
+  Q_DECLARE_PUBLIC(qSlicerSubjectHierarchyRegistrationQAPlugin);
 protected:
-  qSlicerSubjectHierarchyRegQAPlugin* const q_ptr;
+  qSlicerSubjectHierarchyRegistrationQAPlugin* const q_ptr;
 public:
-  qSlicerSubjectHierarchyRegQAPluginPrivate(qSlicerSubjectHierarchyRegQAPlugin& object);
-  ~qSlicerSubjectHierarchyRegQAPluginPrivate();
+  qSlicerSubjectHierarchyRegistrationQAPluginPrivate(qSlicerSubjectHierarchyRegistrationQAPlugin& object);
+  ~qSlicerSubjectHierarchyRegistrationQAPluginPrivate();
   void init();
 public:
   QMenu* DIRQAMenu;
   QActionGroup* DIRQAMenuActionGroup;
   QIcon DIRQAIcon;
-  vtkSlicerRegQALogic* DIRQALogic;
+  vtkSlicerRegistrationQALogic* DIRQALogic;
 };
 
 //-----------------------------------------------------------------------------
-// qSlicerSubjectHierarchyRegQAPluginPrivate methods
+// qSlicerSubjectHierarchyRegistrationQAPluginPrivate methods
 
 //-----------------------------------------------------------------------------
-qSlicerSubjectHierarchyRegQAPluginPrivate::qSlicerSubjectHierarchyRegQAPluginPrivate(qSlicerSubjectHierarchyRegQAPlugin& object)
+qSlicerSubjectHierarchyRegistrationQAPluginPrivate::qSlicerSubjectHierarchyRegistrationQAPluginPrivate(qSlicerSubjectHierarchyRegistrationQAPlugin& object)
  : q_ptr(&object)
 {
   this->DIRQAMenu = NULL;
@@ -136,23 +136,23 @@ qSlicerSubjectHierarchyRegQAPluginPrivate::qSlicerSubjectHierarchyRegQAPluginPri
 }
 
 //------------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPluginPrivate::init()
+void qSlicerSubjectHierarchyRegistrationQAPluginPrivate::init()
 {
-  Q_Q(qSlicerSubjectHierarchyRegQAPlugin);
+  Q_Q(qSlicerSubjectHierarchyRegistrationQAPlugin);
 
   
   
-  this->DIRQAMenu = new QMenu("DIRQA Functions");
+  this->DIRQAMenu = new QMenu("Registration QA");
   this->DIRQAMenuActionGroup = new QActionGroup(q);
   
   QMenu* assignMenu = this->DIRQAMenu->addMenu("Assign node to:");
   QMenu* imageMenu = assignMenu->addMenu( "Image" );
   
-  QAction* fixedImageAction = new QAction("Fixed Image",q);
-  QObject::connect(fixedImageAction, SIGNAL(triggered()), q, SLOT(fixedImageSelected()));
-  fixedImageAction->setActionGroup(this->DIRQAMenuActionGroup);
-  fixedImageAction->setData(QVariant("Fixed Image"));
-  imageMenu->addAction(fixedImageAction);
+  QAction* referenceImageAction = new QAction("Reference Image",q);
+  QObject::connect(referenceImageAction, SIGNAL(triggered()), q, SLOT(referenceImageSelected()));
+  referenceImageAction->setActionGroup(this->DIRQAMenuActionGroup);
+  referenceImageAction->setData(QVariant("Reference Image"));
+  imageMenu->addAction(referenceImageAction);
   
   QAction* movingImageAction = new QAction("Moving Image",q);
   QObject::connect(movingImageAction, SIGNAL(triggered()), q, SLOT(movingImageSelected()));
@@ -173,11 +173,11 @@ void qSlicerSubjectHierarchyRegQAPluginPrivate::init()
   imageMenu->addAction(bwarpedImageAction);
 
   QMenu* vectorMenu = assignMenu->addMenu( "Vector Field" );
-  QAction* fixedVFAction = new QAction("Forward",q);
-  QObject::connect(fixedVFAction, SIGNAL(triggered()), q, SLOT(fixedVectorFieldSelected()));
-  fixedVFAction->setActionGroup(this->DIRQAMenuActionGroup);
-  fixedVFAction->setData(QVariant("Forward"));
-  vectorMenu->addAction(fixedVFAction);
+  QAction* referenceVFAction = new QAction("Forward",q);
+  QObject::connect(referenceVFAction, SIGNAL(triggered()), q, SLOT(referenceVectorFieldSelected()));
+  referenceVFAction->setActionGroup(this->DIRQAMenuActionGroup);
+  referenceVFAction->setData(QVariant("Forward"));
+  vectorMenu->addAction(referenceVFAction);
   
   QAction* movingVFAction = new QAction("Backward",q);
   QObject::connect(movingVFAction, SIGNAL(triggered()), q, SLOT(movingVectorFieldSelected()));
@@ -186,11 +186,11 @@ void qSlicerSubjectHierarchyRegQAPluginPrivate::init()
   vectorMenu->addAction(movingVFAction);
   
   QMenu* fiducialMenu = assignMenu->addMenu( "Fiducial" );
-  QAction* fixedFiducialsAction = new QAction("Fixed phase",q);
-  QObject::connect(fixedFiducialsAction, SIGNAL(triggered()), q, SLOT(fixedFiducialsSelected()));
-  fixedFiducialsAction->setActionGroup(this->DIRQAMenuActionGroup);
-  fixedFiducialsAction->setData(QVariant("Fixed phase"));
-  fiducialMenu->addAction(fixedFiducialsAction);
+  QAction* referenceFiducialsAction = new QAction("Reference phase",q);
+  QObject::connect(referenceFiducialsAction, SIGNAL(triggered()), q, SLOT(referenceFiducialsSelected()));
+  referenceFiducialsAction->setActionGroup(this->DIRQAMenuActionGroup);
+  referenceFiducialsAction->setData(QVariant("Reference phase"));
+  fiducialMenu->addAction(referenceFiducialsAction);
   
   QAction* movingFiducialsAction = new QAction("Moving phase",q);
   QObject::connect(movingFiducialsAction, SIGNAL(triggered()), q, SLOT(movingFiducialsSelected()));
@@ -199,11 +199,11 @@ void qSlicerSubjectHierarchyRegQAPluginPrivate::init()
   fiducialMenu->addAction(movingFiducialsAction);
   
   QMenu* contourMenu = assignMenu->addMenu( "Contour" );
-  QAction* fixedContourAction = new QAction("Fixed phase",q);
-  QObject::connect(fixedContourAction, SIGNAL(triggered()), q, SLOT(fixedContourSelected()));
-  fixedContourAction->setActionGroup(this->DIRQAMenuActionGroup);
-  fixedContourAction->setData(QVariant("Fixed phase"));
-  contourMenu->addAction(fixedContourAction);
+  QAction* referenceContourAction = new QAction("Reference phase",q);
+  QObject::connect(referenceContourAction, SIGNAL(triggered()), q, SLOT(referenceContourSelected()));
+  referenceContourAction->setActionGroup(this->DIRQAMenuActionGroup);
+  referenceContourAction->setData(QVariant("Reference phase"));
+  contourMenu->addAction(referenceContourAction);
   
   QAction* movingContourAction = new QAction("Moving phase",q);
   QObject::connect(movingContourAction, SIGNAL(triggered()), q, SLOT(movingContourSelected()));
@@ -235,34 +235,34 @@ void qSlicerSubjectHierarchyRegQAPluginPrivate::init()
   convertAction->setData(QVariant("Convert"));
   this->DIRQAMenu->addAction(convertAction);
 
-  this->DIRQALogic = vtkSlicerRegQALogic::New();
+  this->DIRQALogic = vtkSlicerRegistrationQALogic::New();
   vtkSmartPointer<vtkMRMLScene> scene; 
   scene = qSlicerSubjectHierarchyPluginHandler::instance()->mrmlScene();
   this->DIRQALogic->SetMRMLScene(scene);
 }
 
 //-----------------------------------------------------------------------------
-qSlicerSubjectHierarchyRegQAPluginPrivate::~qSlicerSubjectHierarchyRegQAPluginPrivate()
+qSlicerSubjectHierarchyRegistrationQAPluginPrivate::~qSlicerSubjectHierarchyRegistrationQAPluginPrivate()
 {
 }
 
 //-----------------------------------------------------------------------------
-// qSlicerSubjectHierarchyRegQAPlugin methods
+// qSlicerSubjectHierarchyRegistrationQAPlugin methods
 
 //-----------------------------------------------------------------------------
-qSlicerSubjectHierarchyRegQAPlugin::qSlicerSubjectHierarchyRegQAPlugin(QObject* parent)
+qSlicerSubjectHierarchyRegistrationQAPlugin::qSlicerSubjectHierarchyRegistrationQAPlugin(QObject* parent)
  : Superclass(parent)
- , m_RegQAParametersID(QString())
- , d_ptr( new qSlicerSubjectHierarchyRegQAPluginPrivate(*this) )
+ , m_RegistrationQAParametersID(QString())
+ , d_ptr( new qSlicerSubjectHierarchyRegistrationQAPluginPrivate(*this) )
 {
   this->m_Name = QString("RegQuality");
-  this->m_RegQAParametersID = QString("");
+  this->m_RegistrationQAParametersID = QString("");
 
-  Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+  Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
   d->init();
 }
 //-----------------------------------------------------------------------------
-qSlicerSubjectHierarchyRegQAPlugin::~qSlicerSubjectHierarchyRegQAPlugin()
+qSlicerSubjectHierarchyRegistrationQAPlugin::~qSlicerSubjectHierarchyRegistrationQAPlugin()
 {
 }
 
@@ -284,7 +284,7 @@ qSlicerSubjectHierarchyRegQAPlugin::~qSlicerSubjectHierarchyRegQAPlugin()
 // }
 
 //---------------------------------------------------------------------------
-double qSlicerSubjectHierarchyRegQAPlugin::canOwnSubjectHierarchyItem(vtkIdType itemID)const
+double qSlicerSubjectHierarchyRegistrationQAPlugin::canOwnSubjectHierarchyItem(vtkIdType itemID)const
 {
   if (!itemID)
   {
@@ -312,21 +312,21 @@ double qSlicerSubjectHierarchyRegQAPlugin::canOwnSubjectHierarchyItem(vtkIdType 
 }
 
 //---------------------------------------------------------------------------
-const QString qSlicerSubjectHierarchyRegQAPlugin::roleForPlugin()const
+const QString qSlicerSubjectHierarchyRegistrationQAPlugin::roleForPlugin()const
 {
   return "Registration Quality";
 }
 
 //-----------------------------------------------------------------------------
-QString qSlicerSubjectHierarchyRegQAPlugin::tooltip(vtkIdType itemID)const
+QString qSlicerSubjectHierarchyRegistrationQAPlugin::tooltip(vtkIdType itemID)const
 {
   return qSlicerSubjectHierarchyPluginHandler::instance()->pluginByName("Volumes")->tooltip(itemID);
 }
 
 //---------------------------------------------------------------------------
-QIcon qSlicerSubjectHierarchyRegQAPlugin::icon(vtkIdType itemID)
+QIcon qSlicerSubjectHierarchyRegistrationQAPlugin::icon(vtkIdType itemID)
 {
-  Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+  Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
 
   if (!itemID)
   {
@@ -343,16 +343,16 @@ QIcon qSlicerSubjectHierarchyRegQAPlugin::icon(vtkIdType itemID)
   return QIcon();
 }
 
-QIcon qSlicerSubjectHierarchyRegQAPlugin::visibilityIcon(int visible)
+QIcon qSlicerSubjectHierarchyRegistrationQAPlugin::visibilityIcon(int visible)
 {
   // Have the default plugin (which is not registered) take care of this
   return qSlicerSubjectHierarchyPluginHandler::instance()->defaultPlugin()->visibilityIcon(visible);
 }
 
 //---------------------------------------------------------------------------
-QList<QAction*> qSlicerSubjectHierarchyRegQAPlugin::itemContextMenuActions()const
+QList<QAction*> qSlicerSubjectHierarchyRegistrationQAPlugin::itemContextMenuActions()const
 {
-  Q_D(const qSlicerSubjectHierarchyRegQAPlugin);
+  Q_D(const qSlicerSubjectHierarchyRegistrationQAPlugin);
 
   QList<QAction*> actions;
   actions << d->DIRQAMenu->menuAction();
@@ -360,9 +360,9 @@ QList<QAction*> qSlicerSubjectHierarchyRegQAPlugin::itemContextMenuActions()cons
 }
 
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::showContextMenuActionsForItem(vtkIdType itemID)
+void qSlicerSubjectHierarchyRegistrationQAPlugin::showContextMenuActionsForItem(vtkIdType itemID)
 {
-  Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+  Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
 
   if (!itemID)
   {
@@ -386,9 +386,9 @@ void qSlicerSubjectHierarchyRegQAPlugin::showContextMenuActionsForItem(vtkIdType
 //   }
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::loadFromFilenameForItemID(vtkIdType itemID)
+void qSlicerSubjectHierarchyRegistrationQAPlugin::loadFromFilenameForItemID(vtkIdType itemID)
 {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -422,11 +422,11 @@ void qSlicerSubjectHierarchyRegQAPlugin::loadFromFilenameForItemID(vtkIdType ite
   
 }
 // //---------------------------------------------------------------------------
-// void qSlicerSubjectHierarchyRegQAPlugin::assignNodeToRegQANode(vtkMRMLNode* node, ){
+// void qSlicerSubjectHierarchyRegistrationQAPlugin::assignNodeToRegistrationQANode(vtkMRMLNode* node, ){
 //    
 // }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::calcuateDIRQAForCurrentNode()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::calcuateDIRQAForCurrentNode()
 {
   
   vtkIdType currentItemID = qSlicerSubjectHierarchyPluginHandler::instance()->currentItem();
@@ -439,7 +439,7 @@ void qSlicerSubjectHierarchyRegQAPlugin::calcuateDIRQAForCurrentNode()
   
   this->calcuateDIRQAForID(currentItemID, false);
 }
-void qSlicerSubjectHierarchyRegQAPlugin::updateRegNodeForCurrentNode(){
+void qSlicerSubjectHierarchyRegistrationQAPlugin::updateRegNodeForCurrentNode(){
    vtkIdType currentItemID = qSlicerSubjectHierarchyPluginHandler::instance()->currentItem();
   
   if (!currentItemID)
@@ -451,7 +451,7 @@ void qSlicerSubjectHierarchyRegQAPlugin::updateRegNodeForCurrentNode(){
   this->updateRegNodeForID(currentItemID);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::convertCurrentNode(){
+void qSlicerSubjectHierarchyRegistrationQAPlugin::convertCurrentNode(){
    vtkIdType currentItemID = qSlicerSubjectHierarchyPluginHandler::instance()->currentItem();
   
   if (!currentItemID)
@@ -463,8 +463,8 @@ void qSlicerSubjectHierarchyRegQAPlugin::convertCurrentNode(){
   this->convertItemID(currentItemID);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::calcuateDIRQAForID(vtkIdType itemID, bool removeNodes) {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+void qSlicerSubjectHierarchyRegistrationQAPlugin::calcuateDIRQAForID(vtkIdType itemID, bool removeNodes) {
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -502,15 +502,15 @@ void qSlicerSubjectHierarchyRegQAPlugin::calcuateDIRQAForID(vtkIdType itemID, bo
    
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::updateRegNodeForID(vtkIdType itemID){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+void qSlicerSubjectHierarchyRegistrationQAPlugin::updateRegNodeForID(vtkIdType itemID){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
       qCritical() << Q_FUNC_INFO << ": Failed to access subject hierarchy node";
       return;
    }
-   /* Check all children, load them and write them in regQA node */
+   /* Check all children, load them and write them in registrationQA node */
    std::string regTypeIdentifier = shNode->GetItemAttribute(itemID,
                     d->DIRQALogic->REGISTRATION_TYPE);
    
@@ -526,9 +526,9 @@ void qSlicerSubjectHierarchyRegQAPlugin::updateRegNodeForID(vtkIdType itemID){
    }
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::calculateFiducialDistance(vtkIdType itemID, bool removeNodes){
+void qSlicerSubjectHierarchyRegistrationQAPlugin::calculateFiducialDistance(vtkIdType itemID, bool removeNodes){
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    
    if (!shNode)
    {
@@ -543,18 +543,18 @@ void qSlicerSubjectHierarchyRegQAPlugin::calculateFiducialDistance(vtkIdType ite
       return;
    }
    
-   vtkSmartPointer<vtkMRMLMarkupsFiducialNode> fiducialFixedNode;
    vtkSmartPointer<vtkMRMLMarkupsFiducialNode> fiducialReferenceNode;
-   fiducialFixedNode = this->loadMarkups(itemID);
+   vtkSmartPointer<vtkMRMLMarkupsFiducialNode> fiducialNode;
+   fiducialNode = this->loadMarkups(itemID);
    
    
-   std::string fixedImageStringID  = shNode->GetItemAttribute(
+   std::string imageStringID  = shNode->GetItemAttribute(
       itemID,d->DIRQALogic->FIXEDIMAGEID.c_str());
    
    std::string referenceImageStringID = shNode->GetAttributeFromItemAncestor(itemID,
         d->DIRQALogic->REFIMAGEID.c_str());
    
-   if (fixedImageStringID.compare(referenceImageStringID) == 0 ){
+   if (referenceImageStringID.compare(imageStringID) == 0 ){
       // Fiducial distance can't be calculated for reference case
       return;
    }
@@ -567,16 +567,16 @@ void qSlicerSubjectHierarchyRegQAPlugin::calculateFiducialDistance(vtkIdType ite
    shNode->GetItemChildren(markupsFieldFolderID,IdMarkupList);
    for(int i=0;i<IdMarkupList->GetNumberOfIds();i++){
       refMarkupID = IdMarkupList->GetId(i);
-      std::string fixedImageID1  = shNode->GetItemAttribute(
+      std::string referenceImageID1  = shNode->GetItemAttribute(
          refMarkupID,d->DIRQALogic->FIXEDIMAGEID.c_str());
-      if ( fixedImageID1.compare(referenceImageStringID) == 0 ){
+      if ( referenceImageID1.compare(referenceImageStringID) == 0 ){
          bFound = true;
          break;
       }
    }
    
    if (! bFound ){
-      qCritical() << Q_FUNC_INFO << ": Can't find markup with fixed ID " << referenceImageStringID.c_str();
+      qCritical() << Q_FUNC_INFO << ": Can't find markup with reference ID " << referenceImageStringID.c_str();
       return;
    }
    
@@ -600,35 +600,35 @@ void qSlicerSubjectHierarchyRegQAPlugin::calculateFiducialDistance(vtkIdType ite
    
    for(int i=0;i<IdList->GetNumberOfIds();i++){
       vectorItemID = IdList->GetId(i);
-      std::string fixedImageID2  = shNode->GetItemAttribute(
+      std::string referenceImageID2  = shNode->GetItemAttribute(
          vectorItemID,d->DIRQALogic->FIXEDIMAGEID.c_str());
       std::string movingImageID  = shNode->GetItemAttribute(
          vectorItemID,d->DIRQALogic->MOVINGIMAGEID.c_str());
-      if (fixedImageID2.compare(referenceImageStringID) == 0 && movingImageID.compare(fixedImageStringID) == 0){
+      if (referenceImageID2.compare(referenceImageStringID) == 0 && movingImageID.compare(imageStringID) == 0){
          bFound = true;
          break;
       }
    }
    
    if (! bFound ){
-      qCritical() << Q_FUNC_INFO << ": Can't find vector field with fixed/moving phase " << referenceImageStringID.c_str() <<
-      "/" << fixedImageStringID.c_str();
+      qCritical() << Q_FUNC_INFO << ": Can't find vector field with reference/moving phase " << referenceImageStringID.c_str() <<
+      "/" << referenceImageStringID.c_str();
       return;
    }
    
    vtkSmartPointer<vtkMRMLVectorVolumeNode> vectorNode;
    vectorNode = vtkMRMLVectorVolumeNode::SafeDownCast(this->loadVolumeFromItemId(vectorItemID));
 
-   double statisticValues[12];
+   double* statisticValues;
    
-   if ( ! d->DIRQALogic->CalculateFiducialsDistance(fiducialReferenceNode, fiducialFixedNode, 
+   if ( ! d->DIRQALogic->CalculateFiducialsDistance(fiducialReferenceNode, fiducialNode, 
       vectorNode, statisticValues) ){
       qCritical() << Q_FUNC_INFO << ": Can't calculate Fiducial distance.";
       return;
    }
    
    this->writeInTable(itemID,
-         d->DIRQALogic->FIDUCIALTABLE.c_str(), statisticValues, fiducialFixedNode);
+         d->DIRQALogic->FIDUCIALTABLE.c_str(), statisticValues, fiducialReferenceNode);
    
    fiducialFolder = shNode->CreateFolderItem(itemID,
             d->DIRQALogic->FIDUCIAL.c_str());      
@@ -638,12 +638,12 @@ void qSlicerSubjectHierarchyRegQAPlugin::calculateFiducialDistance(vtkIdType ite
 //       shNode->RemoveItem(jacobianID);
       this->removeNode(vtkMRMLNode::SafeDownCast(vectorNode));
       this->removeNode(vtkMRMLNode::SafeDownCast(fiducialReferenceNode));
-      this->removeNode(vtkMRMLNode::SafeDownCast(fiducialFixedNode));
+      this->removeNode(vtkMRMLNode::SafeDownCast(fiducialReferenceNode));
    }
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::calculateJacobian(vtkIdType itemID, bool removeNodes){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+void qSlicerSubjectHierarchyRegistrationQAPlugin::calculateJacobian(vtkIdType itemID, bool removeNodes){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
@@ -669,24 +669,24 @@ void qSlicerSubjectHierarchyRegQAPlugin::calculateJacobian(vtkIdType itemID, boo
    vtkSmartPointer<vtkMRMLScalarVolumeNode> jacobianNode;
 //    ROINode = this->loadROI(itemID);
    
-   vtkMRMLRegQANode* regQANode = this->loadRegQANode(itemID);
+   vtkMRMLRegistrationQANode* registrationQANode = this->loadRegistrationQANode(itemID);
    if ( shNode->HasItemAttribute(itemID, d->DIRQALogic->INVERSE)){
-      regQANode = regQANode->GetBackwardRegQAParameters();
+      registrationQANode = registrationQANode->GetBackwardRegistrationQAParameters();
    }
    
    /* Set old jacobian to zero in regqanode */
-   regQANode->SetAndObserveJacobianVolumeNodeID(NULL);
-   regQANode->Modified();
+   registrationQANode->SetAndObserveJacobianVolumeNodeID(NULL);
+   registrationQANode->Modified();
    
    double statisticValues[4];
-   if ( !d->DIRQALogic->Jacobian(regQANode, statisticValues) ){
+   if ( !d->DIRQALogic->Jacobian(registrationQANode, statisticValues) ){
       qCritical() << Q_FUNC_INFO << ": Failed to calculate jacobian for" << shNode->GetItemName(itemID).c_str();
       return;
    }
    
 //    jacobianNode = d->DIRQALogic->Jacobian(vectorNode, ROINode);
    jacobianNode = vtkMRMLScalarVolumeNode::SafeDownCast(scene->GetNodeByID(
-      regQANode->GetJacobianVolumeNodeID()));
+      registrationQANode->GetJacobianVolumeNodeID()));
       
    if (jacobianNode == NULL ){
       qCritical() << Q_FUNC_INFO << ": Can't calculate Jacobian";
@@ -718,8 +718,8 @@ void qSlicerSubjectHierarchyRegQAPlugin::calculateJacobian(vtkIdType itemID, boo
 
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::calculateInverseConsistency(vtkIdType itemID, bool removeNodes){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+void qSlicerSubjectHierarchyRegistrationQAPlugin::calculateInverseConsistency(vtkIdType itemID, bool removeNodes){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
@@ -752,18 +752,18 @@ void qSlicerSubjectHierarchyRegQAPlugin::calculateInverseConsistency(vtkIdType i
    this->loadFromFilenameForItemID(itemID);
    this->loadFromFilenameForItemID(backwardVectorID);
    
-   vtkMRMLRegQANode* regQANode = this->loadRegQANode(itemID);
-   regQANode->SetAndObserveInverseConsistVolumeNodeID(NULL);
-   regQANode->Modified();
+   vtkMRMLRegistrationQANode* registrationQANode = this->loadRegistrationQANode(itemID);
+   registrationQANode->SetAndObserveInverseConsistVolumeNodeID(NULL);
+   registrationQANode->Modified();
 
    double statisticValues[4];
 
-   if ( !d->DIRQALogic->InverseConsist(regQANode, statisticValues) ){
+   if ( !d->DIRQALogic->InverseConsist(registrationQANode, statisticValues) ){
       qCritical() << Q_FUNC_INFO << ": Failed to calcualte inverse consistency for" << shNode->GetItemName(itemID).c_str();
       return;
    }
    backwardConsistNode = vtkMRMLScalarVolumeNode::SafeDownCast(scene->GetNodeByID(
-      regQANode->GetInverseConsistVolumeNodeID()));
+      registrationQANode->GetInverseConsistVolumeNodeID()));
       
    if (backwardConsistNode == NULL ){
       qCritical() << Q_FUNC_INFO << ": Can't calculate inverse consistency";
@@ -806,8 +806,8 @@ void qSlicerSubjectHierarchyRegQAPlugin::calculateInverseConsistency(vtkIdType i
    this->removeNode(backwardVectorID);
 }
 //---------------------------------------------------------------------------
-vtkIdType qSlicerSubjectHierarchyRegQAPlugin::findInverseVectorID(vtkIdType itemID){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+vtkIdType qSlicerSubjectHierarchyRegistrationQAPlugin::findInverseVectorID(vtkIdType itemID){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -815,14 +815,14 @@ vtkIdType qSlicerSubjectHierarchyRegQAPlugin::findInverseVectorID(vtkIdType item
       return 0;
    }
    
-   /* find fixed and moving image ID */
-   std::string fixedImage1ID  = shNode->GetItemAttribute(
+   /* find reference and moving image ID */
+   std::string referenceImage1ID  = shNode->GetItemAttribute(
       itemID,d->DIRQALogic->FIXEDIMAGEID.c_str());
    std::string movingImage1ID  = shNode->GetItemAttribute(
       itemID,d->DIRQALogic->MOVINGIMAGEID.c_str());
    
 
-   /* find items with reverse fixed and moving image ID */
+   /* find items with reverse reference and moving image ID */
    vtkIdType parentItemID = shNode->GetItemParent(itemID);
    vtkSmartPointer<vtkIdList> IdList = vtkSmartPointer<vtkIdList>::New();
    shNode->GetItemChildren(parentItemID,IdList);
@@ -831,19 +831,19 @@ vtkIdType qSlicerSubjectHierarchyRegQAPlugin::findInverseVectorID(vtkIdType item
    
    for(int i=0;i<IdList->GetNumberOfIds();i++){
       backwardVectorItemID = IdList->GetId(i);
-      std::string fixedImage2ID  = shNode->GetItemAttribute(
+      std::string referenceImage2ID  = shNode->GetItemAttribute(
          backwardVectorItemID,d->DIRQALogic->FIXEDIMAGEID.c_str());
       std::string movingImage2ID  = shNode->GetItemAttribute(
          backwardVectorItemID,d->DIRQALogic->MOVINGIMAGEID.c_str());
-      if (fixedImage1ID.compare(movingImage2ID) == 0 && movingImage1ID.compare(fixedImage2ID) == 0){
+      if (referenceImage1ID.compare(movingImage2ID) == 0 && movingImage1ID.compare(referenceImage2ID) == 0){
          return backwardVectorItemID;
       }
    }
    return 0;
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::calculateAbsoluteDifference(vtkIdType itemID, bool removeNodes){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+void qSlicerSubjectHierarchyRegistrationQAPlugin::calculateAbsoluteDifference(vtkIdType itemID, bool removeNodes){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
@@ -860,31 +860,31 @@ void qSlicerSubjectHierarchyRegQAPlugin::calculateAbsoluteDifference(vtkIdType i
    }
    
    
-   std::string fixedImageCharID  = shNode->GetItemAttribute(itemID,
+   std::string referenceImageCharID  = shNode->GetItemAttribute(itemID,
                         d->DIRQALogic->FIXEDIMAGEID.c_str());
  
-   if ( fixedImageCharID.c_str() == NULL){
+   if ( referenceImageCharID.c_str() == NULL){
       qCritical() << Q_FUNC_INFO << ": Failed to find image IDs";
       return;
    }
    
-   vtkIdType fixedImageID = atoll(fixedImageCharID.c_str());
+   vtkIdType referenceImageID = atoll(referenceImageCharID.c_str());
    vtkSmartPointer<vtkMRMLScalarVolumeNode> AbsDiffNode;
    vtkSmartPointer<vtkMRMLScene> scene = qSlicerSubjectHierarchyPluginHandler::instance()->mrmlScene();
    double statisticValues[4];
    
    this->loadFromFilenameForItemID(itemID);
-   this->loadFromFilenameForItemID(fixedImageID);
+   this->loadFromFilenameForItemID(referenceImageID);
    
-   vtkMRMLRegQANode* regQANode = this->loadRegQANode(itemID);
+   vtkMRMLRegistrationQANode* registrationQANode = this->loadRegistrationQANode(itemID);
    
-   if ( !d->DIRQALogic->AbsoluteDifference(regQANode, statisticValues) ){
+   if ( !d->DIRQALogic->AbsoluteDifference(registrationQANode, statisticValues) ){
       qCritical() << Q_FUNC_INFO << ": Failed to calcualte absolute difference for" << shNode->GetItemName(itemID).c_str();
       return;
    }
    
    AbsDiffNode = vtkMRMLScalarVolumeNode::SafeDownCast(scene->GetNodeByID(
-      regQANode->GetAbsoluteDiffVolumeNodeID()));
+      registrationQANode->GetAbsoluteDiffVolumeNodeID()));
    if (AbsDiffNode == NULL ){
       qCritical() << Q_FUNC_INFO << ": Can't calculate Absolute Difference";
       return;
@@ -906,14 +906,14 @@ void qSlicerSubjectHierarchyRegQAPlugin::calculateAbsoluteDifference(vtkIdType i
 
    if (removeNodes){
       this->removeNode(itemID);
-      this->removeNode(fixedImageID);
+      this->removeNode(referenceImageID);
    }
  
       
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::removeNode(vtkMRMLNode* node){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+void qSlicerSubjectHierarchyRegistrationQAPlugin::removeNode(vtkMRMLNode* node){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -928,8 +928,8 @@ void qSlicerSubjectHierarchyRegQAPlugin::removeNode(vtkMRMLNode* node){
    shNode->RemoveItem(id);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::removeNode(vtkIdType itemID){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+void qSlicerSubjectHierarchyRegistrationQAPlugin::removeNode(vtkIdType itemID){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -955,8 +955,8 @@ void qSlicerSubjectHierarchyRegQAPlugin::removeNode(vtkIdType itemID){
 }
 
 //---------------------------------------------------------------------------
-// void qSlicerSubjectHierarchyRegQAPlugin::calculateStatistics(vtkMRMLScalarVolumeNode* scalarNode, double statisticValues[4]){
-//    Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+// void qSlicerSubjectHierarchyRegistrationQAPlugin::calculateStatistics(vtkMRMLScalarVolumeNode* scalarNode, double statisticValues[4]){
+//    Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
 //    
 //    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
 //    if (!shNode)
@@ -977,7 +977,7 @@ void qSlicerSubjectHierarchyRegQAPlugin::removeNode(vtkIdType itemID){
 // //    }
 // }
 //----------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::writeInTable(vtkIdType itemID,char const* tableName, double* statisticValues, vtkMRMLMarkupsFiducialNode* fiducalsNode/*=NULL*/){
+void qSlicerSubjectHierarchyRegistrationQAPlugin::writeInTable(vtkIdType itemID,char const* tableName, double* statisticValues, vtkMRMLMarkupsFiducialNode* fiducalsNode/*=NULL*/){
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -1048,7 +1048,7 @@ void qSlicerSubjectHierarchyRegQAPlugin::writeInTable(vtkIdType itemID,char cons
    }
 }
 //---------------------------------------------------------------------------
-vtkMRMLTableNode* qSlicerSubjectHierarchyRegQAPlugin::createTable(vtkIdType itemID,char const* tableName,bool fiducialsTable/*=false*/){
+vtkMRMLTableNode* qSlicerSubjectHierarchyRegistrationQAPlugin::createTable(vtkIdType itemID,char const* tableName,bool fiducialsTable/*=false*/){
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -1100,7 +1100,7 @@ vtkMRMLTableNode* qSlicerSubjectHierarchyRegQAPlugin::createTable(vtkIdType item
    return tableNode;
 }
 //---------------------------------------------------------------------------
-// vtkMRMLAnnotationROINode* qSlicerSubjectHierarchyRegQAPlugin::calculateVolumeHistogram(vtkMRMLScalarVolumeNode* scalarNode){
+// vtkMRMLAnnotationROINode* qSlicerSubjectHierarchyRegistrationQAPlugin::calculateVolumeHistogram(vtkMRMLScalarVolumeNode* scalarNode){
 // 
 //    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
 //    if (!shNode)
@@ -1146,8 +1146,8 @@ vtkMRMLTableNode* qSlicerSubjectHierarchyRegQAPlugin::createTable(vtkIdType item
 // 
 // }
 //---------------------------------------------------------------------------
-vtkMRMLAnnotationROINode* qSlicerSubjectHierarchyRegQAPlugin::loadROI(vtkIdType itemID){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+vtkMRMLAnnotationROINode* qSlicerSubjectHierarchyRegistrationQAPlugin::loadROI(vtkIdType itemID){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -1214,8 +1214,8 @@ vtkMRMLAnnotationROINode* qSlicerSubjectHierarchyRegQAPlugin::loadROI(vtkIdType 
 
 }
 //---------------------------------------------------------------------------
-vtkMRMLVolumeNode* qSlicerSubjectHierarchyRegQAPlugin::loadVolumeFromItemId(vtkIdType itemID){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+vtkMRMLVolumeNode* qSlicerSubjectHierarchyRegistrationQAPlugin::loadVolumeFromItemId(vtkIdType itemID){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -1337,8 +1337,8 @@ vtkMRMLVolumeNode* qSlicerSubjectHierarchyRegQAPlugin::loadVolumeFromItemId(vtkI
    return volume;
 }
 //---------------------------------------------------------------------------
-vtkMRMLMarkupsFiducialNode* qSlicerSubjectHierarchyRegQAPlugin::loadMarkups(vtkIdType itemID){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+vtkMRMLMarkupsFiducialNode* qSlicerSubjectHierarchyRegistrationQAPlugin::loadMarkups(vtkIdType itemID){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -1389,15 +1389,15 @@ vtkMRMLMarkupsFiducialNode* qSlicerSubjectHierarchyRegQAPlugin::loadMarkups(vtkI
    std::string rawname = fiducialName.substr(0, lastindex);
    fiducialName = scene->GetUniqueNameByString(rawname.c_str());
    
-   char *FixedFiducialNodeID = logic->LoadMarkupsFiducials(filePath.c_str(), fiducialName.c_str());
+   char *ReferenceFiducialNodeID = logic->LoadMarkupsFiducials(filePath.c_str(), fiducialName.c_str());
    
-   if (FixedFiducialNodeID == NULL) {
+   if (ReferenceFiducialNodeID == NULL) {
       qCritical() << Q_FUNC_INFO << ": Can't load Roi from" << filePath.c_str();
       return NULL;
    }
    
    vtkSmartPointer<vtkMRMLMarkupsFiducialNode> fiducialNode;
-   fiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast( scene->GetNodeByID(FixedFiducialNodeID) );
+   fiducialNode = vtkMRMLMarkupsFiducialNode::SafeDownCast( scene->GetNodeByID(ReferenceFiducialNodeID) );
    vtkIdType newFiducialID = shNode->CreateItem(itemID,fiducialNode);
    std::stringstream newFiducialStringID;
    newFiducialStringID <<  newFiducialID;
@@ -1409,8 +1409,8 @@ vtkMRMLMarkupsFiducialNode* qSlicerSubjectHierarchyRegQAPlugin::loadMarkups(vtkI
    return fiducialNode;
 }
 //---------------------------------------------------------------------------
-vtkMRMLRegQANode* qSlicerSubjectHierarchyRegQAPlugin::loadRegQANode(vtkIdType itemID){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+vtkMRMLRegistrationQANode* qSlicerSubjectHierarchyRegistrationQAPlugin::loadRegistrationQANode(vtkIdType itemID){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -1424,64 +1424,64 @@ vtkMRMLRegQANode* qSlicerSubjectHierarchyRegQAPlugin::loadRegQANode(vtkIdType it
       return NULL;
    }
    
-   vtkSmartPointer<vtkMRMLRegQANode> regQANode;
+   vtkSmartPointer<vtkMRMLRegistrationQANode> registrationQANode;
    vtkSmartPointer<vtkMRMLScene> scene; 
    scene = qSlicerSubjectHierarchyPluginHandler::instance()->mrmlScene();
 
-   std::string regQANodeIDString = shNode->GetAttributeFromItemAncestor(itemID, 
-         d->DIRQALogic->REGQANODEID.c_str() );
-   if ( regQANodeIDString.empty() ){
-      QString regQAID = this->m_RegQAParametersID;
-      if ( regQAID.isEmpty() ){
+   std::string registrationQANodeIDString = shNode->GetAttributeFromItemAncestor(itemID, 
+         d->DIRQALogic->RegistrationQANODEID.c_str() );
+   if ( registrationQANodeIDString.empty() ){
+      QString registrationQAID = this->m_RegistrationQAParametersID;
+      if ( registrationQAID.isEmpty() ){
          // Let's check first, if parameters exist in scene
-         vtkSmartPointer<vtkCollection> collection = scene->GetNodesByClass("vtkMRMLRegQANode");
+         vtkSmartPointer<vtkCollection> collection = scene->GetNodesByClass("vtkMRMLRegistrationQANode");
          if (collection->GetNumberOfItems() > 0){
-            qCritical() << Q_FUNC_INFO << ": Found collection regQA: ";
+//             qCritical() << Q_FUNC_INFO << ": Found collection registrationQA: ";
             for(int item = 0; item < collection->GetNumberOfItems(); item++){
                vtkSmartPointer<vtkObject> object = collection->GetItemAsObject(item);
-               regQANode = vtkMRMLRegQANode::SafeDownCast(object);
+               registrationQANode = vtkMRMLRegistrationQANode::SafeDownCast(object);
                // Take only forward paramees
-               if (! regQANode->GetBackwardRegistration() ){
-                  regQAID = regQANode->GetID();
+               if (! registrationQANode->GetBackwardRegistration() ){
+                  registrationQAID = registrationQANode->GetID();
                   break;
                }
             }
          }
          else{
             //Create new reg quality
-            qCritical() << Q_FUNC_INFO << ": Creating new regQA: ";
-            regQANode = vtkMRMLRegQANode::New();
-            scene->AddNode( regQANode );
-            regQAID = regQANode->GetID();
+            qCritical() << Q_FUNC_INFO << ": Creating new registrationQA: ";
+            registrationQANode = vtkMRMLRegistrationQANode::New();
+            scene->AddNode( registrationQANode );
+            registrationQAID = registrationQANode->GetID();
          }
       }
-      else{
-         qCritical() << Q_FUNC_INFO << ": Found regQA: " << regQAID.toUtf8().constData();
-      }
-      regQANodeIDString = regQAID.toUtf8().constData();
+//       else{
+//          qCritical() << Q_FUNC_INFO << ": Found registrationQA: " << registrationQAID.toUtf8().constData();
+//       }
+      registrationQANodeIDString = registrationQAID.toUtf8().constData();
    }
 
-   regQANode = vtkMRMLRegQANode::SafeDownCast(
-         scene->GetNodeByID( regQANodeIDString ));
+   registrationQANode = vtkMRMLRegistrationQANode::SafeDownCast(
+         scene->GetNodeByID( registrationQANodeIDString ));
 
    
-   if (!regQANode){
-      qCritical() << Q_FUNC_INFO << "Can't get " << regQANodeIDString.c_str();
+   if (!registrationQANode){
+      qCritical() << Q_FUNC_INFO << "Can't get " << registrationQANodeIDString.c_str();
       return NULL;
    }
    
-   if ( regQANode->GetBackwardRegQAParameters() == NULL ){
-      d->DIRQALogic->CreateBackwardParameters(regQANode);
+   if ( registrationQANode->GetBackwardRegistrationQAParameters() == NULL ){
+      d->DIRQALogic->CreateBackwardParameters(registrationQANode);
    }
    
-   this->m_RegQAParametersID = QString(regQANodeIDString.c_str());
+   this->m_RegistrationQAParametersID = QString(registrationQANodeIDString.c_str());
    
-   return regQANode;
+   return registrationQANode;
    
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::convertItemID(vtkIdType itemID){
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+void qSlicerSubjectHierarchyRegistrationQAPlugin::convertItemID(vtkIdType itemID){
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -1502,10 +1502,10 @@ void qSlicerSubjectHierarchyRegQAPlugin::convertItemID(vtkIdType itemID){
    
    vtkIdType parentID = shNode->GetItemParent(itemID);
    
-   vtkMRMLRegQANode* pNode = this->loadRegQANode(itemID);
+   vtkMRMLRegistrationQANode* pNode = this->loadRegistrationQANode(itemID);
    //Check for backward
    if ( shNode->HasItemAttribute(parentID,d->DIRQALogic->INVERSE) ){
-      pNode = pNode->GetBackwardRegQAParameters();
+      pNode = pNode->GetBackwardRegistrationQAParameters();
    }
    
    if ( node->IsA("vtkMRMLVectorVolumeNode") ){
@@ -1547,9 +1547,9 @@ void qSlicerSubjectHierarchyRegQAPlugin::convertItemID(vtkIdType itemID){
    }
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::InputSelected(std::string name, bool backward, vtkIdType itemID, vtkMRMLNode* associatedNode)
+void qSlicerSubjectHierarchyRegistrationQAPlugin::InputSelected(std::string name, bool backward, vtkIdType itemID, vtkMRMLNode* associatedNode)
 {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -1567,74 +1567,74 @@ void qSlicerSubjectHierarchyRegQAPlugin::InputSelected(std::string name, bool ba
       return; // Only this plugin can handle this node
    }
    
-   vtkMRMLRegQANode* regQANode = this->loadRegQANode(itemID);
-   if ( ! regQANode ){
-      qCritical() << Q_FUNC_INFO << ": Can't get regQANode.";
+   vtkMRMLRegistrationQANode* registrationQANode = this->loadRegistrationQANode(itemID);
+   if ( ! registrationQANode ){
+      qCritical() << Q_FUNC_INFO << ": Can't get registrationQANode.";
       return; // Only this plugin can handle this node
    }
    if ( backward ){
-      regQANode = regQANode->GetBackwardRegQAParameters();
+      registrationQANode = registrationQANode->GetBackwardRegistrationQAParameters();
    }
    
-   regQANode->DisableModifiedEventOn();
+   registrationQANode->DisableModifiedEventOn();
    if ( name.compare(d->DIRQALogic->IMAGE) == 0 ){
       if (!associatedNode->IsA("vtkMRMLScalarVolumeNode")){
          qCritical() << associatedNode->GetName() << ": Not a scalar volume.";
       }
-      regQANode->SetAndObserveVolumeNodeID(associatedNode->GetID());
+      registrationQANode->SetAndObserveVolumeNodeID(associatedNode->GetID());
    }
    else if ( name.compare(d->DIRQALogic->WARPED_IMAGE) == 0 ){
       if ( !associatedNode->IsA("vtkMRMLScalarVolumeNode")){
          qCritical() << associatedNode->GetName() << ": Not a scalar volume.";
       }
-      regQANode->SetAndObserveWarpedVolumeNodeID(associatedNode->GetID());
+      registrationQANode->SetAndObserveWarpedVolumeNodeID(associatedNode->GetID());
    }
    else if ( name.compare(d->DIRQALogic->VECTOR_FIELD) == 0 ){
       if ( !(associatedNode->IsA("vtkMRMLVectorVolumeNode")) ){
          qCritical() << associatedNode->GetName() << ": Not a vector volume.";
       }
-      regQANode->SetAndObserveVectorVolumeNodeID(associatedNode->GetID());
+      registrationQANode->SetAndObserveVectorVolumeNodeID(associatedNode->GetID());
    }
    else if ( name.compare(d->DIRQALogic->FIDUCIAL) == 0){
       if (!associatedNode->IsA("vtkMRMLMarkupsNode")){
          qCritical() << associatedNode->GetName() << ": Not a markups node.";
       }
-      regQANode->SetAndObserveFiducialNodeID(associatedNode->GetID());
+      registrationQANode->SetAndObserveFiducialNodeID(associatedNode->GetID());
    }
    else if ( name.compare(d->DIRQALogic->ROI) == 0){
       if (!associatedNode->IsA("vtkMRMLAnnotationROINode")){
          qCritical() << associatedNode->GetName() << ": Not a annotation ROI node.";
       }
-      regQANode->SetAndObserveROINodeID(associatedNode->GetID());
+      registrationQANode->SetAndObserveROINodeID(associatedNode->GetID());
    }
    else{
       qCritical() << associatedNode->GetName() << ": with an unnkown reg type: " << name.c_str();
       return;
    }
      
-   regQANode->DisableModifiedEventOff();
+   registrationQANode->DisableModifiedEventOff();
    
    /* Update backward node */
    if ( backward ){
-      regQANode->ChangeFromBackwardToFoward();
+      registrationQANode->ChangeFromBackwardToFoward();
    }
    else{
-      regQANode->GetBackwardRegQAParameters()->ChangeFromBackwardToFoward();
+      registrationQANode->GetBackwardRegistrationQAParameters()->ChangeFromBackwardToFoward();
    }
    
    //Try to update widget
 
-   qSlicerAbstractCoreModule* module = qSlicerApplication::application()->moduleManager()->module("RegQA");
+   qSlicerAbstractCoreModule* module = qSlicerApplication::application()->moduleManager()->module("RegistrationQA");
    qSlicerAbstractModule* moduleWithAction = qobject_cast<qSlicerAbstractModule*>(module);
    if (!moduleWithAction)
    {
-      qCritical() << Q_FUNC_INFO << ": Failed to get RegQA module";
+      qCritical() << Q_FUNC_INFO << ": Failed to get RegistrationQA module";
       return;
    }
    qSlicerAbstractModuleRepresentation* widget = moduleWithAction->widgetRepresentation();
    if (!widget)
    {
-      qCritical() << Q_FUNC_INFO << ": Failed to get RegQA module widget";
+      qCritical() << Q_FUNC_INFO << ": Failed to get RegistrationQA module widget";
       return;
    }
    if (! widget->setEditedNode(associatedNode) ){
@@ -1645,7 +1645,7 @@ void qSlicerSubjectHierarchyRegQAPlugin::InputSelected(std::string name, bool ba
    qCritical() << Q_FUNC_INFO << ":set" << associatedNode->GetName() << " to " << name.c_str() << "\n";
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::InputSelected(std::string name, bool backward)
+void qSlicerSubjectHierarchyRegistrationQAPlugin::InputSelected(std::string name, bool backward)
 {
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
@@ -1664,60 +1664,60 @@ void qSlicerSubjectHierarchyRegQAPlugin::InputSelected(std::string name, bool ba
    this->InputSelected(name, backward, itemID, associatedNode);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::fixedImageSelected()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::referenceImageSelected()
 {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    this->InputSelected(d->DIRQALogic->IMAGE,false);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::movingImageSelected()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::movingImageSelected()
 {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    this->InputSelected(d->DIRQALogic->IMAGE, true);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::fwarpedImageSelected()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::fwarpedImageSelected()
 {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    this->InputSelected(d->DIRQALogic->WARPED_IMAGE, false);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::bwarpedImageSelected()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::bwarpedImageSelected()
 {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    this->InputSelected(d->DIRQALogic->WARPED_IMAGE, true);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::fixedVectorFieldSelected()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::referenceVectorFieldSelected()
 {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    this->InputSelected(d->DIRQALogic->VECTOR_FIELD, false);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::movingVectorFieldSelected()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::movingVectorFieldSelected()
 {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    this->InputSelected(d->DIRQALogic->VECTOR_FIELD, true);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::fixedFiducialsSelected()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::referenceFiducialsSelected()
 {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    this->InputSelected(d->DIRQALogic->FIDUCIAL, false);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::movingFiducialsSelected()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::movingFiducialsSelected()
 {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    this->InputSelected(d->DIRQALogic->FIDUCIAL, true);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::ROISelected()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::ROISelected()
 {
-   Q_D(qSlicerSubjectHierarchyRegQAPlugin);
+   Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
    this->InputSelected(d->DIRQALogic->ROI, false);
 }
-void qSlicerSubjectHierarchyRegQAPlugin::loadContourSelected(bool backward){
+void qSlicerSubjectHierarchyRegistrationQAPlugin::loadContourSelected(bool backward){
    vtkMRMLSubjectHierarchyNode* shNode = qSlicerSubjectHierarchyPluginHandler::instance()->subjectHierarchyNode();
    if (!shNode)
    {
@@ -1741,27 +1741,27 @@ void qSlicerSubjectHierarchyRegQAPlugin::loadContourSelected(bool backward){
       return; // Only this plugin can handle this node
    }
    
-   vtkMRMLRegQANode* regQANode = this->loadRegQANode(currentItemID);
+   vtkMRMLRegistrationQANode* registrationQANode = this->loadRegistrationQANode(currentItemID);
    if (backward){
-      regQANode = regQANode->GetBackwardRegQAParameters();
+      registrationQANode = registrationQANode->GetBackwardRegistrationQAParameters();
    }
    
-   regQANode->SetSegmentID(segmentStringID.c_str());
-   regQANode->SetAndObserveSegmentationNode(vtkMRMLSegmentationNode::SafeDownCast(segmentationNode));
+   registrationQANode->SetSegmentID(segmentStringID.c_str());
+   registrationQANode->SetAndObserveSegmentationNode(vtkMRMLSegmentationNode::SafeDownCast(segmentationNode));
    
    //Try to update widget
     // Get Registration Quality module
-   qSlicerAbstractCoreModule* module = qSlicerApplication::application()->moduleManager()->module("RegQA");
+   qSlicerAbstractCoreModule* module = qSlicerApplication::application()->moduleManager()->module("RegistrationQA");
    qSlicerAbstractModule* moduleWithAction = qobject_cast<qSlicerAbstractModule*>(module);
    if (!moduleWithAction)
    {
-      qCritical() << Q_FUNC_INFO << ": Failed to get RegQA module";
+      qCritical() << Q_FUNC_INFO << ": Failed to get RegistrationQA module";
       return;
    }
    qSlicerAbstractModuleRepresentation* widget = moduleWithAction->widgetRepresentation();
    if (!widget)
    {
-      qCritical() << Q_FUNC_INFO << ": Failed to get RegQA module widget";
+      qCritical() << Q_FUNC_INFO << ": Failed to get RegistrationQA module widget";
       return;
    }
    if (! widget->setEditedNode(segmentationNode) ){
@@ -1770,32 +1770,32 @@ void qSlicerSubjectHierarchyRegQAPlugin::loadContourSelected(bool backward){
 
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::fixedContourSelected()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::referenceContourSelected()
 {
    this->loadContourSelected(false);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::movingContourSelected()
+void qSlicerSubjectHierarchyRegistrationQAPlugin::movingContourSelected()
 {
    this->loadContourSelected(true);
 }
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyRegQAPlugin::setNodeInRegQA(vtkMRMLNode* node, QString role, QString context)
+void qSlicerSubjectHierarchyRegistrationQAPlugin::setNodeInRegistrationQA(vtkMRMLNode* node, QString role, QString context)
 {
 
     // Get Registration Quality module
-   qSlicerAbstractCoreModule* module = qSlicerApplication::application()->moduleManager()->module("RegQA");
+   qSlicerAbstractCoreModule* module = qSlicerApplication::application()->moduleManager()->module("RegistrationQA");
    qSlicerAbstractModule* moduleWithAction = qobject_cast<qSlicerAbstractModule*>(module);
    if (!moduleWithAction)
    {
-      qCritical() << Q_FUNC_INFO << ": Failed to get RegQA module";
+      qCritical() << Q_FUNC_INFO << ": Failed to get RegistrationQA module";
       return;
    }
    // Select dose volume node in Dose Volume Histogram module
    qSlicerAbstractModuleRepresentation* widget = moduleWithAction->widgetRepresentation();
    if (!widget)
    {
-      qCritical() << Q_FUNC_INFO << ": Failed to get RegQA module widget";
+      qCritical() << Q_FUNC_INFO << ": Failed to get RegistrationQA module widget";
       return;
    }
    if (! widget->setEditedNode(node,role,context) ){
