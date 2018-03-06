@@ -22,6 +22,7 @@ set(${KIT}_INCLUDE_DIRECTORIES
   ${vtkSlicerAnnotationsModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerMarkupsModuleLogic_INCLUDE_DIRS}
   ${vtkSlicerMarkupsModuleMRML_INCLUDE_DIRS}
+  ${vtkSlicerSegmentationsModuleLogic_INCLUDE_DIRS}
 #   ${vtkSlicerDoseVolumeHistogramModuleLogic_INCLUDE_DIRS}
 #   ${vtkSlicerDoseVolumeHistogramModuleMRML_INCLUDE_DIRS}
   )
@@ -55,6 +56,7 @@ set(${KIT}_TARGET_LIBRARIES
   vtkSlicerAnnotationsModuleMRML
   vtkSlicerMarkupsModuleLogic
   vtkSlicerMarkupsModuleMRML
+  vtkSlicerSegmentationsModuleLogic
 #   vtkSlicerDoseVolumeHistogramModuleLogic
 #   vtkSlicerDoseVolumeHistogramModuleMRML
   MRMLCore

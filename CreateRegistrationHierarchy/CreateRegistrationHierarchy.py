@@ -24,6 +24,8 @@ REGISTRATION_TYPE = "RegistrationType"
 PHASENUMBER = "PhaseNumber"
 PHASETYPE=  "Phase"
 CT =  "CT"
+SEGMENTATION = "Segmentation"
+SEGMENTID = "SegmentID"
 ITEMID = "_itemID"
 DIR = 'DIR'
 FILEPATH = 'FilePath'
@@ -57,7 +59,7 @@ REGQAITEM = 'RegQA'
 class CreateRegistrationHierarchy(ScriptedLoadableModule):
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    parent.title = "Read Registration Node" # TODO make this more human readable by adding spaces
+    parent.title = "Create Registration Hierarchy" # TODO make this more human readable by adding spaces
     parent.categories = ["Registration.Quality Assurance"]
     parent.dependencies = []
     parent.contributors = ["Kristjan Anderle (GSI)"] # replace with "Firstname Lastname (Org)"
@@ -103,7 +105,8 @@ class CreateRegistrationHierarchyWidget(ScriptedLoadableModuleWidget):
   def setup(self):
     ScriptedLoadableModuleWidget.setup(self)
     self.dirPaths = RegistrationHierarchyHelp()
-    self.predefinedList = ["","FC","SingleFC","MDACC"]
+    #self.predefinedList = ["","FC","SingleFC","MDACC"]
+    self.predefinedList = ["","Example","4DCT"]
     # Instantiate and connect widgets ...
 
     ##
@@ -162,6 +165,18 @@ class CreateRegistrationHierarchyWidget(ScriptedLoadableModuleWidget):
     self.CTDIR.text = ''
     parametersFormLayout.addRow("CT Directory:", self.CTDIR)
     
+    self.contourDIR = qt.QLineEdit()     
+    self.contourDIR.setToolTip( "Input the path to Contour Directory" )
+    self.contourDIR.text = ''
+    self.contourDIR.visible = False
+    parametersFormLayout.addRow("Contour Directory:", self.contourDIR)
+    
+    self.contourID = qt.QLineEdit()     
+    self.contourID.setToolTip( "Input the inspected contour ID" )
+    self.contourID.text = ''
+    self.contourID.visible = False
+    parametersFormLayout.addRow("Contour ID:", self.contourID)
+    
     self.vectorDIR = qt.QLineEdit()     
     self.vectorDIR.setToolTip( "Input the path to vector Directory" )
     self.vectorDIR.text = ''
@@ -177,11 +192,17 @@ class CreateRegistrationHierarchyWidget(ScriptedLoadableModuleWidget):
     self.ROIfilePath.text = ''
     parametersFormLayout.addRow("ROI FilePath:", self.ROIfilePath)
     
-    # CT Directory
     self.fiducialsDIR = qt.QLineEdit()     
     self.fiducialsDIR.setToolTip( "Input the path to fiducials Directory" )
     self.fiducialsDIR.text = ''
     parametersFormLayout.addRow("Fiducials Directory:", self.fiducialsDIR)
+    
+    #Four CT
+    self.fourDCheckbox = qt.QCheckBox()
+    self.fourDCheckbox.setToolTip("Check if a registration within 4DCT was done")
+    self.fourDCheckbox.setCheckState(0)
+    parametersFormLayout.addRow("4DCT Registration:", self.fourDCheckbox)
+    
 
     
     #
@@ -197,6 +218,7 @@ class CreateRegistrationHierarchyWidget(ScriptedLoadableModuleWidget):
     self.predefPatBox.connect('currentIndexChanged(int)', self.setPreDef)
     self.createHierarchyButton.connect('clicked(bool)', self.onCreateHierarchyButton)
     self.patientName.connect('textChanged(QString)',self.patNameChanged)
+    self.fourDCheckbox.connect('clicked(void)',self.updateWidget)
 
 
     # Add vertical spacer
@@ -224,27 +246,38 @@ class CreateRegistrationHierarchyWidget(ScriptedLoadableModuleWidget):
   def updateDirpaths(self):
     self.dirPaths.name = self.patientName.text
     self.dirPaths.ctDirectory =  self.CTDIR.text
+    self.dirPaths.contourDirectory =  self.contourDIR.text
+    self.dirPaths.contourID =  self.contourID.text
     self.dirPaths.vectorDirectory = self.vectorDIR.text
     self.dirPaths.warpDirectory = self.warpedDIR.text
     self.dirPaths.roiFile = self.ROIfilePath.text
     self.dirPaths.fiducialsDirectory = self.fiducialsDIR.text
+    if self.fourDCheckbox.checkState():
+       self.dirPaths.fourD = True
+    else:
+       self.dirPaths.fourD = False
+    
     
   def updateWidget(self):
     self.patientName.text = self.dirPaths.name
     self.CTDIR.text = self.dirPaths.ctDirectory
+    self.contourDIR.text = self.dirPaths.contourDirectory
+    self.contourID.text = self.dirPaths.contourID
     self.vectorDIR.text = self.dirPaths.vectorDirectory
     self.warpedDIR.text = self.dirPaths.warpDirectory
     self.ROIfilePath.text = self.dirPaths.roiFile
     self.fiducialsDIR.text = self.dirPaths.fiducialsDirectory
+    if self.dirPaths.fourD:
+       self.fourDCheckbox.setCheckState(2)
+    else:
+       self.fourDCheckbox.setCheckState(0)
+    
      
   def onCreateHierarchyButton(self):
     self.updateDirpaths()
     element = self.predefinedList[self.predefPatBox.currentIndex]
-    fourD = True
-    if element == "SingleFC":
-       fourD  = False
     logic = CreateRegistrationHierarchyLogic()
-    logic.registerAndDirqa(self.dirPaths,fourD)
+    logic.registerAndDirqa(self.dirPaths)
 
   def onReload(self,moduleName="CreateRegistrationHierarchy"):
     """Generic reload method for any scripted module.
@@ -279,11 +312,12 @@ class CreateRegistrationHierarchyLogic:
   def __init__(self):
     pass
 
-  def registerAndDirqa(self,dirPaths,fourD):
+  def registerAndDirqa(self,dirPaths):
     patientName = dirPaths.name
     
     #Reference phase remains 00 throughout registration
     referencePhase = dirPaths.referencePhase
+    fourD = dirPaths.fourD
     
     #First make subject Hierarchy Node
     #Create Patient Node
@@ -310,14 +344,18 @@ class CreateRegistrationHierarchyLogic:
     shNode.SetItemAttribute(ctDIRItemID,FILEPATH,dirPaths.ctDirectory)
     shNode.SetItemAttribute(patientItemID,CT + ITEMID,str(ctDIRItemID))
     
-    doseDIRItemID = self.createChild(patientItemID,'Dose')
-    shNode.SetItemAttribute(doseDIRItemID,FILEPATH,dirPaths.doseDirectory)
-    shNode.SetItemAttribute(patientItemID,'Dose' + ITEMID,str(doseDIRItemID))
+    #doseDIRItemID = self.createChild(patientItemID,'Dose')
+    #shNode.SetItemAttribute(doseDIRItemID,FILEPATH,dirPaths.doseDirectory)
+    #shNode.SetItemAttribute(patientItemID,'Dose' + ITEMID,str(doseDIRItemID))
+    
+    contoursDIRItemID = self.createChild(patientItemID,'Contours')
+    shNode.SetItemAttribute(contoursDIRItemID,FILEPATH,dirPaths.contourDirectory)
+    shNode.SetItemAttribute(patientItemID,FIDUCIAL + ITEMID,str(contoursDIRItemID))
     
     fiducialsDIRItemID = self.createChild(patientItemID,'Fiducials')
     shNode.SetItemAttribute(fiducialsDIRItemID,FILEPATH,dirPaths.fiducialsDirectory)
     shNode.SetItemAttribute(patientItemID,FIDUCIAL + ITEMID,str(fiducialsDIRItemID))
-     
+
      #Create directories
     modList = [WARPED_IMAGE, VECTOR_FIELD,ROI]
     modDictID = {}
@@ -379,7 +417,7 @@ class CreateRegistrationHierarchyLogic:
       referencePhase
       #Which is the reference phase in a non 4D registration?
       if not fourD:
-         if fileName.find("Plan") > -1:
+         if fileName.find("Plan") > -1 or fileName.find("Image1") > -1:
             shNode.RemoveItemAttribute(ctItemID, INVERSE)
 
       phaseDictID[phase] = ctItemID
@@ -391,6 +429,29 @@ class CreateRegistrationHierarchyLogic:
          shNode.SetItemAttribute(patientItemID,REFERENCENUMBER,str(phaseDictID['refPhaseID']))
          shNode.RemoveItemAttribute(ctItemID, INVERSE)
      
+    
+    #Find contours:
+    contoursDIRItemID = self.createChild(patientItemID,'Contours')
+    shNode.SetItemAttribute(contoursDIRItemID,FILEPATH,dirPaths.contourDirectory)
+    shNode.SetItemAttribute(patientItemID,FIDUCIAL + ITEMID,str(contoursDIRItemID))
+    
+    if not os.path.exists(dirPaths.contourDirectory):
+         print "No directory " + dirPaths.contourDirectory
+    else:
+       for fileName in os.listdir(dirPaths.contourDirectory):
+          filePrefix, fileExtension = os.path.splitext(fileName)
+          #Currently only .nrrd segmentations can be read and only not 4D
+          if dirPaths.fourD:
+             print "Can't read contours for 4DCT"
+          else:
+             if fileExtension.lower() == '.nrrd':
+                itemID = self.createChild(contoursDIRItemID,filePrefix)
+                if fileName.find('Image2') > -1:
+                  shNode.SetItemAttribute(itemID,INVERSE,"1")
+                shNode.SetItemAttribute(itemID,REGISTRATION_TYPE,SEGMENTATION)
+                shNode.SetItemAttribute(itemID,FILEPATH, dirPaths.contourDirectory + fileName)
+                shNode.SetItemAttribute(itemID,SEGMENTID, dirPaths.contourID)
+    
     #Find warped images and vector fields
     for i in range(2):
       if i == 0:
@@ -425,7 +486,7 @@ class CreateRegistrationHierarchyLogic:
                   itemID = self.createChild(modDictID[modList[i]],filePrefix)
                   shNode.SetItemAttribute(itemID,REGISTRATION_TYPE,modList[i])
                   shNode.SetItemAttribute(itemID,FILEPATH, dirList[i] + file)
-                  if file.find("plan_refPhase") > -1:
+                  if file.find("Backward") > -1:
                      shNode.SetItemAttribute(itemID, INVERSE,"1")
 
        #self.checkDirqaDirectory(dirqaDirectory, regQAItemID, phase)
@@ -447,12 +508,12 @@ class CreateRegistrationHierarchyLogic:
                   continue
                phase = '0' + phaseStr
                shNode.SetItemAttribute(itemID,FIXEDIMAGEID,str(phaseDictID[phase]))
-            else:
-               if fileName.find('T00') < 0 and fileName.find('Plan') < 0:
-                  continue
+            #else:
+               #if fileName.find('T00') < 0 and fileName.find('Plan') < 0:
+                  #continue
                
             itemID = self.createChild(fiducialsDIRItemID,filePrefix)
-            if not fourD and fileName.find('T00') > -1:
+            if not fourD and fileName.find('Image2') > -1:
                shNode.SetItemAttribute(itemID,INVERSE,"1")
             shNode.SetItemAttribute(itemID,REGISTRATION_TYPE,FIDUCIAL)
             shNode.SetItemAttribute(itemID,FILEPATH, dirPaths.fiducialsDirectory + fileName)
@@ -511,11 +572,11 @@ class CreateRegistrationHierarchyLogic:
   def checkDirectoryForFiles(self, file, warpedImageOn):
      fixedPhase = movingPhase = -1
      if warpedImageOn:
-        index = file.find('.nrrd')
+        index = file.find('warped')
         if index > -1:
            return (0,0)          
      else:
-        index = file.find('.mha')
+        index = file.find('vf')
         if index > -1:
            return (0,0)
      
@@ -686,12 +747,13 @@ class RegistrationHierarchyHelp():
       self.patDirectory = ''
       self.ctDirectory  = ''
       self.doseDirectory = ''
-      self.contourFile = ''
+      self.contourDirectory = ''
       self.fiducialsDirectory = ''
       self.vectorDirectory = ''
       self.warpDirectory = ''
       self.roiFile = ''
       self.referencePhase = ''
+      self.fourD = False
       
    def createFromTemplate(self,case, name = ""):
       if case == "FC":
@@ -705,12 +767,30 @@ class RegistrationHierarchyHelp():
          self.patDirectory  = patientDirectory
          self.ctDirectory   = patientDirectory + 'CTX/'
          self.doseDirectory = patientDirectory + 'Dose/'
-         self.contourFile   = patientDirectory + 'Contour/4D/ByTRiPTrafo/' + patName + "_00.binfo"
+         self.contourDirectory   = patientDirectory + 'Contour/4D/ByTRiPTrafo/' + patName + "_00.binfo"
          self.vectorDirectory = patientDirectory + 'Registration/4D/'
          self.warpDirectory = self.vectorDirectory
          self.fiducialsDirectory = patientDirectory + '4D/NRRD/'
          self.roiFile = patientDirectory + 'Registration/' + "R.acsv"
          self.referencePhase = "00"
+      elif case == "4DCT":
+         if name == "":
+            patName = 'Example'
+         else:
+            patName = name
+         
+         patientDirectory = '/u/kanderle/Documents/' + patName + '/'
+         self.name = patName
+         self.patDirectory  = patientDirectory
+         self.ctDirectory   = patientDirectory + 'CT/'
+         self.doseDirectory = patientDirectory + 'Dose/'
+         self.contourDirectory   = patientDirectory + 'Contours/'
+         self.vectorDirectory = patientDirectory + 'Registration/'
+         self.warpDirectory = self.vectorDirectory
+         self.fiducialsDirectory = patientDirectory + 'Fiducials/'
+         self.roiFile = patientDirectory + 'Registration/' + "R.acsv"
+         self.referencePhase = "00"
+         self.fourD = True
       elif case == "SingleFC":
          if name == "":
             patName = 'Lung006'
@@ -723,30 +803,32 @@ class RegistrationHierarchyHelp():
          #self.ctDirectory   = patientDirectory + 'CTX/'
          self.ctDirectory = patientDirectory + 'RegQA/'
          self.doseDirectory = patientDirectory + 'Dose/'
-         self.contourFile   = patientDirectory + 'Contour/4D/ByTRiPTrafo/' + patName + "_00.binfo"
+         self.contourDirectory   = patientDirectory + 'Contour/4D/ByTRiPTrafo/' + patName + "_00.binfo"
          #self.vectorDirectory = patientDirectory + 'Registration/4D/'
          self.vectorDirectory = patientDirectory + 'RegQA/Demons/'
          self.warpDirectory = self.vectorDirectory
          self.fiducialsDirectory = patientDirectory + '4D/NRRD/'
          self.roiFile = patientDirectory + 'Registration/' + "R.acsv"
          self.referencePhase = "00"
+         self.fourD = False
       elif case == "Example":
          if name == "":
-            patName = 'Lung006'
+            patName = 'Example'
          else:
             patName = name
          
-         patientDirectory = '/u/kanderle/Documents/Data/' + patName + '/'
+         patientDirectory = '/u/kanderle/Documents/Data/'
          self.name = patName
          self.patDirectory  = patientDirectory
-         #self.ctDirectory   = patientDirectory + 'CTX/'
-         self.ctDirectory = patientDirectory 
+         self.ctDirectory = patientDirectory + 'Images/'
          self.doseDirectory = patientDirectory 
-         self.contourFile   = patientDirectory 
+         self.contourDirectory   = patientDirectory + 'Contours/'
+         self.contourID = "GTV63"
          #self.vectorDirectory = patientDirectory + 'Registration/4D/'
-         self.vectorDirectory = patientDirectory 
+         self.vectorDirectory = patientDirectory + 'RegFiles/'
          self.warpDirectory = self.vectorDirectory
-         self.fiducialsDirectory = patientDirectory 
+         self.fiducialsDirectory = patientDirectory + 'Fiducials/'
+         self.fourD = False
          #self.roiFile = patientDirectory + 'Registration/' + "R.acsv"
          #self.referencePhase = "00"
       elif case == "MDACC":
@@ -760,7 +842,7 @@ class RegistrationHierarchyHelp():
          #self.ctDirectory   = patientDirectory + 'CTX/'
          self.ctDirectory = patientDirectory + 'CTX/'
          self.doseDirectory = patientDirectory + 'Dose/'
-         self.contourFile   = patientDirectory + 'Contour/4D/ByTRiPTrafo/' + patName + "_00.binfo"
+         self.contourDirectory   = patientDirectory + 'Contour/4D/ByTRiPTrafo/' + patName + "_00.binfo"
          #self.vectorDirectory = patientDirectory + 'Registration/4D/'
          self.vectorDirectory = patientDirectory + 'Registration/ByPlastimatch/'
          #self.vectorDirectory = patientDirectory + 'Registration/ByPlastimatch_New/'

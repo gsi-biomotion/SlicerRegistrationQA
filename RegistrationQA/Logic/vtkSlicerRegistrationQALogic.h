@@ -55,6 +55,8 @@ public:
    static const std::string PHASENUMBER;
    static const std::string PHASETYPE;
    static const std::string CT;
+   static const std::string SEGMENTATION;
+   static const std::string SEGMENTATID;
    static const std::string ROI;
    static const std::string ROIITEMID;
    static const std::string ITEMID;
@@ -86,7 +88,7 @@ public:
 
 	void SaveScreenshot(const char*);
 	void SaveOutputFile();
-        void CalculateDIRQAFrom(int number);
+        void CalculateregQAFrom(int number);
 	
         void CalculateContourStatistic();
 	
@@ -164,7 +166,7 @@ public:
         /** Change in which direction (forward or backward) should
          *  the QA be performed.
          */
-        void UpdateRegistrationDirection();
+        void SwitchRegistrationDirection();
         
         /** Update registration quality node based on item attributes in
          *  given subject hierarchy node

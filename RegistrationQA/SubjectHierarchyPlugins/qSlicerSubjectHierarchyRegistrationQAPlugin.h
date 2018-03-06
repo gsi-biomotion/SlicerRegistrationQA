@@ -32,6 +32,7 @@ class vtkMRMLNode;
 class vtkMRMLVolumeNode;
 class vtkMRMLAnnotationROINode;
 class vtkMRMLMarkupsFiducialNode;
+class vtkMRMLSegmentationNode;
 class vtkMRMLScalarVolumeNode;
 class vtkMRMLTableNode;
 class vtkMRMLRegistrationQANode;
@@ -96,18 +97,19 @@ public:
   Q_INVOKABLE virtual void showContextMenuActionsForItem(vtkIdType itemID);
 
 protected slots:
-  /// Add current segment as a basis for DIRQA
+  /// Add current segment as a basis for regQA
   
   /// Load volume from filename
   void loadFromFilenameForItemID(vtkIdType itemID);
 //   void assignNodeToRegistrationQANode(vtkMRMLNode* node, vtkMRMLRegistrationQANode* regQANode, std::string regType, bool inverse);
   vtkMRMLVolumeNode* loadVolumeFromItemId(vtkIdType itemID);
-  void calcuateDIRQAForCurrentNode();
-  void calcuateDIRQAForID(vtkIdType itemID, bool removeNodes);
+  void calcuateregQAForCurrentNode();
+  void calcuateregQAForID(vtkIdType itemID, bool removeNodes);
   void updateRegNodeForCurrentNode();
   void updateRegNodeForID(vtkIdType itemID);
   vtkMRMLAnnotationROINode* loadROI(vtkIdType itemID);
   vtkMRMLMarkupsFiducialNode* loadMarkups(vtkIdType itemID);
+  vtkMRMLSegmentationNode* loadSegmentation(vtkIdType itemID);
   vtkMRMLRegistrationQANode* loadRegistrationQANode(vtkIdType itemID);
   void calculateAbsoluteDifference(vtkIdType itemID, bool removeNodes);
   void calculateJacobian(vtkIdType itemID, bool removeNodes);

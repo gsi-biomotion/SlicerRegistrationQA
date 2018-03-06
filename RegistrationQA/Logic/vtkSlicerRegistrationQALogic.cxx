@@ -109,6 +109,8 @@ const std::string vtkSlicerRegistrationQALogic::REGISTRATION_TYPE = "Registratio
 const std::string vtkSlicerRegistrationQALogic::PHASENUMBER = "PhaseNumber";
 const std::string vtkSlicerRegistrationQALogic::PHASETYPE= "Phase";
 const std::string vtkSlicerRegistrationQALogic::CT= "CT";
+const std::string vtkSlicerRegistrationQALogic::SEGMENTATION= "Segmentation";
+const std::string vtkSlicerRegistrationQALogic::SEGMENTATID = "SegmentID";
 const std::string vtkSlicerRegistrationQALogic::ROI= "ROI";
 const std::string vtkSlicerRegistrationQALogic::ROIITEMID= "ROI" + ITEMID;
 const std::string vtkSlicerRegistrationQALogic::DIR = "DIR";
@@ -251,9 +253,9 @@ void vtkSlicerRegistrationQALogic::CreateBackwardParameters(vtkMRMLRegistrationQ
    backNode->BackwardRegistrationOn();
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegistrationQALogic::UpdateRegistrationDirection(){
+void vtkSlicerRegistrationQALogic::SwitchRegistrationDirection(){
    if (!this->GetMRMLScene() || !this->RegistrationQANode) {
-      vtkErrorMacro("UpdateRegistrationDirection: Invalid scene or parameter set node!");
+      vtkErrorMacro("SwitchRegistrationDirection: Invalid scene or parameter set node!");
       return;
    }
    
@@ -368,15 +370,15 @@ void vtkSlicerRegistrationQALogic::SaveScreenshot(const char* description) {
 	this->RegistrationQANode->DisableModifiedEventOff();
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegistrationQALogic::CalculateDIRQAFrom(int number){
+void vtkSlicerRegistrationQALogic::CalculateregQAFrom(int number){
   // 1. AbsoluteDifference, 2. Jacobian, 3. InverseConsistency, 4. Fiducial Distance
   if (!this->GetMRMLScene() || !this->RegistrationQANode) {
-	    vtkErrorMacro("CalculateDIRQAFrom: Invalid scene or parameter set node!");
+	    vtkErrorMacro("CalculateregQAFrom: Invalid scene or parameter set node!");
 	    return;   
   }
 	
   if (number > 4 || number < 1){
-    vtkErrorMacro("CalculateDIRQAFrom: Invalid number must be between 1 and 5!");
+    vtkErrorMacro("CalculateregQAFrom: Invalid number must be between 1 and 5!");
     return;
   }
   
@@ -394,7 +396,7 @@ void vtkSlicerRegistrationQALogic::CalculateDIRQAFrom(int number){
   if (number == 1){
     vtkMRMLScalarVolumeNode *absoluteDiffVolume;
     if (! this->AbsoluteDifference(pNode,statisticValues) ){
-       vtkErrorMacro("CalculateDIRQAFrom: Can't calculate absolute difference!");
+       vtkErrorMacro("CalculateregQAFrom: Can't calculate absolute difference!");
        return;
     }
     sprintf(colorTableNodeID, "vtkMRMLColorTableNodeFileColdToHotRainbow.txt");
@@ -412,7 +414,7 @@ void vtkSlicerRegistrationQALogic::CalculateDIRQAFrom(int number){
   }
   else if(number == 2){
     if (!this->Jacobian(pNode,statisticValues)){
-       vtkErrorMacro("CalculateDIRQAFrom: Can't calculate Jacobian determinant!");
+       vtkErrorMacro("CalculateregQAFrom: Can't calculate Jacobian determinant!");
        return;
     }
     vtkMRMLScalarVolumeNode *jacobianVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
@@ -433,7 +435,7 @@ void vtkSlicerRegistrationQALogic::CalculateDIRQAFrom(int number){
   }
   else if(number == 3){
     if (!this->InverseConsist(pNode, statisticValues)){
-       vtkErrorMacro("CalculateDIRQAFrom: Can't calculate inverse consistency!");
+       vtkErrorMacro("CalculateregQAFrom: Can't calculate inverse consistency!");
        return;
     }
     vtkMRMLScalarVolumeNode *inverseConsistVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
@@ -473,7 +475,7 @@ void vtkSlicerRegistrationQALogic::CalculateDIRQAFrom(int number){
              //Check for vector field, if there's no transform
              if ( transform) {
                 if (! this->CalculateFiducialsDistance(referenceFiducals, movingFiducials, transform, statisticValues) ){
-                     vtkErrorMacro("CalculateDIRQAFrom: Cannot calculate Fiducal distance!");
+                     vtkErrorMacro("CalculateregQAFrom: Cannot calculate Fiducal distance!");
                      return;
                 }
              }
@@ -482,7 +484,7 @@ void vtkSlicerRegistrationQALogic::CalculateDIRQAFrom(int number){
                 vectorNode = vtkMRMLVectorVolumeNode::SafeDownCast(scene->GetNodeByID(
                    pNode->GetVectorVolumeNodeID()));
                 if (! this->CalculateFiducialsDistance(referenceFiducals, movingFiducials, vectorNode, statisticValues) ){
-                   vtkErrorMacro("CalculateDIRQAFrom: Cannot calculate Fiducal distance!");
+                   vtkErrorMacro("CalculateregQAFrom: Cannot calculate Fiducal distance!");
                    return;
                 }
                 this->UpdateTableWithFiducialValues(referenceFiducals, statisticValues);
@@ -1974,9 +1976,9 @@ vtkMRMLTableNode* vtkSlicerRegistrationQALogic::CreateDefaultRegistrationQATable
    zero->InsertNextValue("Backward Warped Image"); //3
    zero->InsertNextValue("Forward vector field"); //4
    zero->InsertNextValue("Backward vector field"); //5
-   zero->InsertNextValue("Fixed Contour");//6
+   zero->InsertNextValue("Reference Contour");//6
    zero->InsertNextValue("Moving Contour");//7
-   zero->InsertNextValue("Fixed Fiducial");//8
+   zero->InsertNextValue("Reference Fiducial");//8
    zero->InsertNextValue("Moving Fiducial");//9
    zero->InsertNextValue("ROI");//10
    zero->InsertNextValue("Measure:");//11
@@ -2265,7 +2267,7 @@ void vtkSlicerRegistrationQALogic::SaveOutputFile() {
 //      << "<meta charset=\"UTF-8\">" << std::endl << "</head>" << "<body>" << std::endl;
 //      
 //      outfile << "<h1>Registration Quality Output File</h1>" << std::endl;
-//      
+//      d->regQALogic->CalculateregQAFrom(4);
 //      // --- Image Checks ---
 //      outfile << "<h2>Image Checks</h2>" << std::endl;
 //      //Set table

@@ -708,7 +708,7 @@ void qSlicerRegistrationQAModuleWidget::ROIaroundSegmentClicked() {
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQAModuleWidget::RegistrationDirectionChanged() {
    Q_D(const qSlicerRegistrationQAModuleWidget);
-   d->logic()->UpdateRegistrationDirection();
+   d->logic()->SwitchRegistrationDirection();
    this->updateWidgetFromMRML();
 }
 //-----------------------------------------------------------------------------
@@ -772,7 +772,7 @@ void qSlicerRegistrationQAModuleWidget::absoluteDiffClicked() {
 
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
-                d->logic()->CalculateDIRQAFrom(1);
+                d->logic()->CalculateregQAFrom(1);
         } catch (std::runtime_error e) {
                 d->StillErrorLabel->setText(e.what());
                 d->StillErrorLabel->setVisible(true);
@@ -802,7 +802,7 @@ void qSlicerRegistrationQAModuleWidget::fiducialClicked() {
 
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
-                d->logic()->CalculateDIRQAFrom(number);
+                d->logic()->CalculateregQAFrom(number);
         } catch (std::runtime_error e) {
                 d->StillErrorLabel->setText(e.what());
                 d->StillErrorLabel->setVisible(true);
@@ -990,7 +990,7 @@ void qSlicerRegistrationQAModuleWidget::jacobianClicked(){
         Q_D(const qSlicerRegistrationQAModuleWidget);
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
-                d->logic()->CalculateDIRQAFrom(2);
+                d->logic()->CalculateregQAFrom(2);
         } catch (std::runtime_error e) {
                 d->StillErrorLabel->setText(e.what());
                 d->StillErrorLabel->setVisible(true);
@@ -1009,7 +1009,7 @@ void qSlicerRegistrationQAModuleWidget::inverseConsistClicked(){
 
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
-                d->logic()->CalculateDIRQAFrom(3);
+                d->logic()->CalculateregQAFrom(3);
         } catch (std::runtime_error e) {
                 d->StillErrorLabel->setText(e.what());
                 d->StillErrorLabel->setVisible(true);
