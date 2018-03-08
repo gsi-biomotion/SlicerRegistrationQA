@@ -12,9 +12,7 @@ set(${KIT}_INCLUDE_DIRECTORIES
   ${vtkSlicerVolumesModuleLogic_INCLUDE_DIRS}
   ${vtkSlicerSegmentationsModuleLogic_INCLUDE_DIRS}
   ${vtkSlicerTransformsModuleLogic_INCLUDE_DIRS}
-#   ${vtkSlicerSegmentComparisonModuleLogic_INCLUDE_DIRS}
-
-#   ${PLASTIMATCH_INCLUDE_DIRS}
+  ${vtkSlicerSegmentComparisonModuleLogic_INCLUDE_DIRS}
 )
 
 set(${KIT}_SRCS
@@ -32,9 +30,7 @@ set(${KIT}_TARGET_LIBRARIES
   vtkSlicerTransformsModuleLogic
   vtkSlicerAnnotationsModuleMRML
   vtkSlicerSegmentationsModuleMRML
-#   vtkSlicerSegmentComparisonModuleLogic
-#   ${PLASTIMATCH_LIBRARIES}
-  ${SlicerRT_DIR}/inner-build/${Slicer_QTLOADABLEMODULES_LIB_DIR}/libvtkSlicerSegmentComparisonModuleLogic.so
+  vtkSlicerSegmentComparisonModuleLogic
   )
 
 

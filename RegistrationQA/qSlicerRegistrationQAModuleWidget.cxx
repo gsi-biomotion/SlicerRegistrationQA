@@ -514,7 +514,7 @@ void qSlicerRegistrationQAModuleWidget::outputDirectoyChanged() {
         }
 
         pNode->DisableModifiedEventOn();
-        pNode->SetAndObserveOutputDirectory(fileName.toAscii().data());
+        pNode->SetAndObserveOutputDirectory(fileName.toLatin1().data());
         pNode->DisableModifiedEventOff();
 }
 //-----------------------------------------------------------------------------

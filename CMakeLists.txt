@@ -4,7 +4,7 @@ set(EXTENSION_NAME RegistrationQA)
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_NAME "RegistrationQAExtension")
-set(EXTENSION_HOMEPAGE "https://github.com/gsi-biomotion/SlicerRegistrationQAQA/wiki")
+set(EXTENSION_HOMEPAGE "https://github.com/gsi-biomotion/SlicerRegistrationQA/wiki")
 set(EXTENSION_CATEGORY "Registration")
 set(EXTENSION_CONTRIBUTORS "Kristjan Anderle (GSI), Tobias Brandt (University Clinic of Erlangen), Daniel Richter (University Clinic of Erlangen), Jens Woelfelschneider (University Clinic of Erlangen)")
 set(EXTENSION_DESCRIPTION "Image registration quality assurance tool.")
@@ -43,6 +43,9 @@ set(DEPENDENCIES_ADDITIONAL_MODULE_PATHS
   "${SlicerRT_DIR}/Plastimatch-build"
 )
 
+#SlicerRT does not add Plastimatch library path to additional link directories
+#or target properties, so we need to add it here.
+LINK_DIRECTORIES("${SlicerRT_DIR}/../Plastimatch-build")
 
 add_subdirectory(RegistrationQA)
 add_subdirectory(AbsoluteDifference)

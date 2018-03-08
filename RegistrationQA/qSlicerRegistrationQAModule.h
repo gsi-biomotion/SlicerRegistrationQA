@@ -4,6 +4,7 @@
 // SlicerQt includes
 #include "qSlicerLoadableModule.h"
 
+#include "vtkSlicerConfigure.h" // For Slicer_HAVE_QT5
 
 #include "qSlicerRegistrationQAModuleExport.h"
 
@@ -14,6 +15,9 @@ class Q_SLICER_QTMODULES_REGISTRATIONQA_EXPORT qSlicerRegistrationQAModule :
 	public qSlicerLoadableModule {
 
 	Q_OBJECT
+#ifdef Slicer_HAVE_QT5
+    Q_PLUGIN_METADATA(IID "org.slicer.modules.loadable.qSlicerLoadableModule/1.0");
+#endif
 	Q_INTERFACES(qSlicerLoadableModule);
 
 public:
