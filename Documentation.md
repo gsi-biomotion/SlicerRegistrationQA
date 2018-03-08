@@ -55,7 +55,7 @@ The third part on Figure 2 is a table with all the information about the current
 
 # Tutorial
 
-Download the data from [here](https://drive.google.com/open?id=1IiWPDabToNErSbWfsxClNGG6Q4b2ZsdW) (data downloaded and modified from [2])
+Download the data from [here](https://github.com/gsi-biomotion/SlicerRegistrationQA/releases/download/0.0.1/RegistrationData.zip) (data downloaded and modified from [2])
 and unzip it in a directory. The images in Image directory represent the two extreme breathing phases. Image1 has been chosen as the reference image and a registration in forward and backward direction has been performed (using Plastimatch module in SlicerRT). The resulting warped images and vector fields are denoted as \_warped and \_vf, respectively and are stored in RegFiles directory. There are contours and fiducials in Contours and Fiducials directory, respectively, corresponding to both images.
 
 ## Assigning roles
