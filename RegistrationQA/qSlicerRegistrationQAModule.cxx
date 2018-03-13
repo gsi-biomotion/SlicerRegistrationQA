@@ -39,7 +39,7 @@
 //-----------------------------------------------------------------------------
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QtPlugin>
-Q_EXPORT_PLUGIN2(qSlicerRegQAModule, qSlicerRegQAModule);
+Q_EXPORT_PLUGIN2(qSlicerRegistrationQAModule, qSlicerRegistrationQAModule);
 #endif
 
 
