@@ -3,6 +3,7 @@
 // VTK includes
 #include <vtkCommand.h>
 #include <vtkObjectFactory.h>
+#include <vtkSmartPointer.h>
 
 // MRML includes
 #include <vtkMRMLScene.h>
@@ -11,6 +12,11 @@
 #include <vtkMRMLColorTableNode.h>
 #include <vtkMRMLSegmentationNode.h>
 #include <vtkMRMLTableNode.h>
+#include <vtkMRMLTableStorageNode.h>
+#include <vtkStringArray.h>
+
+// STD includes
+#include <iostream>
 
 //----------------------------------------------------------------------------
 static const char* SEGMENTATION_REFERENCE_ROLE = "fixedSegmentationRef";
@@ -56,6 +62,8 @@ vtkMRMLRegistrationQANode::vtkMRMLRegistrationQANode() {
         this->VolumeColorNodeID = NULL;
         this->WarpedColorNodeID = NULL;
 
+        this->CreateDefaultRegistrationQATable();
+
 
 }
 //----------------------------------------------------------------------------
@@ -75,9 +83,38 @@ vtkMRMLRegistrationQANode::~vtkMRMLRegistrationQANode() {
         this->SetInverseConsistVolumeNodeID(NULL);
         this->SetVolumeColorNodeID(NULL);
         this->SetWarpedColorNodeID(NULL);
+        this->SetAndObserveBackwardRegistrationQAParameters(NULL);
+}
+//---------------------------------------------------------------------------
+void vtkMRMLRegistrationQANode::CreateBackwardParameters(){
+
+   vtkSmartPointer<vtkMRMLRegistrationQANode> backNode = 
+         vtkSmartPointer<vtkMRMLRegistrationQANode>::New();
+   std::string outSS;
+   std::string addName("_backward");
+   outSS = this->GetName() + addName;
+   std::string nameNode = this->Scene->GenerateUniqueName(outSS);
+   backNode->SetName(nameNode.c_str());
+   this->Scene->AddNode(backNode);
+   backNode->SetAndObserveBackwardRegistrationQAParameters(this);
+   this->SetAndObserveBackwardRegistrationQAParameters(backNode);
+   
+   backNode->Modified();
+   
+//    Delete table Node
+   if ( this->Scene ) {
+      this->Scene->RemoveNode( backNode->GetRegistrationQATableNode() );
+   }
+   
+   //Change direction to set all necessary nodes
+   if (!backNode->CopyFromBackward()){
+      vtkErrorMacro("Can't change from forward to backward.");
+      return;
+   }
+   backNode->BackwardRegistrationOn();
 }
 //----------------------------------------------------------------------------
-bool vtkMRMLRegistrationQANode::ChangeFromBackwardToFoward(){
+bool vtkMRMLRegistrationQANode::CopyFromBackward(){
         
 
    vtkMRMLRegistrationQANode *backNode = this->GetBackwardRegistrationQAParameters();
@@ -475,3 +512,88 @@ void vtkMRMLRegistrationQANode::PrintSelf(ostream& os, vtkIndent indent){
                         << (this->WarpedColorNodeID ? this->WarpedColorNodeID : "NULL") << "\n";
 }
 
+//---Create default table-----------------------------------
+void vtkMRMLRegistrationQANode::CreateDefaultRegistrationQATable() {
+   
+   if ( ! this->Scene ) {
+      return;
+   }
+   vtkSmartPointer<vtkMRMLTableNode> tableNode = vtkSmartPointer<vtkMRMLTableNode>::New();
+   std::string tableNodeName = this->Scene->GenerateUniqueName("RegistrationQA");
+   tableNode->SetName(tableNodeName.c_str());
+   this->Scene->AddNode(tableNode);
+   
+   vtkSmartPointer<vtkMRMLTableStorageNode> tableStorageNode = vtkMRMLTableStorageNode::SafeDownCast(
+      tableNode->CreateDefaultStorageNode());
+   this->Scene->AddNode(tableStorageNode);
+   tableNode->SetAndObserveStorageNodeID(tableStorageNode->GetID());
+   
+   tableNode->SetUseColumnNameAsColumnHeader(false);
+   
+   vtkStringArray* zero = vtkStringArray::SafeDownCast(tableNode->AddColumn());
+   // Add input information to the table
+   zero->InsertNextValue("Reference Image"); //0
+   zero->InsertNextValue("Moving Image"); //1
+   zero->InsertNextValue("Forward Warped Image"); //2
+   zero->InsertNextValue("Backward Warped Image"); //3
+   zero->InsertNextValue("Forward vector field"); //4
+   zero->InsertNextValue("Backward vector field"); //5
+   zero->InsertNextValue("Reference Contour");//6
+   zero->InsertNextValue("Moving Contour");//7
+   zero->InsertNextValue("Reference Fiducial");//8
+   zero->InsertNextValue("Moving Fiducial");//9
+   zero->InsertNextValue("ROI");//10
+   zero->InsertNextValue("Measure:");//11
+   zero->InsertNextValue("AbsDiff (for)");//12
+   zero->InsertNextValue("AbsDiff (back)");//13
+   zero->InsertNextValue("Jacobian (for)");//14
+   zero->InsertNextValue("Jacobian (back)");//15
+   zero->InsertNextValue("InvConsist ");//16
+   zero->InsertNextValue("");//17
+   zero->InsertNextValue("Contour (for)");//18
+   zero->InsertNextValue("Contour (back)");//19
+   zero->InsertNextValue("Fiducial");//20
+   
+   // Add four columns */
+   tableNode->AddColumn();
+   tableNode->AddColumn();
+   tableNode->AddColumn();
+   tableNode->AddColumn();
+   
+   if (! tableNode->SetCellText(11,1,"Max")){
+      return;
+   }
+   if (! tableNode->SetCellText(11,2,"Min")){
+      return;
+   }
+   if (! tableNode->SetCellText(11,3,"Mean")){
+      return;
+   }
+   if (! tableNode->SetCellText(11,4,"STD")){
+      return;
+   }
+   if (! tableNode->SetCellText(20,1,"Distance Before")){
+      return;
+   }
+   if (! tableNode->SetCellText(20,2,"Distance After")){
+      return;
+   }
+   if (! tableNode->SetCellText(17,1,"Mean Hauss. Before")){
+      return;
+   }
+   if (! tableNode->SetCellText(17,2,"Mean Hauss. After")){
+      return;
+   }
+   if (! tableNode->SetCellText(17,3,"Dice Coeff. Before")){
+      return;
+   }
+   if (! tableNode->SetCellText(17,4,"Dice Coeff. After")){
+      return;
+   }
+   
+   this->SetAndObserveRegistrationQATableNode(tableNode);
+   vtkMRMLRegistrationQANode* backNode = this->GetBackwardRegistrationQAParameters();
+   if (backNode) {
+      backNode->SetAndObserveRegistrationQATableNode(tableNode);
+   }
+}

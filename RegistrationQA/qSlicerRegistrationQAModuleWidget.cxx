@@ -179,7 +179,7 @@ void qSlicerRegistrationQAModuleWidget::updateWidgetFromMRML() {
       d->ParameterComboBox->setCurrentNode(pNode);
       //Create backward RegistrationQAParameters, if it isn't there yet
       if ( pNode->GetBackwardRegistrationQAParameters() == NULL ){
-         d->logic()->CreateBackwardParameters(pNode);
+         pNode->CreateBackwardParameters();
       }
       
       //Update Visualization Parameters
@@ -191,23 +191,23 @@ void qSlicerRegistrationQAModuleWidget::updateWidgetFromMRML() {
       else{
          d->BackwardButton->setText("Change to Back. Reg.");
       }
-      
       //Create table if necesarry
       vtkSmartPointer<vtkMRMLTableNode> tableNode = pNode->GetRegistrationQATableNode();
-      if ( ! tableNode ){
-         tableNode = d->logic()->CreateDefaultRegistrationQATable();
-         if (tableNode == NULL){
-            d->StillErrorLabel->setText("Can't create default RegistrationQA table");
-            return;
-         }
-         pNode->DisableModifiedEventOn();
-         pNode->SetAndObserveRegistrationQATableNode(tableNode);
-         pNode->GetBackwardRegistrationQAParameters()->SetAndObserveRegistrationQATableNode(tableNode);
-         pNode->DisableModifiedEventOff();
-      }
+      if ( tableNode ){
+//          tableNode = d->logic()->CreateDefaultRegistrationQATable();
+//          if (tableNode == NULL){
+//             d->StillErrorLabel->setText("Can't create default RegistrationQA table");
+//             return;
+//          }
+//          pNode->DisableModifiedEventOn();
+//          pNode->SetAndObserveRegistrationQATableNode(tableNode);
+//          pNode->GetBackwardRegistrationQAParameters()->SetAndObserveRegistrationQATableNode(tableNode);
+//          pNode->DisableModifiedEventOff();
+//       }
       
-      d->MRMLTableView->setMRMLTableNode(tableNode);
-      d->MRMLTableView->hideRow(0);
+         d->MRMLTableView->setMRMLTableNode(tableNode);
+         d->MRMLTableView->hideRow(0);
+      }
    }
 
    this->updateButtonsAndTable();
@@ -772,7 +772,7 @@ void qSlicerRegistrationQAModuleWidget::absoluteDiffClicked() {
 
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
-                d->logic()->CalculateregQAFrom(1);
+                d->logic()->CalculateRegQAFrom(1);
         } catch (std::runtime_error e) {
                 d->StillErrorLabel->setText(e.what());
                 d->StillErrorLabel->setVisible(true);
@@ -802,7 +802,7 @@ void qSlicerRegistrationQAModuleWidget::fiducialClicked() {
 
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
-                d->logic()->CalculateregQAFrom(number);
+                d->logic()->CalculateRegQAFrom(number);
         } catch (std::runtime_error e) {
                 d->StillErrorLabel->setText(e.what());
                 d->StillErrorLabel->setVisible(true);
@@ -990,7 +990,7 @@ void qSlicerRegistrationQAModuleWidget::jacobianClicked(){
         Q_D(const qSlicerRegistrationQAModuleWidget);
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
-                d->logic()->CalculateregQAFrom(2);
+                d->logic()->CalculateRegQAFrom(2);
         } catch (std::runtime_error e) {
                 d->StillErrorLabel->setText(e.what());
                 d->StillErrorLabel->setVisible(true);
@@ -1009,7 +1009,7 @@ void qSlicerRegistrationQAModuleWidget::inverseConsistClicked(){
 
         QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         try {
-                d->logic()->CalculateregQAFrom(3);
+                d->logic()->CalculateRegQAFrom(3);
         } catch (std::runtime_error e) {
                 d->StillErrorLabel->setText(e.what());
                 d->StillErrorLabel->setVisible(true);

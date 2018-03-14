@@ -335,6 +335,7 @@ class CreateRegistrationHierarchyLogic:
     regQANode = slicer.vtkMRMLRegistrationQANode()
     slicer.mrmlScene.AddNode( regQANode )
     regQANode.SetName( patientName + 'regQANode')
+    regQANode.CreateBackwardParameters()
     if not regQANode is None:
        shNode.SetItemAttribute( patientItemID, REGQANODEID, regQANode.GetID() )
     

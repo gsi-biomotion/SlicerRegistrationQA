@@ -226,33 +226,6 @@ void vtkSlicerRegistrationQALogic::OnMRMLSceneEndClose() {
 	this->Modified();
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegistrationQALogic::CreateBackwardParameters(vtkMRMLRegistrationQANode* node){
-   if (!node){
-      vtkErrorMacro("CreateBackwardParameters: Invalid registration quality node!");
-      return;
-   }
-   
-   vtkSmartPointer<vtkMRMLRegistrationQANode> backNode = 
-         vtkSmartPointer<vtkMRMLRegistrationQANode>::New();
-   std::string outSS;
-   std::string addName("_backward");
-   outSS = node->GetName() + addName;
-   std::string nameNode = this->GetMRMLScene()->GenerateUniqueName(outSS);
-   backNode->SetName(nameNode.c_str());
-   this->GetMRMLScene()->AddNode(backNode);
-   backNode->SetAndObserveBackwardRegistrationQAParameters(node);
-   node->SetAndObserveBackwardRegistrationQAParameters(backNode);
-   
-   backNode->Modified();
-   
-   //Change direction to set all necessary nodes
-   if (!backNode->ChangeFromBackwardToFoward()){
-      vtkErrorMacro("Can't change from forward to backward.");
-      return;
-   }
-   backNode->BackwardRegistrationOn();
-}
-//---------------------------------------------------------------------------
 void vtkSlicerRegistrationQALogic::SwitchRegistrationDirection(){
    if (!this->GetMRMLScene() || !this->RegistrationQANode) {
       vtkErrorMacro("SwitchRegistrationDirection: Invalid scene or parameter set node!");
@@ -266,13 +239,20 @@ void vtkSlicerRegistrationQALogic::SwitchRegistrationDirection(){
       // Create backward parameters, if not there yet
       vtkSmartPointer<vtkMRMLRegistrationQANode> backNode = pNode->GetBackwardRegistrationQAParameters();
       if ( backNode == NULL ){
-         this->CreateBackwardParameters(pNode);
+         pNode->CreateBackwardParameters();
+         backNode = pNode->GetBackwardRegistrationQAParameters();
       }
-      if (!backNode->ChangeFromBackwardToFoward()){
-         vtkErrorMacro("Can't change from forward to backward.");
+      else{
+         //If we already have backNode we only need to copy content from forward paramers
+         if (!backNode->CopyFromBackward()){
+            vtkErrorMacro("Can't change from forward to backward.");
+            return;
+         }
+      }
+      if ( backNode->GetBackwardRegistration() ) {
+         vtkErrorMacro("SwitchRegistrationDirection: Wrong direction.");
          return;
       }
-      backNode->BackwardRegistrationOn();
       this->SetAndObserveRegistrationQANode(backNode);
    }
    else{
@@ -283,11 +263,14 @@ void vtkSlicerRegistrationQALogic::SwitchRegistrationDirection(){
          vtkErrorMacro("Forward parameter doesn't exist");
          return;
       }
-      if (!forwardNode->ChangeFromBackwardToFoward()){
+      if (!forwardNode->CopyFromBackward()){
          vtkErrorMacro("Can't change from forward to backward.");
          return;
       }
-      forwardNode->BackwardRegistrationOff();
+      if ( ! forwardNode->GetBackwardRegistration() ) {
+         vtkErrorMacro("SwitchRegistrationDirection: Wrong direction.");
+         return;
+      }
       this->SetAndObserveRegistrationQANode(forwardNode);
    }
 }
@@ -370,15 +353,15 @@ void vtkSlicerRegistrationQALogic::SaveScreenshot(const char* description) {
 	this->RegistrationQANode->DisableModifiedEventOff();
 }
 //---------------------------------------------------------------------------
-void vtkSlicerRegistrationQALogic::CalculateregQAFrom(int number){
+void vtkSlicerRegistrationQALogic::CalculateRegQAFrom(int number){
   // 1. AbsoluteDifference, 2. Jacobian, 3. InverseConsistency, 4. Fiducial Distance
   if (!this->GetMRMLScene() || !this->RegistrationQANode) {
-	    vtkErrorMacro("CalculateregQAFrom: Invalid scene or parameter set node!");
+	    vtkErrorMacro("CalculateRegQAFrom: Invalid scene or parameter set node!");
 	    return;   
   }
 	
   if (number > 4 || number < 1){
-    vtkErrorMacro("CalculateregQAFrom: Invalid number must be between 1 and 5!");
+    vtkErrorMacro("CalculateRegQAFrom: Invalid number must be between 1 and 5!");
     return;
   }
   
@@ -396,7 +379,7 @@ void vtkSlicerRegistrationQALogic::CalculateregQAFrom(int number){
   if (number == 1){
     vtkMRMLScalarVolumeNode *absoluteDiffVolume;
     if (! this->AbsoluteDifference(pNode,statisticValues) ){
-       vtkErrorMacro("CalculateregQAFrom: Can't calculate absolute difference!");
+       vtkErrorMacro("CalculateRegQAFrom: Can't calculate absolute difference!");
        return;
     }
     sprintf(colorTableNodeID, "vtkMRMLColorTableNodeFileColdToHotRainbow.txt");
@@ -414,7 +397,7 @@ void vtkSlicerRegistrationQALogic::CalculateregQAFrom(int number){
   }
   else if(number == 2){
     if (!this->Jacobian(pNode,statisticValues)){
-       vtkErrorMacro("CalculateregQAFrom: Can't calculate Jacobian determinant!");
+       vtkErrorMacro("CalculateRegQAFrom: Can't calculate Jacobian determinant!");
        return;
     }
     vtkMRMLScalarVolumeNode *jacobianVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
@@ -435,7 +418,7 @@ void vtkSlicerRegistrationQALogic::CalculateregQAFrom(int number){
   }
   else if(number == 3){
     if (!this->InverseConsist(pNode, statisticValues)){
-       vtkErrorMacro("CalculateregQAFrom: Can't calculate inverse consistency!");
+       vtkErrorMacro("CalculateRegQAFrom: Can't calculate inverse consistency!");
        return;
     }
     vtkMRMLScalarVolumeNode *inverseConsistVolume = vtkMRMLScalarVolumeNode::SafeDownCast(
@@ -475,7 +458,7 @@ void vtkSlicerRegistrationQALogic::CalculateregQAFrom(int number){
              //Check for vector field, if there's no transform
              if ( transform) {
                 if (! this->CalculateFiducialsDistance(referenceFiducals, movingFiducials, transform, statisticValues) ){
-                     vtkErrorMacro("CalculateregQAFrom: Cannot calculate Fiducal distance!");
+                     vtkErrorMacro("CalculateRegQAFrom: Cannot calculate Fiducal distance!");
                      return;
                 }
              }
@@ -484,7 +467,7 @@ void vtkSlicerRegistrationQALogic::CalculateregQAFrom(int number){
                 vectorNode = vtkMRMLVectorVolumeNode::SafeDownCast(scene->GetNodeByID(
                    pNode->GetVectorVolumeNodeID()));
                 if (! this->CalculateFiducialsDistance(referenceFiducals, movingFiducials, vectorNode, statisticValues) ){
-                   vtkErrorMacro("CalculateregQAFrom: Cannot calculate Fiducal distance!");
+                   vtkErrorMacro("CalculateRegQAFrom: Cannot calculate Fiducal distance!");
                    return;
                 }
                 this->UpdateTableWithFiducialValues(referenceFiducals, statisticValues);
@@ -1948,99 +1931,7 @@ void vtkSlicerRegistrationQALogic
 	redSliceLogic->EndSliceCompositeNodeInteraction();
 	return;
 }
-//---Create default table-----------------------------------
-vtkMRMLTableNode* vtkSlicerRegistrationQALogic::CreateDefaultRegistrationQATable() {
-   if (!this->GetMRMLScene() || !this->RegistrationQANode) {
-      vtkErrorMacro("CreateDefaultRegistrationQATable: Invalid scene or parameter set node!");
-      return NULL;
-   }
 
-   vtkSmartPointer<vtkMRMLTableNode> tableNode = vtkSmartPointer<vtkMRMLTableNode>::New();
-
-   std::string tableNodeName = this->GetMRMLScene()->GenerateUniqueName("RegistrationQA");
-   tableNode->SetName(tableNodeName.c_str());
-   this->GetMRMLScene()->AddNode(tableNode);
-   
-   vtkSmartPointer<vtkMRMLTableStorageNode> tableStorageNode = vtkMRMLTableStorageNode::SafeDownCast(
-      tableNode->CreateDefaultStorageNode());
-   this->GetMRMLScene()->AddNode(tableStorageNode);
-   tableNode->SetAndObserveStorageNodeID(tableStorageNode->GetID());
-   
-   tableNode->SetUseColumnNameAsColumnHeader(false);
-   
-   vtkStringArray* zero = vtkStringArray::SafeDownCast(tableNode->AddColumn());
-   // Add input information to the table
-   zero->InsertNextValue("Reference Image"); //0
-   zero->InsertNextValue("Moving Image"); //1
-   zero->InsertNextValue("Forward Warped Image"); //2
-   zero->InsertNextValue("Backward Warped Image"); //3
-   zero->InsertNextValue("Forward vector field"); //4
-   zero->InsertNextValue("Backward vector field"); //5
-   zero->InsertNextValue("Reference Contour");//6
-   zero->InsertNextValue("Moving Contour");//7
-   zero->InsertNextValue("Reference Fiducial");//8
-   zero->InsertNextValue("Moving Fiducial");//9
-   zero->InsertNextValue("ROI");//10
-   zero->InsertNextValue("Measure:");//11
-   zero->InsertNextValue("AbsDiff (for)");//12
-   zero->InsertNextValue("AbsDiff (back)");//13
-   zero->InsertNextValue("Jacobian (for)");//14
-   zero->InsertNextValue("Jacobian (back)");//15
-   zero->InsertNextValue("InvConsist ");//16
-   zero->InsertNextValue("");//17
-   zero->InsertNextValue("Contour (for)");//18
-   zero->InsertNextValue("Contour (back)");//19
-   zero->InsertNextValue("Fiducial");//20
-   
-   // Add four columns */
-   tableNode->AddColumn();
-   tableNode->AddColumn();
-   tableNode->AddColumn();
-   tableNode->AddColumn();
-   
-   if (! tableNode->SetCellText(11,1,"Max")){
-      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
-      return NULL;
-   }
-   if (! tableNode->SetCellText(11,2,"Min")){
-      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
-      return NULL;
-   }
-   if (! tableNode->SetCellText(11,3,"Mean")){
-      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
-      return NULL;
-   }
-   if (! tableNode->SetCellText(11,4,"STD")){
-      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
-      return NULL;
-   }
-   if (! tableNode->SetCellText(20,1,"Distance Before")){
-      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
-      return NULL;
-   }
-   if (! tableNode->SetCellText(20,2,"Distance After")){
-      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
-      return NULL;
-   }
-   if (! tableNode->SetCellText(17,1,"Mean Hauss. Before")){
-      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
-      return NULL;
-   }
-   if (! tableNode->SetCellText(17,2,"Mean Hauss. After")){
-      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
-      return NULL;
-   }
-   if (! tableNode->SetCellText(17,3,"Dice Coeff. Before")){
-      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
-      return NULL;
-   }
-   if (! tableNode->SetCellText(17,4,"Dice Coeff. After")){
-      vtkErrorMacro("CreateDefaultRegistrationQATable: Can't set cell!");
-      return NULL;
-   }
-
-   return tableNode;
-}
 //---Create default table-----------------------------------
 void vtkSlicerRegistrationQALogic::UpdateRegistrationQATable() {
    if (!this->GetMRMLScene() || !this->RegistrationQANode) {
@@ -2065,8 +1956,20 @@ void vtkSlicerRegistrationQALogic::UpdateRegistrationQATable() {
    }
 
    vtkSmartPointer<vtkMRMLTableNode> regQATable = pNode->GetRegistrationQATableNode();
+   
+   if ( ! regQATable ) {
+      this->RegistrationQANode->CreateDefaultRegistrationQATable();
+      regQATable = pNode->GetRegistrationQATableNode();
+      if ( ! regQATable ) {
+         vtkErrorMacro("UpdateRegistrationQATable: No table!");
+         return;
+      }
+   }
+   
    vtkSmartPointer<vtkTable> table;
    table = regQATable->GetTable();
+   
+   
 
    node = this->GetMRMLScene()->GetNodeByID(pNode->GetVolumeNodeID());
    if ( node ){
@@ -2132,10 +2035,18 @@ void vtkSlicerRegistrationQALogic::UpdateTableWithStatisticalValues(double stati
    vtkSmartPointer<vtkMRMLRegistrationQANode> pNode = this->RegistrationQANode;
    vtkSmartPointer<vtkMRMLNode> node;
    vtkSmartPointer<vtkMRMLTableNode> regQATable = pNode->GetRegistrationQATableNode();
+   if ( ! regQATable ) {
+      this->RegistrationQANode->CreateDefaultRegistrationQATable();
+      regQATable = pNode->GetRegistrationQATableNode();
+      if ( ! regQATable ) {
+         vtkErrorMacro("UpdateRegistrationQATable: No table!");
+         return;
+      }
+   }
+   
    vtkSmartPointer<vtkTable> table;
    table = regQATable->GetTable();
-
-
+   
    table->SetValue(row, 1, vtkVariant(statisticValues[0])); //Max
    table->SetValue(row, 2, vtkVariant(statisticValues[1])); //Min
    table->SetValue(row, 3, vtkVariant(statisticValues[2])); //Mean
@@ -2156,7 +2067,18 @@ void vtkSlicerRegistrationQALogic::UpdateTableWithFiducialValues(vtkMRMLMarkupsF
    }
    
    vtkSmartPointer<vtkMRMLTableNode> tableNode = this->RegistrationQANode->GetRegistrationQATableNode();
+   
+   if ( ! tableNode ) {
+      this->RegistrationQANode->CreateDefaultRegistrationQATable();
+      tableNode = this->RegistrationQANode->GetRegistrationQATableNode();
+      if ( ! tableNode ) {
+         vtkErrorMacro("UpdateRegistrationQATable: No table!");
+         return;
+      }
+   }
+   
    vtkSmartPointer<vtkTable> table = tableNode->GetTable();
+
    int fiducialNumber = fiducals->GetNumberOfFiducials();
    vtkIdType nRows = table->GetNumberOfRows();
    vtkIdType nAllRows = 21;
@@ -2267,7 +2189,7 @@ void vtkSlicerRegistrationQALogic::SaveOutputFile() {
 //      << "<meta charset=\"UTF-8\">" << std::endl << "</head>" << "<body>" << std::endl;
 //      
 //      outfile << "<h1>Registration Quality Output File</h1>" << std::endl;
-//      d->regQALogic->CalculateregQAFrom(4);
+//      d->regQALogic->CalculateRegQAFrom(4);
 //      // --- Image Checks ---
 //      outfile << "<h2>Image Checks</h2>" << std::endl;
 //      //Set table

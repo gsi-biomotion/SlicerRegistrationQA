@@ -88,7 +88,7 @@ public:
 
 	void SaveScreenshot(const char*);
 	void SaveOutputFile();
-        void CalculateregQAFrom(int number);
+        void CalculateRegQAFrom(int number);
 	
         void CalculateContourStatistic();
 	
@@ -149,19 +149,10 @@ public:
          */
         vtkMRMLAnnotationROINode* CreateROIAroundSegments(vtkMRMLSegmentationNode* segmentation1Node,const char* segment1StringID,
                                                            vtkMRMLSegmentationNode* segmentation2Node,const char* segment2StringID);
-	
-	/** Create default table node, used in jacobian, absdiff, fiducials
-         *  and inverse consistency
-         */
-        vtkMRMLTableNode* CreateDefaultRegistrationQATable();
         
         /** Update table with all the node names
          */
         void UpdateRegistrationQATable();
-        
-        /** Create default node for backward parameters
-         */
-        void CreateBackwardParameters(vtkMRMLRegistrationQANode* node);
         
         /** Change in which direction (forward or backward) should
          *  the QA be performed.

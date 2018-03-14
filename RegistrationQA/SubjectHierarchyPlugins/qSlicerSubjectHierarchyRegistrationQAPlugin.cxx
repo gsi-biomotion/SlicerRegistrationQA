@@ -661,11 +661,11 @@ void qSlicerSubjectHierarchyRegistrationQAPlugin::calculateFiducialDistance(vtkI
    qCritical() << Q_FUNC_INFO << "Starting calculations";
    // This calculates fiducial distance and writes in table
    d->regQALogic->SetAndObserveRegistrationQANode(registrationQANode);
-   d->regQALogic->CalculateregQAFrom(4);
+   d->regQALogic->CalculateRegQAFrom(4);
    
    //Repeat for other direction
    d->regQALogic->SwitchRegistrationDirection();
-   d->regQALogic->CalculateregQAFrom(4);
+   d->regQALogic->CalculateRegQAFrom(4);
    
    
    // Also for other direction
@@ -731,7 +731,7 @@ void qSlicerSubjectHierarchyRegistrationQAPlugin::calculateJacobian(vtkIdType it
    double statisticValues[4];
    // Calculate Jacobian with nodes in registrationQANode and write in its table
    d->regQALogic->SetAndObserveRegistrationQANode(registrationQANode);
-//    d->regQALogic->CalculateregQAFrom(2);
+//    d->regQALogic->CalculateRegQAFrom(2);
    if ( !d->regQALogic->Jacobian(registrationQANode, statisticValues) ){
       qCritical() << Q_FUNC_INFO << ": Failed to calculate jacobian for" << shNode->GetItemName(itemID).c_str();
       return;
@@ -1633,7 +1633,7 @@ vtkMRMLRegistrationQANode* qSlicerSubjectHierarchyRegistrationQAPlugin::loadRegi
    }
    
    if ( registrationQANode->GetBackwardRegistrationQAParameters() == NULL ){
-      d->regQALogic->CreateBackwardParameters(registrationQANode);
+      registrationQANode->CreateBackwardParameters();
    }
    
    this->m_RegistrationQAParametersID = QString(registrationQANodeIDString.c_str());
@@ -1778,10 +1778,10 @@ void qSlicerSubjectHierarchyRegistrationQAPlugin::InputSelected(std::string name
    
    /* Update backward node */
    if ( backward ){
-      registrationQANode->ChangeFromBackwardToFoward();
+      registrationQANode->CopyFromBackward();
    }
    else{
-      registrationQANode->GetBackwardRegistrationQAParameters()->ChangeFromBackwardToFoward();
+      registrationQANode->GetBackwardRegistrationQAParameters()->CopyFromBackward();
    }
    
    //Try to update widget

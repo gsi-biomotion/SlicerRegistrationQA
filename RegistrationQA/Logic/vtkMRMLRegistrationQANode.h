@@ -24,6 +24,9 @@ public:
 	virtual void Copy(vtkMRMLNode *node);
 	virtual const char* GetNodeTagName() {return "RegistrationQAParameters";};
 	virtual void UpdateReferenceID(const char *oldID, const char *newID);
+        
+        // Create regisration QA parameters in the backward direction
+        void CreateBackwardParameters();
 
 	vtkGetStringMacro(VectorVolumeNodeID);
         vtkSetStringMacro(VectorVolumeNodeID);
@@ -111,7 +114,7 @@ public:
         void SetAndObserveBackwardRegistrationQAParameters(vtkMRMLRegistrationQANode* node);
         
         /// Exchange forward and backward parameters
-        bool ChangeFromBackwardToFoward();
+        bool CopyFromBackward();
         
         // Movie parameters
         vtkGetMacro(MovieBoxRedState, int);
@@ -135,9 +138,13 @@ public:
         vtkGetStringMacro(WarpedColorNodeID);
         /// Se Warped Color node ID
         vtkSetStringMacro(WarpedColorNodeID);
-
-
         
+        /** Create default table node, used in jacobian, absdiff, fiducials
+         *  and inverse consistency
+         */
+        void CreateDefaultRegistrationQATable();
+        
+
 protected:
 	vtkMRMLRegistrationQANode();
 	~vtkMRMLRegistrationQANode();
@@ -176,7 +183,7 @@ protected:
         
         char* VolumeColorNodeID;
         char* WarpedColorNodeID;
-        
+
 };
 
 #endif
