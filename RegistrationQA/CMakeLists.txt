@@ -70,5 +70,8 @@ slicerMacroBuildQtModule(
   TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
   RESOURCES ${MODULE_RESOURCES}
   )
-
 #-----------------------------------------------------------------------------
+
+if(BUILD_TESTING)
+  add_subdirectory(Testing)
+endif()
