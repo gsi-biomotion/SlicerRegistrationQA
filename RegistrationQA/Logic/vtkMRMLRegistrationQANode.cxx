@@ -518,7 +518,16 @@ void vtkMRMLRegistrationQANode::CreateDefaultRegistrationQATable() {
    if ( ! this->Scene ) {
       return;
    }
-   vtkSmartPointer<vtkMRMLTableNode> tableNode = vtkSmartPointer<vtkMRMLTableNode>::New();
+   
+   vtkSmartPointer<vtkMRMLTableNode> tableNode;
+   
+   tableNode = this->GetRegistrationQATableNode();
+   
+   if ( tableNode ) {
+      this->Scene->RemoveNode( tableNode );
+   }
+   
+   tableNode = vtkSmartPointer<vtkMRMLTableNode>::New();
    std::string tableNodeName = this->Scene->GenerateUniqueName("RegistrationQA");
    tableNode->SetName(tableNodeName.c_str());
    this->Scene->AddNode(tableNode);
