@@ -3,7 +3,7 @@
 **A registration quality assurance module for 3D Slicer**
 
 Dr. Kristjan Anderle
-(k.anderle@gsi.de)
+(kristjan.anderle@gmail.com)
 
 # Introduction
 
