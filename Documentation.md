@@ -89,7 +89,7 @@ Next, click _Fiducial Distance_, which corresponds to Measure 5. This calculates
 
 Similarly, _Contour Measures_ will calculate Hausdorff distance and dice metric between contours before and after registration. You can click the button and investigate results in the table. It corresponds to Measure 6.
 
-![invers](https://github.com/gsi-biomotion/SlicerRegistrationQA/blob/master/Screenshots/InverseConsistencyInsideROI.png "Inverse Consistency inside the ROI)
+![invers](https://github.com/gsi-biomotion/SlicerRegistrationQA/blob/master/Screenshots/InverseConsistencyInsideROI.png "Inverse Consistency inside the ROI")
 
 Figure 6 - Inverse consistency calculated inside the ROI around GTV contour.
 
