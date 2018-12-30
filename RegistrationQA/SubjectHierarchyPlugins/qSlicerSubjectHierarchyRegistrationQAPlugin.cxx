@@ -120,7 +120,7 @@ public:
   QMenu* regQAMenu;
   QActionGroup* regQAMenuActionGroup;
   QIcon regQAIcon;
-  vtkSlicerRegistrationQALogic* regQALogic;
+  vtkWeakPointer<vtkSlicerRegistrationQALogic> regQALogic;
 };
 
 //-----------------------------------------------------------------------------
@@ -235,16 +235,18 @@ void qSlicerSubjectHierarchyRegistrationQAPluginPrivate::init()
   convertAction->setActionGroup(this->regQAMenuActionGroup);
   convertAction->setData(QVariant("Convert"));
   this->regQAMenu->addAction(convertAction);
-
-  this->regQALogic = vtkSlicerRegistrationQALogic::New();
-  vtkSmartPointer<vtkMRMLScene> scene; 
-  scene = qSlicerSubjectHierarchyPluginHandler::instance()->mrmlScene();
-  this->regQALogic->SetMRMLScene(scene);
 }
 
 //-----------------------------------------------------------------------------
 qSlicerSubjectHierarchyRegistrationQAPluginPrivate::~qSlicerSubjectHierarchyRegistrationQAPluginPrivate()
 {
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerSubjectHierarchyRegistrationQAPlugin::setRegistrationQALogic(vtkSlicerRegistrationQALogic* registrationQALogic)
+{
+  Q_D(qSlicerSubjectHierarchyRegistrationQAPlugin);
+  d->regQALogic = registrationQALogic;
 }
 
 //-----------------------------------------------------------------------------

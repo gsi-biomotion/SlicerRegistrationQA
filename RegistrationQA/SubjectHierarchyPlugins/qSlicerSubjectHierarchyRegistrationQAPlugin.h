@@ -28,6 +28,7 @@
 // #include "qSlicerDicomRtImportExportSubjectHierarchyPluginsExport.h"
 
 class qSlicerSubjectHierarchyRegistrationQAPluginPrivate;
+
 class vtkMRMLNode;
 class vtkMRMLVolumeNode;
 class vtkMRMLAnnotationROINode;
@@ -36,6 +37,8 @@ class vtkMRMLSegmentationNode;
 class vtkMRMLScalarVolumeNode;
 class vtkMRMLTableNode;
 class vtkMRMLRegistrationQANode;
+class vtkSlicerRegistrationQALogic;
+
 //BTX
 /// \ingroup Slicer_QtModules_SubjectHierarchy_Plugins
 class Q_SLICER_REGISTRATIONQA_SUBJECT_HIERARCHY_PLUGINS_EXPORT qSlicerSubjectHierarchyRegistrationQAPlugin : public qSlicerSubjectHierarchyAbstractPlugin
@@ -49,6 +52,9 @@ public:
   virtual ~qSlicerSubjectHierarchyRegistrationQAPlugin();
  
 public:
+  /// Set  module logic.
+  void setRegistrationQALogic(vtkSlicerRegistrationQALogic* registrationQALogic);
+
   /// Determines if a data node can be placed in the hierarchy using the actual plugin,
   /// and gets a confidence value for a certain MRML node (usually the type and possibly attributes are checked).
   /// \param node Node to be added to the hierarchy
