@@ -104,9 +104,12 @@ QStringList qSlicerRegistrationQAModule::dependencies() const {
 
 //-----------------------------------------------------------------------------
 void qSlicerRegistrationQAModule::setup() {
-	this->Superclass::setup();
-	// Register Subject Hierarchy core plugins
-       qSlicerSubjectHierarchyPluginHandler::instance()->registerPlugin(new qSlicerSubjectHierarchyRegistrationQAPlugin());
+  this->Superclass::setup();
+  // Register Subject Hierarchy plugin
+  vtkSlicerRegistrationQALogic* registrationQALogic = vtkSlicerRegistrationQALogic::SafeDownCast(this->logic());
+  qSlicerSubjectHierarchyRegistrationQAPlugin* shPlugin = new qSlicerSubjectHierarchyRegistrationQAPlugin();
+  shPlugin->setRegistrationQALogic(registrationQALogic);
+  qSlicerSubjectHierarchyPluginHandler::instance()->registerPlugin(shPlugin);
 }
 
 //-----------------------------------------------------------------------------
