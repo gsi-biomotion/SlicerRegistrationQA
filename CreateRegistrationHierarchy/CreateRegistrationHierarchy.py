@@ -291,7 +291,7 @@ class CreateRegistrationHierarchyWidget(ScriptedLoadableModuleWidget):
       evalString = 'globals()["%s"].%sTest()' % (moduleName, moduleName)
       tester = eval(evalString)
       tester.runTest()
-    except Exception, e:
+    except Exception as e:
       import traceback
       traceback.print_exc()
       qt.QMessageBox.warning(slicer.util.mainWindow(),
@@ -323,7 +323,7 @@ class CreateRegistrationHierarchyLogic:
     #Create Patient Node
     shNode = slicer.util.getNode('SubjectHierarchy')
     if not shNode:
-      print "Can't find Subject Hierarchy node!"
+      print("Can't find Subject Hierarchy node!")
       return
     sceneItemID = shNode.GetSceneItemID()
     patientItemID = shNode.GetItemByUID('DICOM',patientName)
@@ -377,7 +377,7 @@ class CreateRegistrationHierarchyLogic:
    
     #Populate Subject Hierarchy with all phases
     if not os.path.exists(dirPaths.ctDirectory): 
-      print "No directories."
+      print("No directories.")
       return
 
     phaseDictID = {}
@@ -394,7 +394,7 @@ class CreateRegistrationHierarchyLogic:
       #Special check, so we have 4DCT files
       if fourD:
          if not fileName[index-3] == "_":
-            print "Not part of 4DCT " + fileName
+            print("Not part of 4DCT " + fileName)
             continue
       
       #Try to find out, which phase do we have
@@ -403,7 +403,7 @@ class CreateRegistrationHierarchyLogic:
          try:
             int(phase)
          except ValueError:
-            print "No phase: " + phase
+            print("No phase: " + phase)
             continue
       else:
          phase = "UNKNOWN"
@@ -437,13 +437,13 @@ class CreateRegistrationHierarchyLogic:
     shNode.SetItemAttribute(patientItemID,FIDUCIAL + ITEMID,str(contoursDIRItemID))
     
     if not os.path.exists(dirPaths.contourDirectory):
-         print "No directory " + dirPaths.contourDirectory
+         print("No directory " + dirPaths.contourDirectory)
     else:
        for fileName in os.listdir(dirPaths.contourDirectory):
           filePrefix, fileExtension = os.path.splitext(fileName)
           #Currently only .nrrd segmentations can be read and only not 4D
           if dirPaths.fourD:
-             print "Can't read contours for 4DCT"
+             print("Can't read contours for 4DCT")
           else:
              if fileExtension.lower() == '.nrrd':
                 itemID = self.createChild(contoursDIRItemID,filePrefix)
@@ -460,7 +460,7 @@ class CreateRegistrationHierarchyLogic:
       else:
          warpedImageOn = False
       if not os.path.exists(dirList[i]):
-         print "No directory " + dirList[i]
+         print("No directory " + dirList[i])
       else:
          for file in os.listdir(dirList[i]):
             #Read 4D-CT registration case
@@ -495,7 +495,7 @@ class CreateRegistrationHierarchyLogic:
 
     #Find fiducials
     if not os.path.exists(dirPaths.fiducialsDirectory):
-         print "No directory " + dirPaths.fiducialsDirectory
+         print("No directory " + dirPaths.fiducialsDirectory)
     else:
        for fileName in os.listdir(dirPaths.fiducialsDirectory):
           filePrefix, fileExtension = os.path.splitext(fileName)
@@ -505,7 +505,7 @@ class CreateRegistrationHierarchyLogic:
                try:
                   int(phaseStr)
                except ValueError:
-                  print "No phase: " + phaseStr
+                  print("No phase: " + phaseStr)
                   continue
                phase = '0' + phaseStr
                shNode.SetItemAttribute(itemID,FIXEDIMAGEID,str(phaseDictID[phase]))
@@ -590,11 +590,11 @@ class CreateRegistrationHierarchyLogic:
         index = file.find('ref00.nhdr')
         if index > -1:
           #Find out warpedimage or invWarpedImage
-          print file
+          print(file)
           if ('0' + file[index-1]) == phase:
             dirqaID = self.createChild(phaseItemID,NAME_INVCONSIST)
           else:
-            print "Cannot find phase number. Index: " + str(index)
+            print("Cannot find phase number. Index: " + str(index))
             continue
           if dirqaID:
             shNode.SetItemAttribute(dirqaID,'FilePath',dirqaDirectory+file)
@@ -853,5 +853,5 @@ class RegistrationHierarchyHelp():
          self.referencePhase = "05"
          
       else:
-         print "Unknown case" + case
+         print("Unknown case" + case)
          return
