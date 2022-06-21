@@ -9,8 +9,8 @@ set(EXTENSION_CATEGORY "Registration")
 set(EXTENSION_CONTRIBUTORS "Kristjan Anderle (GSI), Tobias Brandt (University Clinic of Erlangen), Daniel Richter (University Clinic of Erlangen), Jens Woelfelschneider (University Clinic of Erlangen)")
 set(EXTENSION_DESCRIPTION "Image registration quality assurance tool.")
 set(EXTENSION_STATUS "Beta")
-set(EXTENSION_ICONURL "https://github.com/gsi-biomotion/SlicerRegistrationQA/blob/master/RegQA/Resources/Icons/RegQAIcon.png")
-set(EXTENSION_SCREENSHOTURLS "")
+set(EXTENSION_ICONURL "https://raw.githubusercontent.com/gsi-biomotion/SlicerRegistrationQA/master/RegistrationQA/Resources/Icons/RegistrationQAIcon.png")
+set(EXTENSION_SCREENSHOTURLS "https://raw.githubusercontent.com/gsi-biomotion/SlicerRegistrationQA/master/Screenshots/RegQAOverview.png")
 set(EXTENSION_DEPENDS SlicerRT)
 
 #-----------------------------------------------------------------------------
