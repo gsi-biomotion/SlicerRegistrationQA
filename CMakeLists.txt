@@ -4,7 +4,7 @@ project(RegistrationQA)
 
 #-----------------------------------------------------------------------------
 # Extension meta-information
-set(EXTENSION_HOMEPAGE "https://github.com/gsi-biomotion/SlicerRegistrationQA/wiki")
+set(EXTENSION_HOMEPAGE "https://github.com/gsi-biomotion/Slicer-RegQA/wiki")
 set(EXTENSION_CATEGORY "Registration")
 set(EXTENSION_CONTRIBUTORS "Kristjan Anderle (GSI), Tobias Brandt (University Clinic of Erlangen), Daniel Richter (University Clinic of Erlangen), Jens Woelfelschneider (University Clinic of Erlangen)")
 set(EXTENSION_DESCRIPTION "Image registration quality assurance tool.")
